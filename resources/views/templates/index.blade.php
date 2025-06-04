@@ -15,7 +15,7 @@
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-            <strong><span class="name_design" ></span> - <span class="size_design"></span></strong>
+            <strong><span class="name_design"></span> - <span class="size_design"></span></strong>
             <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
         </div>
         <div class="tools">
@@ -23,11 +23,37 @@
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
             <button class="btn btn-sm btn-success" onclick="downloadCanvas()">Tải xuống</button>
+            <button class="btn btn-sm btn-outline-success" onclick="openPrintModal()">In hàng loạt</button>
         </div>
     </div>
 
-    <div class="d-flex">
 
+
+    <div class="modal fade" id="printModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="printForm" method="POST" action="/print-batch">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">In hàng loạt</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
+                        <label class="form-label">Dán dữ liệu (CSV: name,code):</label>
+                        <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456&#10;Trần Thị B,654321"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">In</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <div class="d-flex">
         <div class="sidebar-canvas d-flex flex-column">
             <div class="sidebar-item" onclick="showPanel('dynamic')">
                 <i class="bi bi-lightning-charge"></i>
@@ -49,15 +75,32 @@
                 <i class="bi bi-award"></i>
                 <span>Thương hiệu</span>
             </div>
-            <div class="sidebar-item" onclick="showPanel('project')">
+            <!-- <div class="sidebar-item" onclick="showPanel('project')">
                 <i class="bi bi-folder2"></i>
                 <span>Dự án</span>
+            </div> -->
+
+            <div class="sidebar-item" onclick="showPanel('ingredient')">
+                <i class="bi bi-award"></i>
+                <span>Thành phần</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('tools')">
+                <i class="bi bi-tools"></i>
+                <span>Công cụ</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('other')">
+                <i class="bi bi-grid"></i>
+                <span>Khác</span>
             </div>
         </div>
 
+
         <!-- Panel chi tiết -->
         <div id="panel-dynamic" class="sidebar-panel">
-            <div class="panel-title"><i class="bi bi-lightning-charge"></i> Trường động</div>
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-lightning-charge"></i> Trường động</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('dynamic')"></button>
+            </div>
             <div class="panel-group">
                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{name}')">
                     <i class="bi bi-person me-2"></i> Tên
@@ -74,7 +117,10 @@
             </div>
         </div>
         <div id="panel-text" class="sidebar-panel">
-            <div class="panel-title"><i class="bi bi-type"></i> Văn bản</div>
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-type"></i> Văn bản</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('text')"></button>
+            </div>
             <div class="panel-group">
                 <button class="btn btn-outline-secondary w-100 d-flex align-items-center mb-2" onclick="addText()">
                     <i class="bi bi-type me-2"></i> Thêm Text thường
@@ -82,7 +128,10 @@
             </div>
         </div>
         <div id="panel-upload" class="sidebar-panel">
-            <div class="panel-title"><i class="bi bi-cloud-arrow-up"></i> Tải ảnh lên</div>
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh lên</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('upload')"></button>
+            </div>
             <div class="panel-group">
                 <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadImg').click()">
                     <i class="bi bi-cloud-arrow-up me-2"></i> Tải ảnh lên
@@ -91,7 +140,10 @@
             </div>
         </div>
         <div id="panel-shape" class="sidebar-panel">
-            <div class="panel-title"><i class="bi bi-square"></i> Hình khối</div>
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-square"></i> Hình khối</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('shape')"></button>
+            </div>
             <div class="panel-group">
                 <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addRect()">
                     <i class="bi bi-square me-2"></i> Hình chữ nhật
@@ -102,17 +154,79 @@
             </div>
         </div>
         <div id="panel-brand" class="sidebar-panel">
-            <div class="panel-title"><i class="bi bi-award"></i> Thương hiệu</div>
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-award"></i> Thương hiệu</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('brand')"></button>
+            </div>
             <div class="panel-group">
                 <div class="text-muted">Chức năng này đang phát triển...</div>
             </div>
         </div>
-        <div id="panel-project" class="sidebar-panel">
-            <div class="panel-title"><i class="bi bi-folder2"></i> Dự án</div>
+        <div id="panel-ingredient" class="sidebar-panel">
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-award"></i> Thành phần</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('ingredient')"></button>
+            </div>
             <div class="panel-group">
-                <div class="text-muted">Chức năng này đang phát triển...</div>
+                <input class="form-control mb-2" placeholder="Tìm kiếm thành phần...">
+                <div>
+                    <div class="fw-bold mb-1">Hình dạng</div>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addRect()">■ Vuông</button>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addCircle()">● Tròn</button>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addLine()">━ Line</button>
+                </div>
+                <div class="mt-2">
+                    <div class="fw-bold mb-1">Đồ họa</div>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addIcon('trophy')"><i class="bi bi-trophy"></i> Cúp</button>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addIcon('globe')"><i class="bi bi-globe"></i> Địa cầu</button>
+                </div>
             </div>
         </div>
+        <div id="panel-tools" class="sidebar-panel">
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-tools"></i> Công cụ</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('tools')"></button>
+            </div>
+            <div class="vertical-toolbar">
+                <button class="tool-btn" title="Chọn" onclick="selectTool('select')">
+                    <i class="bi bi-cursor"></i>
+                </button>
+                <button class="tool-btn" title="Vẽ tự do" onclick="selectTool('draw')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="tool-btn" title="Vẽ đường thẳng" onclick="addLine()">
+                    <i class="bi bi-slash-lg"></i>
+                </button>
+             
+            </div>
+        </div>
+
+        <!-- <div id="panel-app" class="sidebar-panel">
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-grid"></i> Ứng dụng</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('app')"></button>
+            </div>
+            <div class="panel-group">
+                <div class="text-muted">Tích hợp AI, plugin, tiện ích mở rộng...</div>
+            </div>
+        </div>
+        <div id="panel-effect" class="sidebar-panel">
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-stars"></i> Biến hóa</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('effect')"></button>
+            </div>
+            <div class="panel-group">
+                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addTextEffect('bold')">
+                    <i class="bi bi-type-bold me-2"></i> Đậm
+                </button>
+                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addTextEffect('italic')">
+                    <i class="bi bi-type-italic me-2"></i> Nghiêng
+                </button>
+                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addTextEffect('underline')">
+                    <i class="bi bi-type-underline me-2"></i> Gạch chân
+                </button>
+            </div>
+        </div> -->
 
         <!-- Canvas area -->
         <div class="canvas-container">

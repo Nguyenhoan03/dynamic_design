@@ -152,3 +152,108 @@ body,
             border-radius: 8px;
             transition: background 0.2s, color 0.2s;
         }
+
+        .object-detail-panel {
+    position: fixed;
+    top: 70px;
+    right: 30px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    z-index: 1001;
+    min-width: 180px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.object-detail-panel label {
+    font-size: 13px;
+    margin-bottom: 2px;
+    display: block;
+}
+.object-detail-panel input, .object-detail-panel select {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+/* Thêm vào template.css */
+.sub-sidebar {
+    display: none;
+    position: fixed;
+    left: 70px;
+    top: 0;
+    width: 320px;
+    height: 100vh;
+    background: #fff;
+    border-right: 1px solid #eee;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+    z-index: 2000;
+    animation: fadeInRight 0.2s;
+}
+.sub-sidebar.active { display: block; }
+.sub-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 8px 16px;
+    border-bottom: 1px solid #eee;
+    font-weight: bold;
+    font-size: 16px;
+}
+.sub-sidebar-content {
+    padding: 16px;
+    overflow-y: auto;
+    height: calc(100vh - 56px);
+}
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(40px);}
+    to { opacity: 1; transform: translateX(0);}
+}
+
+
+.vertical-toolbar {
+    position: absolute;
+    left: 10px;
+    top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 10px 6px;
+    box-shadow: 0 2px 8px #0001;
+    z-index: 100;
+}
+.tool-btn {
+    background: none;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    transition: background 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+.tool-btn:hover, .tool-btn.active {
+    background: #f0f0f0;
+}
+.has-submenu .submenu {
+    display: none;
+    position: absolute;
+    left: 45px;
+    top: 0;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #0002;
+    padding: 6px;
+    gap: 6px;
+    z-index: 10;
+}
+.has-submenu:hover .submenu {
+    display: flex;
+}

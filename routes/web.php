@@ -18,5 +18,8 @@ Route::get('/', function () {
 });
 Route::get('/templates', [TemplateController::class, 'index']);
 Route::post('/templates', [TemplateController::class, 'store']);
+
+Route::post('/print-batch', [TemplateController::class, 'printBatch']);
 Route::get('/templates/{id}/preview', [TemplateController::class, 'preview']);
+
 Route::post('/templates/{id}/print', [TemplateController::class, 'print']);

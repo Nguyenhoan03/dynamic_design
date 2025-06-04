@@ -7,6 +7,40 @@ function showPanel(panel) {
     const panelEl = document.getElementById('panel-' + panel);
     if(panelEl) panelEl.classList.add('active');
 }
+function closePanel(panel) {
+    document.getElementById('panel-' + panel).style.display = 'none';
+}
+
+function openPrintModal() {
+    var modal = new bootstrap.Modal(document.getElementById('printModal'));
+    modal.show();
+}
+function selectTool(tool) {
+    // Xử lý chọn công cụ, ví dụ: vẽ, chọn, text...
+    // Đổi trạng thái active cho nút
+    document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+    // Nếu là submenu thì không có onclick
+    const btn = document.querySelector(`.tool-btn[onclick*="${tool}"]`);
+    if (btn) btn.classList.add('active');
+    // Tùy tool mà bật/tắt chế độ fabric
+    if (tool === 'draw') {
+        canvas.isDrawingMode = true;
+    } else {
+        canvas.isDrawingMode = false;
+    }
+}
+function addLine() {
+    const line = new fabric.Line([50, 100, 200, 100], {
+        left: 170,
+        top: 100,
+        stroke: '#222',
+        strokeWidth: 3
+    });
+    canvas.add(line).setActiveObject(line);
+}
+
+
+
 // Khởi tạo canvas
 const canvas = new fabric.Canvas('templateCanvas', {
     backgroundColor: '#fff',
@@ -40,10 +74,13 @@ function undo() {
     }
 }
 
+
+
 function redo() {
     // Đơn giản: chỉ undo, không redo stack
     alert('Chức năng redo cần bổ sung stack riêng!');
 }
+
 
 
 // Thêm QR code mẫu (chỉ là placeholder)
@@ -66,6 +103,18 @@ function addQRCode() {
         top: 120
     });
     canvas.add(group).setActiveObject(group);
+}
+
+function addText() {
+    const text = new fabric.Textbox('Nhập nội dung', {
+        left: 120,
+        top: 60,
+        fontSize: 22,
+        fill: '#222',
+        width: 200,
+        fontFamily: 'Arial'
+    });
+    canvas.add(text).setActiveObject(text);
 }
 
 // Upload ảnh từ máy
@@ -105,11 +154,30 @@ function flipSelected() {
 
 // Đổi màu đối tượng text
 function changeColor() {
-    const active = canvas.getActiveObject();
-    if (active && active.type === 'textbox') {
-        active.set('fill', active.fill === 'red' ? '#222' : 'red');
-        canvas.requestRenderAll();
+    let colorInput = document.getElementById('colorPicker');
+    if (!colorInput) {
+        colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.id = 'colorPicker';
+        colorInput.style.position = 'fixed';
+        colorInput.style.left = '50%';
+        colorInput.style.top = '50%';
+        colorInput.style.transform = 'translate(-50%, -50%)';
+        colorInput.style.zIndex = 9999;
+        colorInput.style.display = 'block';
+        colorInput.addEventListener('input', function () {
+            const active = canvas.getActiveObject();
+            if (active && active.type === 'textbox') {
+                active.set('fill', this.value);
+                canvas.requestRenderAll();
+            }
+            colorInput.style.display = 'none';
+        });
+        document.body.appendChild(colorInput);
     }
+    colorInput.style.display = 'block';
+    colorInput.focus();
+    colorInput.click();
 }
 
 // Tải xuống thiết kế
@@ -328,3 +396,4 @@ function addDynamicQR() {
     const group = new fabric.Group([rect, label], { left: 300, top: 120, customType: 'dynamicQR', variable: '#{code}' });
     canvas.add(group).setActiveObject(group);
 }
+
