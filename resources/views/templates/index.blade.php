@@ -7,14 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{asset('./css/template.css')}}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-   
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 </head>
 
 <body>
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-            <strong>Thiết kế không tên - 750px x 350px</strong>
+            <strong><span class="name_design" ></span> - <span class="size_design"></span></strong>
             <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
         </div>
         <div class="tools">
@@ -26,19 +27,91 @@
     </div>
 
     <div class="d-flex">
-        <!-- Left sidebar -->
-        <div class="left-sidebar">
-            <a href="#" class="nav-link" onclick="addText()">Thêm Text</a>
-            <a href="#" class="nav-link" onclick="addQRCode()">Thêm QR</a>
-            <a href="#" class="nav-link" onclick="document.getElementById('uploadImg').click()">Tải ảnh lên</a>
-            <input type="file" id="uploadImg" accept="image/*" style="display:none">
-            <hr>
-            <a href="#" class="nav-link">Thành phần</a>
-            <a href="#" class="nav-link">Văn bản</a>
-            <a href="#" class="nav-link">Thương hiệu</a>
-            <a href="#" class="nav-link">Công cụ</a>
-            <a href="#" class="nav-link">Dự án</a>
-            <a href="#" class="nav-link">Ứng dụng</a>
+
+        <div class="sidebar-canvas d-flex flex-column">
+            <div class="sidebar-item" onclick="showPanel('dynamic')">
+                <i class="bi bi-lightning-charge"></i>
+                <span>Trường động</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('text')">
+                <i class="bi bi-type"></i>
+                <span>Văn bản</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('upload')">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>Tải lên</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('shape')">
+                <i class="bi bi-square"></i>
+                <span>Hình khối</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('brand')">
+                <i class="bi bi-award"></i>
+                <span>Thương hiệu</span>
+            </div>
+            <div class="sidebar-item" onclick="showPanel('project')">
+                <i class="bi bi-folder2"></i>
+                <span>Dự án</span>
+            </div>
+        </div>
+
+        <!-- Panel chi tiết -->
+        <div id="panel-dynamic" class="sidebar-panel">
+            <div class="panel-title"><i class="bi bi-lightning-charge"></i> Trường động</div>
+            <div class="panel-group">
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{name}')">
+                    <i class="bi bi-person me-2"></i> Tên
+                </button>
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{code}')">
+                    <i class="bi bi-upc-scan me-2"></i> Mã
+                </button>
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{name} - #{code}')">
+                    <i class="bi bi-card-text me-2"></i> Tên + Mã
+                </button>
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicQR()">
+                    <i class="bi bi-qr-code me-2"></i> QR code mã
+                </button>
+            </div>
+        </div>
+        <div id="panel-text" class="sidebar-panel">
+            <div class="panel-title"><i class="bi bi-type"></i> Văn bản</div>
+            <div class="panel-group">
+                <button class="btn btn-outline-secondary w-100 d-flex align-items-center mb-2" onclick="addText()">
+                    <i class="bi bi-type me-2"></i> Thêm Text thường
+                </button>
+            </div>
+        </div>
+        <div id="panel-upload" class="sidebar-panel">
+            <div class="panel-title"><i class="bi bi-cloud-arrow-up"></i> Tải ảnh lên</div>
+            <div class="panel-group">
+                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadImg').click()">
+                    <i class="bi bi-cloud-arrow-up me-2"></i> Tải ảnh lên
+                </button>
+                <input type="file" id="uploadImg" accept="image/*" style="display:none">
+            </div>
+        </div>
+        <div id="panel-shape" class="sidebar-panel">
+            <div class="panel-title"><i class="bi bi-square"></i> Hình khối</div>
+            <div class="panel-group">
+                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addRect()">
+                    <i class="bi bi-square me-2"></i> Hình chữ nhật
+                </button>
+                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addCircle()">
+                    <i class="bi bi-circle me-2"></i> Hình tròn
+                </button>
+            </div>
+        </div>
+        <div id="panel-brand" class="sidebar-panel">
+            <div class="panel-title"><i class="bi bi-award"></i> Thương hiệu</div>
+            <div class="panel-group">
+                <div class="text-muted">Chức năng này đang phát triển...</div>
+            </div>
+        </div>
+        <div id="panel-project" class="sidebar-panel">
+            <div class="panel-title"><i class="bi bi-folder2"></i> Dự án</div>
+            <div class="panel-group">
+                <div class="text-muted">Chức năng này đang phát triển...</div>
+            </div>
         </div>
 
         <!-- Canvas area -->
@@ -54,263 +127,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
-    <script>
-        // Khởi tạo canvas
-        const canvas = new fabric.Canvas('templateCanvas', { backgroundColor: '#fff', preserveObjectStacking: true });
-
-        // Undo/Redo stack
-        let state = [], mods = 0, undoing = false, redoing = false;
-        function saveState() {
-            if (!undoing && !redoing) {
-                state.push(JSON.stringify(canvas));
-                mods = 0;
-            }
-        }
-        canvas.on('object:added', saveState);
-        canvas.on('object:modified', saveState);
-        canvas.on('object:removed', saveState);
-
-        function undo() {
-            if (state.length > 1) {
-                undoing = true;
-                state.pop();
-                canvas.loadFromJSON(state[state.length - 1], () => {
-                    canvas.renderAll();
-                    undoing = false;
-                });
-            }
-        }
-        function redo() {
-            // Đơn giản: chỉ undo, không redo stack
-            alert('Chức năng redo cần bổ sung stack riêng!');
-        }
-
-        // Thêm ảnh mẫu
-        fabric.Image.fromURL('https://imagedelivery.net/ZeGtsGSjuQe1P3UP_zk3fQ/ede24b65-497e-4940-ea90-06cc2757a200/storedata', function(img) {
-            img.set({ left: 10, top: 10, scaleX: 0.5, scaleY: 0.5 });
-            canvas.add(img);
-        });
-
-        // Thêm text động
-        function addText() {
-            const text = new fabric.Textbox('Nhập nội dung', {
-                left: 120, top: 60, fontSize: 22, fill: '#222', width: 200, fontFamily: 'Arial'
-            });
-            canvas.add(text).setActiveObject(text);
-        }
-
-        // Thêm QR code mẫu (chỉ là placeholder)
-        function addQRCode() {
-            const rect = new fabric.Rect({
-                width: 70, height: 70, fill: '#eee', stroke: '#333', strokeWidth: 1
-            });
-            const label = new fabric.Text('QR: #{code}', {
-                fontSize: 12, left: 10, top: 25, fill: '#333'
-            });
-            const group = new fabric.Group([rect, label], { left: 300, top: 120 });
-            canvas.add(group).setActiveObject(group);
-        }
-
-        // Upload ảnh từ máy
-        document.getElementById('uploadImg').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(f) {
-                fabric.Image.fromURL(f.target.result, function(img) {
-                    img.set({ left: 50, top: 50, scaleX: 0.5, scaleY: 0.5 });
-                    canvas.add(img).setActiveObject(img);
-                });
-            };
-            reader.readAsDataURL(file);
-            e.target.value = '';
-        });
-
-        // Xóa đối tượng đang chọn
-        function deleteSelected() {
-            const active = canvas.getActiveObject();
-            if (active) canvas.remove(active);
-        }
-
-        // Lật đối tượng đang chọn
-        function flipSelected() {
-            const active = canvas.getActiveObject();
-            if (active && active.type === 'image') {
-                active.toggle('flipX');
-                canvas.requestRenderAll();
-            }
-        }
-
-        // Đổi màu đối tượng text
-        function changeColor() {
-            const active = canvas.getActiveObject();
-            if (active && active.type === 'textbox') {
-                active.set('fill', active.fill === 'red' ? '#222' : 'red');
-                canvas.requestRenderAll();
-            }
-        }
-
-        // Tải xuống thiết kế
-        function downloadCanvas() {
-            const dataURL = canvas.toDataURL({ format: 'png' });
-            const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = 'thietke.png';
-            link.click();
-        }
-
-        // Toolbar nổi khi chọn đối tượng
-        const objectToolbar = document.getElementById('objectToolbar');
-        canvas.on('selection:created', showToolbar);
-        canvas.on('selection:updated', showToolbar);
-        canvas.on('selection:cleared', () => objectToolbar.style.display = 'none');
-        function showToolbar(e) {
-            const obj = canvas.getActiveObject();
-            if (!obj) return;
-            const bound = obj.getBoundingRect();
-            objectToolbar.style.display = 'flex';
-            objectToolbar.style.left = (bound.left + bound.width / 2 - 40) + 'px';
-            objectToolbar.style.top = (bound.top - 30) + 'px';
-        }
-        canvas.on('object:moving', showToolbar);
-        canvas.on('object:scaling', showToolbar);
-
-        // Đổi kích thước canvas
-        function changeCanvasSize() {
-            let w = prompt('Nhập chiều rộng (px):', canvas.width);
-            let h = prompt('Nhập chiều cao (px):', canvas.height);
-            if (w && h) {
-                canvas.setWidth(Number(w));
-                canvas.setHeight(Number(h));
-                document.querySelector('.canvas-box').style.width = w + 'px';
-                document.querySelector('.canvas-box').style.height = h + 'px';
-            }
-        }
-
-        // Thêm hình chữ nhật
-        function addRect() {
-            const rect = new fabric.Rect({
-                left: 150, top: 100, fill: '#00bcd4', width: 100, height: 60
-            });
-            canvas.add(rect).setActiveObject(rect);
-        }
-
-        // Thêm hình tròn
-        function addCircle() {
-            const circle = new fabric.Circle({
-                left: 250, top: 120, fill: '#673ab7', radius: 40
-            });
-            canvas.add(circle).setActiveObject(circle);
-        }
-
-        // Copy/Paste đối tượng
-        let clipboard = null;
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'c') {
-                const active = canvas.getActiveObject();
-                if (active) active.clone(function(cloned) { clipboard = cloned; });
-            }
-            if (e.ctrlKey && e.key === 'v' && clipboard) {
-                clipboard.clone(function(clonedObj) {
-                    canvas.discardActiveObject();
-                    clonedObj.set({ left: clonedObj.left + 20, top: clonedObj.top + 20, evented: true });
-                    if (clonedObj.type === 'activeSelection') {
-                        clonedObj.canvas = canvas;
-                        clonedObj.forEachObject(function(obj) { canvas.add(obj); });
-                        clonedObj.setCoords();
-                    } else {
-                        canvas.add(clonedObj);
-                    }
-                    canvas.setActiveObject(clonedObj);
-                    canvas.requestRenderAll();
-                });
-            }
-            // Undo
-            if (e.ctrlKey && e.key === 'z') undo();
-        });
-
-        // Group/Ungroup
-        function groupSelected() {
-            if (!canvas.getActiveObject()) return;
-            if (canvas.getActiveObject().type !== 'activeSelection') return;
-            canvas.getActiveObject().toGroup();
-            canvas.requestRenderAll();
-        }
-        function ungroupSelected() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'group') {
-                obj.toActiveSelection();
-                canvas.requestRenderAll();
-            }
-        }
-
-        // Khóa/Mở khóa đối tượng
-        function lockSelected() {
-            const obj = canvas.getActiveObject();
-            if (obj) {
-                obj.set({ selectable: false, evented: false, lockMovementX: true, lockMovementY: true });
-                canvas.discardActiveObject();
-                canvas.requestRenderAll();
-            }
-        }
-        function unlockAll() {
-            canvas.getObjects().forEach(obj => {
-                obj.set({ selectable: true, evented: true, lockMovementX: false, lockMovementY: false });
-            });
-            canvas.requestRenderAll();
-        }
-
-        // Đổi font, cỡ, căn lề cho text
-        function setFont(font) {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'textbox') {
-                obj.set('fontFamily', font);
-                canvas.requestRenderAll();
-            }
-        }
-        function setFontSize(size) {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'textbox') {
-                obj.set('fontSize', size);
-                canvas.requestRenderAll();
-            }
-        }
-        function setAlign(align) {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'textbox') {
-                obj.set('textAlign', align);
-                canvas.requestRenderAll();
-            }
-        }
-
-        // Đổi thứ tự lớp
-        function bringToFront() {
-            const obj = canvas.getActiveObject();
-            if (obj) { canvas.bringToFront(obj); }
-        }
-        function sendToBack() {
-            const obj = canvas.getActiveObject();
-            if (obj) { canvas.sendToBack(obj); }
-        }
-
-        // Xóa tất cả
-        function clearCanvas() {
-            canvas.clear();
-            canvas.setBackgroundColor('#fff', canvas.renderAll.bind(canvas));
-        }
-
-        // Zoom canvas
-        function zoomIn() {
-            canvas.setZoom(canvas.getZoom() * 1.1);
-        }
-        function zoomOut() {
-            canvas.setZoom(canvas.getZoom() / 1.1);
-        }
-    </script>
 
     <!-- Thêm các nút chức năng mới vào thanh công cụ hoặc sidebar -->
     <div style="position:fixed;bottom:20px;left:140px;z-index:1000;">
@@ -344,6 +160,12 @@
         </select>
         <button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+    <script src="{{asset('./js/templates.js')}}"></script>
+
 </body>
 
 </html>
