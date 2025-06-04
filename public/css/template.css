@@ -1,0 +1,91 @@
+ <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .topbar {
+            background: linear-gradient(to right, #00bcd4, #673ab7);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar .tools {
+            display: flex;
+            gap: 10px;
+        }
+
+        .left-sidebar {
+            width: 120px;
+            background-color: #f8f9fa;
+            height: calc(100vh - 50px);
+            padding-top: 10px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .left-sidebar .nav-link {
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            height: calc(100vh - 50px);
+        }
+
+        .canvas-box {
+            background-color: white;
+            border: 1px solid #ccc;
+            width: 750px;
+            height: 350px;
+            position: relative;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 13px;
+            z-index: 2;
+        }
+
+        .object-toolbar {
+            display: none;
+            position: absolute;
+            z-index: 10;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 13px;
+            gap: 5px;
+        }
+
+        .object-toolbar button {
+            border: none;
+            background: none;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .bottom-bar {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
