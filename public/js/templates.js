@@ -77,10 +77,8 @@ function undo() {
 
 
 function redo() {
-    // Đơn giản: chỉ undo, không redo stack
     alert('Chức năng redo cần bổ sung stack riêng!');
 }
-
 
 
 // Thêm QR code mẫu (chỉ là placeholder)

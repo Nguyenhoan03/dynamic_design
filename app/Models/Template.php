@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Template extends Model
 {
     use HasFactory;
-      protected $fillable = ['name', 'width', 'height'];
+    protected $fillable = ['name', 'width', 'height', 'config'];
 
     public function elements()
     {
         return $this->hasMany(TemplateElement::class);
     }
+    protected $casts = [
+    'config' => 'array',
+];
 }

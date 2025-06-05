@@ -47,20 +47,55 @@ class TemplateController extends Controller
 
     public function printBatch(Request $request)
     {
-        dd($request->all());
-        $template = Template::with('elements')->findOrFail($request->template_id);
-        $csv = $request->input('csv_rows');
-        $rows = [];
-        foreach (explode("\n", $csv) as $line) {
-            $parts = str_getcsv(trim($line));
-            if (count($parts) >= 2) {
-                $rows[] = ['name' => $parts[0], 'code' => $parts[1]];
+        try {
+            // 1. Tạo mới Template
+            $template = new Template();
+            $template->name = $request->input('template_name', 'Mẫu mới');
+            $template->width = $request->input('template_width', 750);
+            $template->height = $request->input('template_height', 350);
+            $template->config = $request->input('template_config');
+            $template->save();
+
+            // 1.1. Lưu các element vào bảng template_elements
+            $config = json_decode($template->config, true);
+            if (!empty($config['objects'])) {
+                foreach ($config['objects'] as $obj) {
+                    $type = $obj['customType'] ?? $obj['type'] ?? 'text';
+                    $content = $obj['text'] ?? '';
+                    if ($type === 'dynamicQR' || $type === 'qr') {
+                        $type = 'qr';
+                        $content = $obj['variable'] ?? '#{code}';
+                    }
+                    $template->elements()->create([
+                        'type' => $type,
+                        'content' => $content,
+                        'x' => $obj['left'] ?? 0,
+                        'y' => $obj['top'] ?? 0,
+                        'font_size' => $obj['fontSize'] ?? 18,
+                        'size' => $obj['width'] ?? null,
+                        'style' => [],
+                    ]);
+                }
             }
+
+            // 2. Xử lý dữ liệu CSV
+            $csv = $request->input('csv_rows');
+            $rows = [];
+            foreach (explode("\n", $csv) as $line) {
+                $parts = str_getcsv(trim($line));
+                if (count($parts) >= 2) {
+                    $rows[] = ['name' => $parts[0], 'code' => $parts[1]];
+                }
+            }
+
+            // 3. Render PDF
+            $pdf = \Barryvdh\DomPDF\Facade\PDF::loadView('print.batch', [
+                'template' => $template,
+                'rows' => $rows
+            ]);
+            return $pdf->download($template->name . '.pdf');
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
         }
-        $pdf = PDF::loadView('print.batch', [
-            'template' => $template,
-            'rows' => $rows
-        ]);
-        return $pdf->download('batch.pdf');
     }
 }

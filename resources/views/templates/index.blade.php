@@ -33,6 +33,10 @@
         <div class="modal-dialog">
             <form id="printForm" method="POST" action="/print-batch">
                 @csrf
+                <input type="hidden" name="template_name" id="template_name">
+                <input type="hidden" name="template_width" id="template_width">
+                <input type="hidden" name="template_height" id="template_height">
+                <input type="hidden" name="template_config" id="template_config">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">In hàng loạt</h5>
@@ -197,41 +201,13 @@
                 <button class="tool-btn" title="Vẽ đường thẳng" onclick="addLine()">
                     <i class="bi bi-slash-lg"></i>
                 </button>
-             
-            </div>
-        </div>
 
-        <!-- <div id="panel-app" class="sidebar-panel">
-            <div class="panel-title d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-grid"></i> Ứng dụng</span>
-                <button type="button" class="btn-close btn-sm" onclick="closePanel('app')"></button>
-            </div>
-            <div class="panel-group">
-                <div class="text-muted">Tích hợp AI, plugin, tiện ích mở rộng...</div>
             </div>
         </div>
-        <div id="panel-effect" class="sidebar-panel">
-            <div class="panel-title d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-stars"></i> Biến hóa</span>
-                <button type="button" class="btn-close btn-sm" onclick="closePanel('effect')"></button>
-            </div>
-            <div class="panel-group">
-                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addTextEffect('bold')">
-                    <i class="bi bi-type-bold me-2"></i> Đậm
-                </button>
-                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addTextEffect('italic')">
-                    <i class="bi bi-type-italic me-2"></i> Nghiêng
-                </button>
-                <button class="btn btn-outline-info w-100 d-flex align-items-center mb-2" onclick="addTextEffect('underline')">
-                    <i class="bi bi-type-underline me-2"></i> Gạch chân
-                </button>
-            </div>
-        </div> -->
 
         <!-- Canvas area -->
-        <div class="canvas-container">
+        <div class="canvas-container" style="position: relative;">
             <div class="canvas-box" style="width:750px;height:350px;">
-
                 <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
                 <div id="objectToolbar" class="object-toolbar">
                     <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
@@ -239,11 +215,12 @@
                     <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
                 </div>
             </div>
+            <div id="canvasInfo" class="canvas-info canvas-info-bottom"></div>
         </div>
     </div>
 
     <!-- Thêm các nút chức năng mới vào thanh công cụ hoặc sidebar -->
-    <div style="position:fixed;bottom:20px;left:140px;z-index:1000;">
+    <div style="position:fixed;bottom:20px;left:15%;z-index:1000;justify-content: center;display: flex;flex-wrap: wrap;gap: 5px;">
         <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
         <button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button>
         <button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
@@ -262,8 +239,15 @@
             <option value="Courier New">Courier New</option>
         </select>
         <select onchange="setFontSize(this.value)">
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="12">12</option>
+            <option value="14">14</option>
+            <option value="16">16</option>
             <option value="18">18</option>
+            <option value="20">20</option>
             <option value="22" selected>22</option>
+            <option value="26">26</option>
             <option value="28">28</option>
             <option value="36">36</option>
         </select>
@@ -278,7 +262,17 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
-    <script src="{{asset('./js/templates.js')}}"></script>
+    <script type="module" src="{{ asset('./js/canvas-editor/index.js') }}"></script>
+
+    <script>
+        document.querySelector('#printForm').addEventListener('submit', function(e) {
+            const json = canvas.toJSON(['customType', 'variable']); // Include custom props
+            document.getElementById('template_name').value = 'Mẫu in hàng loạt';
+            document.getElementById('template_width').value = canvas.getWidth();
+            document.getElementById('template_height').value = canvas.getHeight();
+            document.getElementById('template_config').value = JSON.stringify(json);
+        });
+    </script>
 
 </body>
 
