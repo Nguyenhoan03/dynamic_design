@@ -15,15 +15,19 @@
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-            <strong><span class="name_design"></span> - <span class="size_design"></span></strong>
+            <strong><input type="text" placeholder="Nhập tên bản thiết kế" class="name_design"> <span class="size_design"></span></strong>
             <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
         </div>
         <div class="tools">
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
-            <button class="btn btn-sm btn-success" onclick="downloadCanvas()">Tải xuống</button>
-            <button class="btn btn-sm btn-outline-success" onclick="openPrintModal()">In hàng loạt</button>
+            <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="downloadCanvas()">
+                <i class="bi bi-download"></i> Tải xuống
+            </button>
+            <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="openPrintModal()">
+                <i class="bi bi-printer"></i> In hàng loạt
+            </button>
         </div>
     </div>
 
@@ -44,8 +48,8 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                        <label class="form-label">Dán dữ liệu (CSV: name,code):</label>
-                        <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456&#10;Trần Thị B,654321"></textarea>
+                        <label class="form-label">Dán dữ liệu (CSV: name,code,qrcode):</label>
+                        <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-success">In</button>
@@ -265,9 +269,12 @@
     <script type="module" src="{{ asset('./js/canvas-editor/index.js') }}"></script>
 
     <script>
+        
         document.querySelector('#printForm').addEventListener('submit', function(e) {
-            const json = canvas.toJSON(['customType', 'variable']); // Include custom props
-            document.getElementById('template_name').value = 'Mẫu in hàng loạt';
+            const name_design = document.getElementsByClassName('name_design')[0].value;
+            console.log(name_design)
+            const json = canvas.toJSON(['customType', 'variable']);
+            document.getElementById('template_name').value = name_design;
             document.getElementById('template_width').value = canvas.getWidth();
             document.getElementById('template_height').value = canvas.getHeight();
             document.getElementById('template_config').value = JSON.stringify(json);

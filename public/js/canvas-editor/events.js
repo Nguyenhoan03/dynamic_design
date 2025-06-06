@@ -44,13 +44,14 @@ window.canvas.on('resize', updateCanvasInfo);
 document.querySelector('.canvas-box').addEventListener('wheel', function(e) {
     if (e.ctrlKey) {
         e.preventDefault();
+        const pointer = window.canvas.getPointer(e);
         let zoom = window.canvas.getZoom();
         const minZoom = 0.2, maxZoom = 3;
         if (e.deltaY < 0) zoom = Math.min(zoom * 1.1, maxZoom);
         else zoom = Math.max(zoom / 1.1, minZoom);
-        window.canvas.setZoom(zoom);
-        window.canvas.requestRenderAll();
-        updateCanvasInfo();
+        // Zoom tại vị trí chuột
+        window.canvas.zoomToPoint({ x: e.offsetX, y: e.offsetY }, zoom);
+        if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
     }
 }, { passive: false });
 
