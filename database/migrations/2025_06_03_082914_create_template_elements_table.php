@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('template_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['text', 'qrcode']);
-            $table->string('content'); 
+            $table->text('content'); 
             $table->integer('x');     
             $table->integer('y');     
             $table->integer('font_size')->nullable();

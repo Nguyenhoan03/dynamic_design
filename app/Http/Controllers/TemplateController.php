@@ -85,12 +85,32 @@ class TemplateController extends Controller
         if (!empty($config['objects'])) {
             foreach ($config['objects'] as $obj) {
                 $type = $obj['customType'] ?? $obj['type'] ?? 'text';
-                $content = $obj['text'] ?? '';
+                $content = '';
+
+                // Xử lý nội dung cho từng loại
                 if ($type === 'dynamicQR' || $type === 'qr') {
                     $type = 'qr';
                     $content = $obj['variable'] ?? '#{code}';
                     $qrVariables[] = $content;
+                } elseif ($type === 'text' || $type === 'dynamic' || $type === 'textbox') {
+                    $content = $obj['text'] ?? '';
+                } elseif ($type === 'image') {
+                    $content = $obj['src'] ?? '';
+                } elseif (in_array($type, ['rect', 'circle', 'triangle', 'line'])) {
+                    $content = '';
+                } elseif ($type === 'group') {
+                    $content = ''; 
                 }
+
+                // Lưu thêm các thuộc tính style nếu có
+                $style = [];
+                if (isset($obj['fill'])) $style['fill'] = $obj['fill'];
+                if (isset($obj['radius'])) $style['radius'] = $obj['radius'];
+                if (isset($obj['stroke'])) $style['stroke'] = $obj['stroke'];
+                if (isset($obj['strokeWidth'])) $style['strokeWidth'] = $obj['strokeWidth'];
+                if (isset($obj['scaleX'])) $style['scaleX'] = $obj['scaleX'];
+                if (isset($obj['scaleY'])) $style['scaleY'] = $obj['scaleY'];
+
                 $template->elements()->create([
                     'type' => $type,
                     'content' => $content,
@@ -98,13 +118,12 @@ class TemplateController extends Controller
                     'y' => $obj['top'] ?? 0,
                     'font_size' => $obj['fontSize'] ?? 18,
                     'size' => $obj['width'] ?? null,
-                    'style' => [],
+                    'style' => $style,
                 ]);
             }
         }
         return $qrVariables;
     }
-
     private function parseCsvRowsAndGenerateQr($csv, $qrVariables)
     {
         $rows = [];
@@ -141,8 +160,7 @@ class TemplateController extends Controller
                 $rows[] = $row;
             }
         }
+        // dd($rows);
         return $rows;
     }
 }
-
-
