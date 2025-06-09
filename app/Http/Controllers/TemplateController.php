@@ -26,19 +26,15 @@ class TemplateController extends Controller
             'name' => $request->input('name'),
             'width' => $request->input('width'),
             'height' => $request->input('height'),
+            'config' => $request->input('config') ?? null,
         ]);
 
-        $elements = $request->input('elements');
+        $elements = $request->input('elements', []);
 
         foreach ($elements as $element) {
             $template->elements()->create([
                 'type' => $element['type'],
-                'content' => $element['content'],
-                'x' => $element['x'],
-                'y' => $element['y'],
-                'font_size' => $element['font_size'] ?? null,
-                'size' => $element['size'] ?? null,
-                'style' => $element['style'] ?? [],
+                'data' => json_encode($element['data'] ?? []),
             ]);
         }
 
@@ -61,9 +57,11 @@ class TemplateController extends Controller
                 'rows' => $rows,
             ]);
 
-            // $pageWidth = $template->width * 0.264583;
-            // $pageHeight = $template->height * 0.264583;
+            // $pageWidth = is_numeric($template->width) ? $template->width * 0.264583 : 210;  // mm
+            // $pageHeight = is_numeric($template->height) ? $template->height * 0.264583 : 297;
+
             // $pdf->setPaper([$pageWidth, $pageHeight], 'portrait');
+
 
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
@@ -112,40 +110,37 @@ class TemplateController extends Controller
         $rows = [];
         foreach (explode("\n", $csv) as $line) {
             $parts = str_getcsv(trim($line));
-           
-                $row = [
-                    'name' => mb_convert_encoding($parts[0], 'UTF-8', 'auto'),
-                    'code' => mb_convert_encoding($parts[1], 'UTF-8', 'auto'),
-                    'qrcode' => (count($parts) > 2) ? mb_convert_encoding($parts[2], 'UTF-8', 'auto') : null,
-                ];
 
-                if (!empty($qrVariables)) {
-                    $qrContent = $row['qrcode'] ?? null;
-                    if (!$qrContent) {
-                        $qrTemplate = $qrVariables[0];
-                        $qrContent = str_replace(
-                            ['#{name}', '#{code}'],
-                            [$row['name'], $row['code']],
-                            $qrTemplate
-                        );
-                    }
-                    $qrContent = mb_convert_encoding($qrContent, 'UTF-8', 'auto');
-                    $qrFileName = 'qr_codes/' . md5($qrContent) . '.png';
+            $row = [
+                'name' => mb_convert_encoding($parts[0], 'UTF-8', 'auto'),
+                'code' => mb_convert_encoding($parts[1], 'UTF-8', 'auto'),
+                'qrcode' => (count($parts) > 2) ? mb_convert_encoding($parts[2], 'UTF-8', 'auto') : null,
+            ];
 
-                    if (!Storage::disk('public')->exists($qrFileName)) {
-                        $qrImage = QrCode::format('png')->size(200)->margin(1)->generate($qrContent);
-                        Storage::disk('public')->put($qrFileName, $qrImage);
-                    }
-                    $qrBinary = Storage::disk('public')->get($qrFileName);
-                    $row['qr_image_base64'] = 'data:image/png;base64,' . base64_encode($qrBinary);
+            if (!empty($qrVariables)) {
+                $qrContent = $row['qrcode'] ?? null;
+                if (!$qrContent) {
+                    $qrTemplate = $qrVariables[0];
+                    $qrContent = str_replace(
+                        ['#{name}', '#{code}'],
+                        [$row['name'], $row['code']],
+                        $qrTemplate
+                    );
                 }
+                $qrContent = mb_convert_encoding($qrContent, 'UTF-8', 'auto');
+                $qrFileName = 'qr_codes/' . md5($qrContent) . '.png';
 
-                $rows[] = $row;
-            
+                if (!Storage::disk('public')->exists($qrFileName)) {
+                    $qrImage = QrCode::format('png')->size(200)->margin(1)->generate($qrContent);
+                    Storage::disk('public')->put($qrFileName, $qrImage);
+                }
+                $qrBinary = Storage::disk('public')->get($qrFileName);
+                $row['qr_image_base64'] = 'data:image/png;base64,' . base64_encode($qrBinary);
+            }
+
+            $rows[] = $row;
         }
         // dd($rows);
         return $rows;
     }
 }
-
-

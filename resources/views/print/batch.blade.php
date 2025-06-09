@@ -16,7 +16,7 @@
     </style>
 </head>
 
-<body style="width: {{ $template->width }}px; height: {{ $template->height }}px;">
+<div style="position: relative; width: {{ $template->width }}px; height: {{ $template->height }}px; page-break-after: always; overflow: hidden; background: #fff;">
     @foreach ($rows as $data)
     <div style="page-break-after: always;">
         @foreach ($template->elements as $el)
