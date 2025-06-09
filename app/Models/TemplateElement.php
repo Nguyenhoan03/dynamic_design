@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class TemplateElement extends Model
 {
     use HasFactory;
-     protected $fillable = ['template_id', 'type', 'content', 'x', 'y', 'font_size', 'size', 'style'];
+    protected $fillable = ['template_id', 'type', 'data'];
 
     public function template()
     {

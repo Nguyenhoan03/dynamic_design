@@ -84,6 +84,7 @@
             const height = document.getElementById('height').value;
             const unit = document.getElementById('unit').value;
             alert(`Đã tạo thiết kế mới với kích thước: ${width}x${height} ${unit}`);
+            window.location.href = `/templates`;
         });
     </script>
 </body>

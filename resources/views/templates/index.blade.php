@@ -12,6 +12,11 @@
 </head>
 
 <body>
+    @if(session('error'))
+    <script>
+        alert(@json(session('error')));
+    </script>
+    @endif
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
@@ -269,10 +274,8 @@
     <script type="module" src="{{ asset('./js/canvas-editor/index.js') }}"></script>
 
     <script>
-        
         document.querySelector('#printForm').addEventListener('submit', function(e) {
-            const name_design = document.getElementsByClassName('name_design')[0].value;
-            console.log(name_design)
+            const name_design = document.querySelector('.name_design').value;
             const json = canvas.toJSON(['customType', 'variable']);
             document.getElementById('template_name').value = name_design;
             document.getElementById('template_width').value = canvas.getWidth();

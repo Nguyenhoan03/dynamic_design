@@ -82,8 +82,13 @@ function addDynamicQR() {
     window.canvas.add(group).setActiveObject(group);
 }
 function openPrintModal() {
-    var modal = new bootstrap.Modal(document.getElementById('printModal'));
-    modal.show();
+    const name = document.querySelector('.name_design').value;
+    if (!name || name.trim() === "") {
+        alert("Vui lòng nhập tên bản thiết kế trước khi in hàng loạt!");
+        return;
+    }
+    const printModal = new bootstrap.Modal(document.getElementById('printModal'));
+    printModal.show();
 }
 
 window.addLine = addLine;

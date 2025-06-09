@@ -58,12 +58,22 @@ class TemplateController extends Controller
 
             $pdf = \Barryvdh\DomPDF\Facade\PDF::loadView('print.batch', [
                 'template' => $template,
-                'rows' => $rows
+                'rows' => $rows,
             ]);
+
+            // $pageWidth = $template->width * 0.264583;
+            // $pageHeight = $template->height * 0.264583;
+            // $pdf->setPaper([$pageWidth, $pageHeight], 'portrait');
 
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            if (str_contains($th->getMessage(), 'Column \'name\' cannot be null')) {
+                $message = 'Vui lòng nhập tên bản thiết kế!';
+            } else {
+                dd($th->getMessage());
+                $message = 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!';
+            }
+            return redirect()->back()->with('error', $message);
         }
     }
 
@@ -85,40 +95,13 @@ class TemplateController extends Controller
         if (!empty($config['objects'])) {
             foreach ($config['objects'] as $obj) {
                 $type = $obj['customType'] ?? $obj['type'] ?? 'text';
-                $content = '';
-
-                // Xử lý nội dung cho từng loại
                 if ($type === 'dynamicQR' || $type === 'qr') {
                     $type = 'qr';
-                    $content = $obj['variable'] ?? '#{code}';
-                    $qrVariables[] = $content;
-                } elseif ($type === 'text' || $type === 'dynamic' || $type === 'textbox') {
-                    $content = $obj['text'] ?? '';
-                } elseif ($type === 'image') {
-                    $content = $obj['src'] ?? '';
-                } elseif (in_array($type, ['rect', 'circle', 'triangle', 'line'])) {
-                    $content = '';
-                } elseif ($type === 'group') {
-                    $content = ''; 
+                    $qrVariables[] = $obj['variable'] ?? '#{code}';
                 }
-
-                // Lưu thêm các thuộc tính style nếu có
-                $style = [];
-                if (isset($obj['fill'])) $style['fill'] = $obj['fill'];
-                if (isset($obj['radius'])) $style['radius'] = $obj['radius'];
-                if (isset($obj['stroke'])) $style['stroke'] = $obj['stroke'];
-                if (isset($obj['strokeWidth'])) $style['strokeWidth'] = $obj['strokeWidth'];
-                if (isset($obj['scaleX'])) $style['scaleX'] = $obj['scaleX'];
-                if (isset($obj['scaleY'])) $style['scaleY'] = $obj['scaleY'];
-
                 $template->elements()->create([
                     'type' => $type,
-                    'content' => $content,
-                    'x' => $obj['left'] ?? 0,
-                    'y' => $obj['top'] ?? 0,
-                    'font_size' => $obj['fontSize'] ?? 18,
-                    'size' => $obj['width'] ?? null,
-                    'style' => $style,
+                    'data' => json_encode($obj),
                 ]);
             }
         }
@@ -129,11 +112,11 @@ class TemplateController extends Controller
         $rows = [];
         foreach (explode("\n", $csv) as $line) {
             $parts = str_getcsv(trim($line));
-            if (count($parts) >= 2) {
+           
                 $row = [
                     'name' => mb_convert_encoding($parts[0], 'UTF-8', 'auto'),
                     'code' => mb_convert_encoding($parts[1], 'UTF-8', 'auto'),
-                    'qrcode' => isset($parts[2]) ? mb_convert_encoding($parts[2], 'UTF-8', 'auto') : null,
+                    'qrcode' => (count($parts) > 2) ? mb_convert_encoding($parts[2], 'UTF-8', 'auto') : null,
                 ];
 
                 if (!empty($qrVariables)) {
@@ -158,9 +141,11 @@ class TemplateController extends Controller
                 }
 
                 $rows[] = $row;
-            }
+            
         }
         // dd($rows);
         return $rows;
     }
 }
+
+

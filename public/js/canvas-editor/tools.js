@@ -2,6 +2,10 @@ function bringToFront() {
     const obj = window.canvas.getActiveObject();
     if (obj) window.canvas.bringToFront(obj);
 }
+function sendToBack() {
+    const obj = window.canvas.getActiveObject();
+    if (obj) window.canvas.sendToBack(obj);
+}
 
 function zoomIn() {
     window.canvas.setZoom(window.canvas.getZoom() * 1.1);
@@ -32,10 +36,7 @@ function setFont(font) {
     }
 }
 
-function sendToBack() {
-    const obj = window.canvas.getActiveObject();
-    if (obj) window.canvas.sendToBack(obj);
-}
+
 
 function selectTool(tool) {
     document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));

@@ -14,13 +14,8 @@ return new class extends Migration
         Schema::create('template_elements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('template_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['text', 'qrcode']);
-            $table->text('content'); 
-            $table->integer('x');     
-            $table->integer('y');     
-            $table->integer('font_size')->nullable();
-            $table->integer('size')->nullable(); 
-            $table->json('style')->nullable();
+            $table->string('type');
+            $table->longText('data')->nullable();
             $table->timestamps();
         });
     }

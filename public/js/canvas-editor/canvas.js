@@ -64,14 +64,18 @@ function clearCanvas() {
 }
 
 function downloadCanvas() {
-  
+    const name_design = document.querySelector('.name_design').value
+    if (!name_design || name_design.trim() === "") {
+        alert("Vui lòng nhập tên bản thiết kế trước khi tải xuống!");
+        return;
+    }
     const dataURL = window.canvas.toDataURL({
         format: 'png',
         multiplier: 1
     });
     const link = document.createElement('a');
     link.href = dataURL;
-    link.download = 'thietke.png';
+    link.download = name_design + '.png';
     link.click();
 }
 
