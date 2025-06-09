@@ -26,7 +26,7 @@
         @endphp
 
         @if ($type === 'text' || $type === 'dynamic' || $type === 'textbox')
-        <div style="position: absolute; left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px; font-size: {{ $obj['fontSize'] ?? 16 }}px;">
+        <div style="position: absolute; left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px; font-size: {{ $obj['fontSize'] ?? 16 }}px; color: {{ $obj['fill'] ?? '#000' }};">
             {{ str_replace(['#{name}', '#{code}'], [$data['name'] ?? '', $data['code'] ?? ''], $obj['text'] ?? '') }}
         </div>
         @elseif ($type === 'qr' && !empty($data['qr_image_base64']))
@@ -58,6 +58,6 @@
     </div>
     @endforeach
 
-</body>
+    </body>
 
 </html>

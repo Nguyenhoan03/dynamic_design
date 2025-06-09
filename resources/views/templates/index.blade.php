@@ -215,8 +215,9 @@
         </div>
 
         <!-- Canvas area -->
+
         <div class="canvas-container" style="position: relative;">
-            <div class="canvas-box" style="width:750px;height:350px;">
+            <div class="canvas-box" id="canvasBox" style="width:750px;height:350px;">
                 <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
                 <div id="objectToolbar" class="object-toolbar">
                     <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
@@ -266,6 +267,7 @@
             <option value="right">Phải</option>
         </select>
         <button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
     </div>
 
     <!-- Bootstrap JS -->

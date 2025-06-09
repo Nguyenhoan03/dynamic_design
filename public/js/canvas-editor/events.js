@@ -27,6 +27,7 @@ document.addEventListener('keydown', function (e) {
         });
     }
     if (e.ctrlKey && e.key === 'z') window.undo();
+    if (e.ctrlKey && e.key === 'y') window.redo();
 });
 
 function updateCanvasInfo() {
@@ -41,18 +42,16 @@ window.canvas.on('zoom:changed', updateCanvasInfo);
 window.canvas.on('resize', updateCanvasInfo);
 
 // Gọi sau khi setZoom hoặc đổi size
-document.querySelector('.canvas-box').addEventListener('wheel', function(e) {
-    if (e.ctrlKey) {
-        e.preventDefault();
-        const pointer = window.canvas.getPointer(e);
-        let zoom = window.canvas.getZoom();
-        const minZoom = 0.2, maxZoom = 3;
-        if (e.deltaY < 0) zoom = Math.min(zoom * 1.1, maxZoom);
-        else zoom = Math.max(zoom / 1.1, minZoom);
-        // Zoom tại vị trí chuột
-        window.canvas.zoomToPoint({ x: e.offsetX, y: e.offsetY }, zoom);
-        if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
-    }
+document.querySelector('.canvas-box').addEventListener('wheel', function (e) {
+    e.preventDefault();
+    const pointer = window.canvas.getPointer(e);
+    let zoom = window.canvas.getZoom();
+    const minZoom = 0.2, maxZoom = 3;
+    if (e.deltaY < 0) zoom = Math.min(zoom * 1.1, maxZoom);
+    else zoom = Math.max(zoom / 1.1, minZoom);
+    // Zoom tại vị trí chuột
+    window.canvas.zoomToPoint({ x: e.offsetX, y: e.offsetY }, zoom);
+    if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
 }, { passive: false });
 
 // Gọi khi khởi tạo
@@ -83,3 +82,32 @@ function flipSelected() {
 }
 
 window.flipSelected = flipSelected;
+
+let isPanning = false;
+let lastPosX = 0, lastPosY = 0;
+
+document.querySelector('.canvas-box').addEventListener('mousedown', function (e) {
+    // Chỉ pan khi không chọn object nào
+    if (!window.canvas.getActiveObject()) {
+        isPanning = true;
+        lastPosX = e.clientX;
+        lastPosY = e.clientY;
+        window.canvas.setCursor('grab');
+    }
+});
+document.addEventListener('mousemove', function (e) {
+    if (isPanning) {
+        const vpt = window.canvas.viewportTransform;
+        vpt[4] += e.clientX - lastPosX;
+        vpt[5] += e.clientY - lastPosY;
+        window.canvas.requestRenderAll();
+        lastPosX = e.clientX;
+        lastPosY = e.clientY;
+    }
+});
+document.addEventListener('mouseup', function () {
+    if (isPanning) {
+        isPanning = false;
+        window.canvas.setCursor('default');
+    }
+});

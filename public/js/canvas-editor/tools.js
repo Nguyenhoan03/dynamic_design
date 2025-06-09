@@ -17,13 +17,18 @@ function zoomOut() {
     if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
 }
 function changeCanvasSize() {
-    let w = prompt('Nhập chiều rộng (px):', window.canvas.width);
-    let h = prompt('Nhập chiều cao (px):', window.canvas.height);
+    let w = prompt('Nhập chiều rộng (px):', window.canvas.getWidth());
+    let h = prompt('Nhập chiều cao (px):', window.canvas.getHeight());
     if (w && h) {
         window.canvas.setWidth(Number(w));
         window.canvas.setHeight(Number(h));
-        document.querySelector('.canvas-box').style.width = w + 'px';
-        document.querySelector('.canvas-box').style.height = h + 'px';
+        const canvasBox = document.querySelector('.canvas-box');
+        if (canvasBox) {
+            canvasBox.style.width = w + 'px';
+            canvasBox.style.height = h + 'px';
+        }
+        localStorage.setItem('canvas_design_width', w);
+        localStorage.setItem('canvas_design_height', h);
     }
 }
 
@@ -35,7 +40,6 @@ function setFont(font) {
         window.canvas.requestRenderAll();
     }
 }
-
 
 
 function selectTool(tool) {

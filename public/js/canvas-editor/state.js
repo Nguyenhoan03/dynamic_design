@@ -1,16 +1,18 @@
 let state = [],
+    redoStack = [],
     undoing = false;
 
 function saveState() {
     if (!undoing) {
         state.push(JSON.stringify(window.canvas));
+        redoStack = [];
     }
 }
 
 function undo() {
     if (state.length > 1) {
         undoing = true;
-        state.pop();
+        redoStack.push(state.pop());
         window.canvas.loadFromJSON(state[state.length - 1], () => {
             window.canvas.renderAll();
             undoing = false;
@@ -19,9 +21,16 @@ function undo() {
 }
 
 function redo() {
-    alert('Chức năng redo cần bổ sung stack riêng!');
+    if (redoStack.length > 0) {
+        undoing = true;
+        const redoState = redoStack.pop();
+        state.push(redoState);
+        window.canvas.loadFromJSON(redoState, () => {
+            window.canvas.renderAll();
+            undoing = false;
+        });
+    }
 }
-
 
 window.canvas.on('object:added', saveState);
 window.canvas.on('object:modified', saveState);

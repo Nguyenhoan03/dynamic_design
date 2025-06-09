@@ -47,6 +47,8 @@ class TemplateController extends Controller
             $template = $this->createTemplateFromRequest($request);
             $qrVariables = $this->saveTemplateElements($template);
 
+            // dd($template['src']);
+             
             $rows = $this->parseCsvRowsAndGenerateQr(
                 $request->input('csv_rows'),
                 $qrVariables
@@ -56,7 +58,7 @@ class TemplateController extends Controller
                 'template' => $template,
                 'rows' => $rows,
             ]);
-
+             
             // $pageWidth = is_numeric($template->width) ? $template->width * 0.264583 : 210;  // mm
             // $pageHeight = is_numeric($template->height) ? $template->height * 0.264583 : 297;
 
