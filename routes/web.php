@@ -20,7 +20,7 @@ use App\Http\Controllers\TemplateController;
 Route::get('/', [HomeController::class, 'index']);
 
 Route::get('/templates', [TemplateController::class, 'index']);
-Route::post('/templates', [TemplateController::class, 'store']);
+Route::post('/templates', [TemplateController::class, 'store'])->name('templates.index');
 Route::get('/templates/edit/{name}', [TemplateController::class, 'index'])->name('templates_eidt.index');
 Route::post('/templates/check-or-create', [TemplateController::class, 'checkOrCreate']);
 Route::post('/print-batch', [TemplateController::class, 'printBatch']);

@@ -6,6 +6,8 @@
     <title>Tạo thiết kế</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -227,11 +229,11 @@
                 <form id="customSizeForm" class="row g-4 align-items-end justify-content-center">
                     <div class="col-md-3">
                         <label for="width" class="form-label">Rộng</label>
-                        <input type="number" class="form-control" id="width" value="123" min="1">
+                        <input type="number" class="form-control" id="width" value="500" min="1">
                     </div>
                     <div class="col-md-3">
                         <label for="height" class="form-label">Cao</label>
-                        <input type="number" class="form-control" id="height" value="123" min="1">
+                        <input type="number" class="form-control" id="height" value="500" min="1">
                     </div>
                     <div class="col-md-3">
                         <label for="unit" class="form-label">Đơn vị</label>
@@ -277,17 +279,48 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- JS thuần -->
+    <!-- JS -->
+
     <script>
-        document.getElementById('customSizeForm').addEventListener('submit', function(e) {
+        document.getElementById('customSizeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const width = document.getElementById('width').value;
             const height = document.getElementById('height').value;
             const unit = document.getElementById('unit').value;
-            // alert(`Đã tạo thiết kế mới với kích thước: ${width}x${height} ${unit}`);
+            const config = localStorage.getItem('canvas_design');
+            const name = localStorage.getItem('canvas_design_name') || 'no-name';
+
+            // Nếu có dữ liệu cũ, kiểm tra/lưu vào DB trước khi tạo mới
+            if (config) {
+                try {
+                    await fetch('/templates/check-or-create', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            width: width,
+                            height: height,
+                            config: config
+                        })
+                    });
+                } catch (e) {
+                    alert('Có lỗi khi lưu thiết kế cũ!');
+                }
+                // Xóa dữ liệu localStorage để tạo mới hoàn toàn
+                localStorage.removeItem('canvas_design');
+                localStorage.removeItem('canvas_design_name');
+            }
+
+            // Lưu thông số mới cho canvas trắng
             localStorage.setItem('canvas_design_width', width);
             localStorage.setItem('canvas_design_height', height);
             localStorage.setItem('canvas_design_unit', unit);
+
+            // Chuyển trang
             window.location.href = `/templates?width=${width}&height=${height}&unit=${unit}`;
         });
     </script>
