@@ -285,6 +285,9 @@
             const height = document.getElementById('height').value;
             const unit = document.getElementById('unit').value;
             // alert(`Đã tạo thiết kế mới với kích thước: ${width}x${height} ${unit}`);
+            localStorage.setItem('canvas_design_width', width);
+            localStorage.setItem('canvas_design_height', height);
+            localStorage.setItem('canvas_design_unit', unit);
             window.location.href = `/templates?width=${width}&height=${height}&unit=${unit}`;
         });
     </script>
@@ -302,7 +305,6 @@
             });
         });
     </script>
-
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>

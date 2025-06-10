@@ -286,6 +286,37 @@
         });
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const width = localStorage.getItem('canvas_design_width') || 750;
+            const height = localStorage.getItem('canvas_design_height') || 350;
+            const config = localStorage.getItem('canvas_design');
+            const name = localStorage.getItem('canvas_design_name') || 'no-name';
+
+            if (config) {
+                try {
+                    const resp = await fetch('/templates/check-or-create', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            width: width,
+                            height: height,
+                            config: config
+                        })
+                    });
+                    
+                } catch (e) {
+                    alert('Có lỗi khi kiểm tra hoặc lưu thiết kế!');
+                }
+            }
+        });
+    </script>
+
 </body>
 
 </html>

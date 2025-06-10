@@ -11,11 +11,11 @@ class TemplateController extends Controller
 {
     public function index(Request $request)
     {
-        $width = $request->query('width', 750);  
+        $width = $request->query('width', 750);
         $height = $request->query('height', 350);
         $unit = $request->query('unit', 'px');
         // $templates = Template::all();
-      
+
         return view('templates.index', compact('width', 'height', 'unit'));
     }
 
@@ -148,5 +148,38 @@ class TemplateController extends Controller
         }
         // dd($rows);
         return $rows;
+    }
+
+    public function checkOrCreate(Request $request)
+    {
+        $name = $request->input('name', 'no-name');
+        $width = $request->input('width');
+        $height = $request->input('height');
+        $config = $request->input('config');
+
+        // Tìm template theo name (bỏ width, height nếu chỉ cần duy nhất theo name)
+        $template = Template::where('name', $name)->first();
+
+        if ($template) {
+            // Nếu config khác thì update
+            if ($template->config !== $config) {
+                $template->config = $config;
+                $template->width = $width;   // Có thể cập nhật width/height nếu muốn
+                $template->height = $height;
+                $template->save();
+                return response()->json(['status' => 'updated', 'template' => $template]);
+            }
+            // Nếu config giống thì không làm gì
+            return response()->json(['status' => 'no-change', 'template' => $template]);
+        } else {
+            // Nếu chưa có thì tạo mới
+            $template = Template::create([
+                'name' => $name,
+                'width' => $width,
+                'height' => $height,
+                'config' => $config,
+            ]);
+            return response()->json(['status' => 'created', 'template' => $template]);
+        }
     }
 }
