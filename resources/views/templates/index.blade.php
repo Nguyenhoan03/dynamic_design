@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{asset('./css/template.css')}}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="downloadCanvas()">
-                <i class="bi bi-download"></i> Tải xuống
+                <i class="bi bi-download"></i>Lưu & Tải xuống
             </button>
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="openPrintModal()">
                 <i class="bi bi-printer"></i> In hàng loạt

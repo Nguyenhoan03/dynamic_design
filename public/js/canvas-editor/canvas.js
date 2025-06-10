@@ -1,7 +1,13 @@
+const canvasWidth = window.defaultCanvasWidth;
+const canvasHeight = window.defaultCanvasHeight;
+
 window.canvas = new fabric.Canvas('templateCanvas', {
     backgroundColor: '#fff',
-    preserveObjectStacking: true
+    preserveObjectStacking: true,
+    width: canvasWidth,
+    height: canvasHeight
 });
+console.log(canvasWidth, canvasHeight);
 
 function addLine() {
     const line = new fabric.Line([50, 100, 200, 100], {
@@ -63,8 +69,8 @@ function clearCanvas() {
     window.canvas.setBackgroundColor('#fff', window.canvas.renderAll.bind(window.canvas));
 }
 
-function downloadCanvas() {
-    const name_design = document.querySelector('.name_design').value
+async function downloadCanvas() {
+    const name_design = document.querySelector('.name_design').value;
     if (!name_design || name_design.trim() === "") {
         alert("Vui lòng nhập tên bản thiết kế trước khi tải xuống!");
         return;
@@ -73,6 +79,32 @@ function downloadCanvas() {
         format: 'png',
         multiplier: 1
     });
+    const config = JSON.stringify(window.canvas.toJSON());
+    const width = window.canvas.getWidth();
+    const height = window.canvas.getHeight();
+
+    try {
+        const resp = await fetch('/templates', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: (() => {
+                const fd = new FormData();
+                fd.append('name', name_design);
+                fd.append('width', width);
+                fd.append('height', height);
+                fd.append('config', config);
+              
+                return fd;
+            })()
+        });
+        if (!resp.ok) throw new Error('Lưu thiết kế thất bại!');
+    } catch (e) {
+        alert(e.message);
+        return;
+    }
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = name_design + '.png';

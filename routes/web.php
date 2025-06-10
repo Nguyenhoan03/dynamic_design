@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TemplateController;
 /*
@@ -12,10 +13,14 @@ use App\Http\Controllers\TemplateController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/', function () {
-    return view('home');
-});
+// Route::get('/', function () {
+
+//     return view('home');
+// });
+Route::get('/', [HomeController::class, 'index']);
+
 Route::get('/templates', [TemplateController::class, 'index']);
+Route::get('/templates/edit/{name}', [TemplateController::class, 'index'])->name('templates_eidt.index');
 Route::post('/templates', [TemplateController::class, 'store']);
 Route::post('/print-batch', [TemplateController::class, 'printBatch']);
 Route::get('/templates/{id}/preview', [TemplateController::class, 'preview']);
