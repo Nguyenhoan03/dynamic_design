@@ -14,9 +14,9 @@ class TemplateController extends Controller
         $width = $request->query('width', 750);  
         $height = $request->query('height', 350);
         $unit = $request->query('unit', 'px');
-        $templates = Template::all();
-
-        return view('templates.index', compact('templates', 'width', 'height', 'unit'));
+        // $templates = Template::all();
+      
+        return view('templates.index', compact('width', 'height', 'unit'));
     }
 
     public function create()

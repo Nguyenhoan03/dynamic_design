@@ -25,19 +25,16 @@ if (saved) {
         if (savedName && document.querySelector('.name_design')) {
             document.querySelector('.name_design').value = savedName;
         }
+        saveCanvasToLocal();
     });
+} else {
+    saveCanvasToLocal();
 }
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     const w = localStorage.getItem('canvas_design_width') || 750;
     const h = localStorage.getItem('canvas_design_height') || 350;
-    const box = document.getElementById('canvasBox');
-    const canvas = document.getElementById('templateCanvas');
-    if (box && canvas) {
-        box.style.width = w + 'px';
-        box.style.height = h + 'px';
-        canvas.width = w;
-        canvas.height = h;
-    }
+    window.canvas.setWidth(w);
+    window.canvas.setHeight(h);
 });
