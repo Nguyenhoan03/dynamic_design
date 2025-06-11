@@ -71,11 +71,11 @@ function clearCanvas() {
 
 
 
-async function SaveCanvas() {
+async function SaveCanvas(isSilent = false) {
     const name_design = document.querySelector('.name_design').value;
     const template_id = document.getElementById('template_id')?.value || '';
     if (!name_design || name_design.trim() === "") {
-        alert("Vui lòng nhập tên bản thiết kế trước khi lưu!");
+        if (!isSilent) alert("Vui lòng nhập tên bản thiết kế trước khi lưu!");
         return;
     }
     const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable']));
@@ -100,16 +100,16 @@ async function SaveCanvas() {
         });
         if (!resp.ok) {
             const data = await resp.json().catch(() => ({}));
-            throw new Error(data.message || 'Lưu thiết kế thất bại!');
+            if (!isSilent) throw new Error(data.message || 'Lưu thiết kế thất bại!');
+            return;
         }
-        alert('Lưu thiết kế thành công!');
-        // Nếu server trả về id mới, cập nhật lại input ẩn template_id
+        if (!isSilent) alert('Lưu thiết kế thành công!');
         const data = await resp.json().catch(() => ({}));
         if (data.template && data.template.id) {
             document.getElementById('template_id').value = data.template.id;
         }
     } catch (e) {
-        alert(e.message);
+        if (!isSilent) alert(e.message);
     }
 }
 
@@ -129,6 +129,22 @@ function downloadCanvas() {
     link.click();
 }
 
+function createNewDesign() {
+    if (window.canvas) {
+        window.canvas.clear();
+        window.canvas.setWidth(750);
+        window.canvas.setHeight(350);
+        window.canvas.renderAll();
+    }
+    document.querySelector('.name_design').value = '';
+    document.getElementById('template_id').value = '';
+    localStorage.removeItem('canvas_design');
+    localStorage.removeItem('canvas_design_name');
+    localStorage.removeItem('canvas_design_width');
+    localStorage.removeItem('canvas_design_height');
+    if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
+}
+
 
 window.clearCanvas = clearCanvas;
 window.downloadCanvas = downloadCanvas;
@@ -137,5 +153,5 @@ window.deleteSelected = deleteSelected;
 window.addCircle = addCircle;
 window.addRect = addRect;
 window.addLine = addLine;
-
+window.createNewDesign = createNewDesign;
 

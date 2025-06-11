@@ -27,6 +27,7 @@
                 <span class="size_design"></span>
             </strong>
             <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
+            <button class="btn btn-sm btn-outline-light text-weight-bold" onclick="createNewDesign()">Tạo thiết kế mới</button>
         </div>
         <div class="tools">
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
@@ -297,22 +298,53 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
-            @if(isset($config) && $config)
-            setTimeout(function() {
-                try {
-                    let json = @json($config);
-                    if (typeof json === 'string') json = JSON.parse(json);
-                    if (window.canvas && json) {
-                        window.canvas.loadFromJSON(json, function() {
-                            window.canvas.renderAll();
-                        });
+            const saved = localStorage.getItem('canvas_design');
+            if (saved) {
+                // Ưu tiên load từ localStorage
+                window.canvas.loadFromJSON(saved, function() {
+                    window.canvas.renderAll();
+                });
+            } else {
+                // Nếu không có localStorage, mới load từ DB (config)
+                @if(isset($config) && $config)
+                setTimeout(function() {
+                    try {
+                        let json = @json($config);
+                        if (typeof json === 'string') json = JSON.parse(json);
+                        if (window.canvas && json) {
+                            window.canvas.loadFromJSON(json, function() {
+                                window.canvas.renderAll();
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Lỗi load config:', e);
                     }
-                } catch (e) {
-                    console.error('Lỗi load config:', e);
-                }
-            }, 300);
-            @endif
+                }, 300);
+                @endif
+            }
+        });
+
+        // Khi có thao tác trên canvas thì lưu vào localStorage
+        if (window.canvas) {
+            window.canvas.on('object:added', saveCanvasToLocal);
+            window.canvas.on('object:modified', saveCanvasToLocal);
+            window.canvas.on('object:removed', saveCanvasToLocal);
+        }
+
+        function saveCanvasToLocal() {
+            const json = window.canvas.toJSON(['customType', 'variable']);
+            const name_design = document.querySelector('.name_design')?.value || '';
+            localStorage.setItem('canvas_design', JSON.stringify(json));
+            localStorage.setItem('canvas_design_name', name_design);
+            localStorage.setItem('canvas_design_width', window.canvas.getWidth());
+            localStorage.setItem('canvas_design_height', window.canvas.getHeight());
+        }
+
+        // Khi người dùng reload hoặc thoát trang, tự động gọi SaveCanvas để update lên server
+        window.addEventListener('beforeunload', function(e) {
+            if (typeof SaveCanvas === 'function') {
+                SaveCanvas(true);
+            }
         });
     </script>
 
