@@ -14,8 +14,6 @@ class TemplateController extends Controller
         $width = $request->query('width', 750);
         $height = $request->query('height', 350);
         $unit = $request->query('unit', 'px');
-        // $templates = Template::all();
-
         return view('templates.index', compact('width', 'height', 'unit'));
     }
 
@@ -23,6 +21,7 @@ class TemplateController extends Controller
     {
         return view('templates.create');
     }
+
     public function edit($id)
     {
         $template = Template::findOrFail($id);
@@ -34,35 +33,30 @@ class TemplateController extends Controller
             'unit' => 'px',
         ]);
     }
-    
+
     public function store(Request $request)
     {
-        $template = Template::create([
-            'name' => $request->input('name'),
-            'width' => $request->input('width'),
-            'height' => $request->input('height'),
-            'config' => $request->input('config') ?? null,
-        ]);
-
-        $elements = $request->input('elements', []);
-
-        foreach ($elements as $element) {
-            $template->elements()->create([
-                'type' => $element['type'],
-                'data' => json_encode($element['data'] ?? []),
-            ]);
-        }
-
-        return redirect()->route('templates.index')->with('success', 'Template created successfully!');
+        $this->createOrUpdateTemplate(
+            $request->input('name'),
+            $request->input('width'),
+            $request->input('height'),
+            $request->input('config'),
+            $request->input('elements', [])
+        );
+        return redirect()->route('templates.index')->with('success', 'Template saved successfully!');
     }
 
     public function printBatch(Request $request)
     {
         try {
-            $template = $this->createTemplateFromRequest($request);
-            $qrVariables = $this->saveTemplateElements($template);
+            $template = $this->createOrUpdateTemplate(
+                $request->input('template_name'),
+                $request->input('template_width'),
+                $request->input('template_height'),
+                $request->input('template_config')
+            );
 
-            // dd($template['src']);
+            $qrVariables = $this->saveTemplateElements($template);
 
             $rows = $this->parseCsvRowsAndGenerateQr(
                 $request->input('csv_rows'),
@@ -74,39 +68,77 @@ class TemplateController extends Controller
                 'rows' => $rows,
             ]);
 
-            // $pageWidth = is_numeric($template->width) ? $template->width * 0.264583 : 210;  // mm
-            // $pageHeight = is_numeric($template->height) ? $template->height * 0.264583 : 297;
-
-            // $pdf->setPaper([$pageWidth, $pageHeight], 'portrait');
-
-
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
-            if (str_contains($th->getMessage(), 'Column \'name\' cannot be null')) {
-                $message = 'Vui lòng nhập tên bản thiết kế!';
-            } else {
-                dd($th->getMessage());
-                $message = 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!';
-            }
+            $message = str_contains($th->getMessage(), 'Column \'name\' cannot be null')
+                ? 'Vui lòng nhập tên bản thiết kế!'
+                : 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!';
             return redirect()->back()->with('error', $message);
         }
     }
 
-    private function createTemplateFromRequest(Request $request)
+    public function checkOrCreate(Request $request)
     {
-        $template = new Template();
-        $template->name = $request->input('template_name', 'Mẫu mới');
-        $template->width = $request->input('template_width');
-        $template->height = $request->input('template_height');
-        $template->config = $request->input('template_config');
+        $name = $request->input('name', 'no-name');
+        $width = $request->input('width');
+        $height = $request->input('height');
+        $config = $request->input('config');
+
+        $template = Template::where('name', $name)->first();
+
+        if ($template) {
+            if ($template->config !== $config) {
+                $template->update([
+                    'config' => $config,
+                    'width' => $width,
+                    'height' => $height,
+                ]);
+                return response()->json(['status' => 'updated', 'template' => $template]);
+            }
+            return response()->json(['status' => 'no-change', 'template' => $template]);
+        } else {
+            $template = Template::create([
+                'name' => $name,
+                'width' => $width,
+                'height' => $height,
+                'config' => $config,
+            ]);
+            return response()->json(['status' => 'created', 'template' => $template]);
+        }
+    }
+
+    /**
+     * Tạo mới hoặc cập nhật template theo tên.
+     */
+    private function createOrUpdateTemplate($name, $width, $height, $config, $elements = [])
+    {
+        $template = Template::firstOrNew(['name' => $name]);
+        $template->width = $width;
+        $template->height = $height;
+        $template->config = $config;
         $template->save();
+
+        // Nếu có elements thì cập nhật lại
+        if (!empty($elements)) {
+            $template->elements()->delete();
+            foreach ($elements as $element) {
+                $template->elements()->create([
+                    'type' => $element['type'],
+                    'data' => json_encode($element['data'] ?? []),
+                ]);
+            }
+        }
         return $template;
     }
 
+    /**
+     * Lưu elements từ config vào DB, trả về danh sách biến QR.
+     */
     private function saveTemplateElements($template)
     {
         $config = json_decode($template->config, true);
         $qrVariables = [];
+        $template->elements()->delete();
         if (!empty($config['objects'])) {
             foreach ($config['objects'] as $obj) {
                 $type = $obj['customType'] ?? $obj['type'] ?? 'text';
@@ -122,15 +154,18 @@ class TemplateController extends Controller
         }
         return $qrVariables;
     }
+
+    /**
+     * Parse CSV và sinh QR code cho từng dòng.
+     */
     private function parseCsvRowsAndGenerateQr($csv, $qrVariables)
     {
         $rows = [];
         foreach (explode("\n", $csv) as $line) {
             $parts = str_getcsv(trim($line));
-
             $row = [
-                'name' => mb_convert_encoding($parts[0], 'UTF-8', 'auto'),
-                'code' => mb_convert_encoding($parts[1], 'UTF-8', 'auto'),
+                'name' => mb_convert_encoding($parts[0] ?? '', 'UTF-8', 'auto'),
+                'code' => mb_convert_encoding($parts[1] ?? '', 'UTF-8', 'auto'),
                 'qrcode' => (count($parts) > 2) ? mb_convert_encoding($parts[2], 'UTF-8', 'auto') : null,
             ];
 
@@ -157,38 +192,6 @@ class TemplateController extends Controller
 
             $rows[] = $row;
         }
-        // dd($rows);
         return $rows;
-    }
-
-    public function checkOrCreate(Request $request)
-    {
-        $name = $request->input('name', 'no-name');
-        $width = $request->input('width');
-        $height = $request->input('height');
-        $config = $request->input('config');
-
-        $template = Template::where('name', $name)->first();
-
-        if ($template) {
-
-            if ($template->config !== $config) {
-                $template->config = $config;
-                $template->width = $width;
-                $template->height = $height;
-                $template->save();
-                return response()->json(['status' => 'updated', 'template' => $template]);
-            }
-
-            return response()->json(['status' => 'no-change', 'template' => $template]);
-        } else {
-            $template = Template::create([
-                'name' => $name,
-                'width' => $width,
-                'height' => $height,
-                'config' => $config,
-            ]);
-            return response()->json(['status' => 'created', 'template' => $template]);
-        }
     }
 }

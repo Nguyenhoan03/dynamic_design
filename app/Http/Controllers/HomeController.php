@@ -12,9 +12,5 @@ class HomeController extends Controller
         $templates = Template::all();
         return view('home', compact('templates'));
     }
-    // public function ($id)
-    // {
-    //     $template = Template::findOrFail($id);
-    //     return view('templates.show', compact('template'));
-    // }
+   
 }

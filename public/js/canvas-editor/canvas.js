@@ -69,17 +69,15 @@ function clearCanvas() {
     window.canvas.setBackgroundColor('#fff', window.canvas.renderAll.bind(window.canvas));
 }
 
-async function downloadCanvas() {
+
+
+async function SaveCanvas() {
     const name_design = document.querySelector('.name_design').value;
     if (!name_design || name_design.trim() === "") {
-        alert("Vui lòng nhập tên bản thiết kế trước khi tải xuống!");
+        alert("Vui lòng nhập tên bản thiết kế trước khi lưu!");
         return;
     }
-    const dataURL = window.canvas.toDataURL({
-        format: 'png',
-        multiplier: 1
-    });
-    const config = JSON.stringify(window.canvas.toJSON());
+    const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable']));
     const width = window.canvas.getWidth();
     const height = window.canvas.getHeight();
 
@@ -96,15 +94,26 @@ async function downloadCanvas() {
                 fd.append('width', width);
                 fd.append('height', height);
                 fd.append('config', config);
-              
                 return fd;
             })()
         });
         if (!resp.ok) throw new Error('Lưu thiết kế thất bại!');
+        alert('Lưu thiết kế thành công!');
     } catch (e) {
         alert(e.message);
+    }
+}
+
+function downloadCanvas() {
+    const name_design = document.querySelector('.name_design').value;
+    if (!name_design || name_design.trim() === "") {
+        alert("Vui lòng nhập tên bản thiết kế trước khi tải xuống!");
         return;
     }
+    const dataURL = window.canvas.toDataURL({
+        format: 'png',
+        multiplier: 1
+    });
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = name_design + '.png';
@@ -114,6 +123,7 @@ async function downloadCanvas() {
 
 window.clearCanvas = clearCanvas;
 window.downloadCanvas = downloadCanvas;
+window.SaveCanvas = SaveCanvas;
 window.deleteSelected = deleteSelected;
 window.addCircle = addCircle;
 window.addRect = addRect;

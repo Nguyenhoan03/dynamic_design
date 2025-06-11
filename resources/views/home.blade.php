@@ -239,8 +239,8 @@
                         <label for="unit" class="form-label">Đơn vị</label>
                         <select class="form-select" id="unit">
                             <option value="px" selected>px</option>
-                            <option value="cm">cm</option>
-                            <option value="in">in</option>
+                            <!-- <option value="cm">cm</option>
+                            <option value="in">in</option> -->
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-end ">
@@ -286,7 +286,6 @@
             const unit = document.getElementById('unit').value;
             const config = localStorage.getItem('canvas_design');
             const name = localStorage.getItem('canvas_design_name') || ('Mẫu_' + Math.random().toString(36).substr(2, 6));;
-
             if (config) {
                 try {
                     await fetch('/templates/check-or-create', {
@@ -329,8 +328,6 @@
                     l.classList.remove('active');
                 });
                 this.classList.add('active');
-                // Nếu muốn chuyển trang thì bỏ comment dòng dưới
-                // e.preventDefault();
             });
         });
     </script>
@@ -357,8 +354,6 @@
             });
         });
     </script>
-
-
 
 
 </body>

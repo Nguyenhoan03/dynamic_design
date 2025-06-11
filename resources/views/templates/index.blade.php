@@ -31,8 +31,11 @@
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
+            <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
+                <i class="bi bi-download"></i>Lưu thiết kế
+            </button>
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="downloadCanvas()">
-                <i class="bi bi-download"></i>Lưu & Tải xuống
+                <i class="bi bi-download"></i>Tải xuống PNG
             </button>
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="openPrintModal()">
                 <i class="bi bi-printer"></i> In hàng loạt
@@ -310,6 +313,7 @@
             @endif
         });
     </script>
+
 
 </body>
 
