@@ -46,7 +46,6 @@
     </div>
 
 
-
     <div class="modal fade" id="printModal" tabindex="-1">
         <div class="modal-dialog">
             <form id="printForm" method="POST" action="/print-batch">
@@ -98,11 +97,7 @@
                 <i class="bi bi-award"></i>
                 <span>Thương hiệu</span>
             </div>
-            <!-- <div class="sidebar-item" onclick="showPanel('project')">
-                <i class="bi bi-folder2"></i>
-                <span>Dự án</span>
-            </div> -->
-
+           
             <div class="sidebar-item" onclick="showPanel('ingredient')">
                 <i class="bi bi-award"></i>
                 <span>Thành phần</span>
@@ -304,19 +299,28 @@
             localStorage.removeItem('canvas_design_name');
             localStorage.removeItem('canvas_design_width');
             localStorage.removeItem('canvas_design_height');
-            setTimeout(function() {
-                try {
-                    let json = @json($config);
-                    if (typeof json === 'string') json = JSON.parse(json);
-                    if (window.canvas && json) {
-                        window.canvas.loadFromJSON(json, function() {
-                            window.canvas.renderAll();
-                        });
-                    }
-                } catch (e) {
-                    console.error('Lỗi load config:', e);
+         setTimeout(function() {
+    try {
+        let json = @json($config);
+        if (typeof json === 'string') json = JSON.parse(json);
+        if (window.canvas && json) {
+            window.canvas.loadFromJSON(json, function() {
+                // Set lại kích thước canvas theo backend
+                window.canvas.setWidth({{ $width }});
+                window.canvas.setHeight({{ $height }});
+                // Set lại kích thước box chứa canvas nếu có
+                const box = document.getElementById('canvasBox');
+                if (box) {
+                    box.style.width = '{{ $width }}px';
+                    box.style.height = '{{ $height }}px';
                 }
-            }, 300);
+                window.canvas.renderAll();
+            });
+        }
+    } catch (e) {
+        console.error('Lỗi load config:', e);
+    }
+}, 300);
             @else
             // Nếu không phải edit (hoặc sau khi đã thao tác), ưu tiên load từ localStorage
             const saved = localStorage.getItem('canvas_design');
@@ -351,7 +355,6 @@
             }
         });
     </script>
-
 
 </body>
 
