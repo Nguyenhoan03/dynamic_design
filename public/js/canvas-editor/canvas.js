@@ -130,19 +130,11 @@ function downloadCanvas() {
 }
 
 function createNewDesign() {
-    if (window.canvas) {
-        window.canvas.clear();
-        window.canvas.setWidth(750);
-        window.canvas.setHeight(350);
-        window.canvas.renderAll();
-    }
-    document.querySelector('.name_design').value = '';
-    document.getElementById('template_id').value = '';
     localStorage.removeItem('canvas_design');
     localStorage.removeItem('canvas_design_name');
     localStorage.removeItem('canvas_design_width');
     localStorage.removeItem('canvas_design_height');
-    if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
+    window.location.href = `/templates?width=500&height=500&unit=px`;
 }
 
 
