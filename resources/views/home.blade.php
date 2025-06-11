@@ -285,9 +285,8 @@
             const height = document.getElementById('height').value;
             const unit = document.getElementById('unit').value;
             const config = localStorage.getItem('canvas_design');
-            const name = localStorage.getItem('canvas_design_name') || 'no-name';
+            const name = localStorage.getItem('canvas_design_name') || ('Mẫu_' + Math.random().toString(36).substr(2, 6));;
 
-            // Nếu có dữ liệu cũ, kiểm tra/lưu vào DB trước khi tạo mới
             if (config) {
                 try {
                     await fetch('/templates/check-or-create', {

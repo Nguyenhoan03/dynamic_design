@@ -34,6 +34,7 @@ class TemplateController extends Controller
             'unit' => 'px',
         ]);
     }
+    
     public function store(Request $request)
     {
         $template = Template::create([

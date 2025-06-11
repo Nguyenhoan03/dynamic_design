@@ -20,7 +20,11 @@
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-            <strong><input type="text" placeholder="Nhập tên bản thiết kế" class="name_design"> <span class="size_design"></span></strong>
+            <strong>
+                <input type="text" placeholder="Nhập tên bản thiết kế" class="name_design"
+                    value="{{ $template->name ?? '' }}">
+                <span class="size_design"></span>
+            </strong>
             <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
         </div>
         <div class="tools">
@@ -237,8 +241,8 @@
         <button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
         <button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
         <button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
-        <button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Lên trên</button>
-        <button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Xuống dưới</button>
+        <button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
+        <button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
         <button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
         <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
         <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
@@ -288,7 +292,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Nếu có biến config (từ controller truyền sang)
+
             @if(isset($config) && $config)
             setTimeout(function() {
                 try {

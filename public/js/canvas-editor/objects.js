@@ -87,6 +87,11 @@ function openPrintModal() {
         alert("Vui lòng nhập tên bản thiết kế trước khi in hàng loạt!");
         return;
     }
+    document.getElementById('template_name').value = name;
+    document.getElementById('template_width').value = window.canvas.getWidth();
+    document.getElementById('template_height').value = window.canvas.getHeight();
+    document.getElementById('template_config').value = JSON.stringify(window.canvas.toJSON(['customType', 'variable']));
+
     const printModal = new bootstrap.Modal(document.getElementById('printModal'));
     printModal.show();
 }
