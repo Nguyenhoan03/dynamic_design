@@ -67,6 +67,48 @@
             margin-right: 8px;
         }
 
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.04);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 32px rgba(37, 99, 235, 0.15), 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        /* Canvas preview remains visually distinct but no longer has transform */
+        .card-canvas-preview {
+            min-height: 120px;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            transition: background-color 0.25s ease;
+            position: relative;
+        }
+
+        /* Optional: subtle overlay effect on canvas preview */
+        .card-canvas-preview::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(37, 99, 235, 0.03));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: inherit;
+        }
+
+        .card:hover .card-canvas-preview::after {
+            opacity: 1;
+        }
+
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100vw;
@@ -80,8 +122,7 @@
 
         .custom-form-outer {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            
             margin-bottom: 40px;
         }
 
@@ -92,7 +133,6 @@
             padding: 25px;
             width: 100%;
             max-width: 950px;
-            margin: 0 auto;
         }
 
         .custom-form-wrapper .form-label {
@@ -254,18 +294,26 @@
         <div class="row row-cols-1 row-cols-md-3 g-4 p-2">
             @foreach ($templates as $template)
             <div class="col">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm border-0">
                     <div class="card-canvas-preview w-100" style="height: 180px; background-size: cover; background-position: center;" data-template-config='@json($template->config)'></div>
                     <div class="card-body">
-                        <h6 class="card-title">{{$template->name}}</h6>
-                        <p class="card-text mb-1">
-                            <span class="badge bg-secondary">{{$template->width}}x{{$template->height}} px</span>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0 text-primary fw-semibold">
+                                {{ $template->name }}
+                            </h5>
+                            <span class="badge bg-secondary ms-2">
+                                {{ $template->width }} x {{ $template->height }} px
+                            </span>
+                        </div>
+                        <p class="card-text text-muted small mb-3">
+                            Cập nhật: {{ $template->updated_at->timezone('Asia/Ho_Chi_Minh')->format("d/m/Y H:i:s") }}
                         </p>
-                        <p class="card-text text-muted small">
-                            Tạo lúc: {{$template->updated_at->format("d/m/Y")}}
-                        </p>
-                        <a href="{{ route('templates.edit', $template->id) }}" class="btn btn-outline-primary btn-sm">Xem</a>
+
+                        <a href="{{ route('templates.edit', $template->id) }}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-eye me-1"></i> Xem chi tiết
+                        </a>
                     </div>
+
                 </div>
             </div>
             @endforeach
