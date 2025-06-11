@@ -23,7 +23,17 @@ class TemplateController extends Controller
     {
         return view('templates.create');
     }
-
+    public function edit($id)
+    {
+        $template = Template::findOrFail($id);
+        return view('templates.index', [
+            'template' => $template,
+            'config' => $template->config,
+            'width' => $template->width,
+            'height' => $template->height,
+            'unit' => 'px',
+        ]);
+    }
     public function store(Request $request)
     {
         $template = Template::create([
@@ -157,22 +167,20 @@ class TemplateController extends Controller
         $height = $request->input('height');
         $config = $request->input('config');
 
-        // Tìm template theo name (bỏ width, height nếu chỉ cần duy nhất theo name)
         $template = Template::where('name', $name)->first();
 
         if ($template) {
-            // Nếu config khác thì update
+
             if ($template->config !== $config) {
                 $template->config = $config;
-                $template->width = $width;   // Có thể cập nhật width/height nếu muốn
+                $template->width = $width;
                 $template->height = $height;
                 $template->save();
                 return response()->json(['status' => 'updated', 'template' => $template]);
             }
-            // Nếu config giống thì không làm gì
+
             return response()->json(['status' => 'no-change', 'template' => $template]);
         } else {
-            // Nếu chưa có thì tạo mới
             $template = Template::create([
                 'name' => $name,
                 'width' => $width,

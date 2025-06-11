@@ -255,10 +255,7 @@
             @foreach ($templates as $template)
             <div class="col">
                 <div class="card h-100 shadow-sm">
-
                     <div class="card-canvas-preview w-100" style="height: 180px; background-size: cover; background-position: center;" data-template-config='@json($template->config)'></div>
-
-
                     <div class="card-body">
                         <h6 class="card-title">{{$template->name}}</h6>
                         <p class="card-text mb-1">
@@ -267,7 +264,7 @@
                         <p class="card-text text-muted small">
                             Tạo lúc: {{$template->updated_at->format("d/m/Y")}}
                         </p>
-                        <a href="/templates/edit/{{$template->name}}" class="btn btn-outline-primary btn-sm">Xem</a>
+                        <a href="{{ route('templates.edit', $template->id) }}" class="btn btn-outline-primary btn-sm">Xem</a>
                     </div>
                 </div>
             </div>

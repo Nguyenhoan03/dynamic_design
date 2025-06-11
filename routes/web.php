@@ -21,7 +21,7 @@ Route::get('/', [HomeController::class, 'index']);
 
 Route::get('/templates', [TemplateController::class, 'index']);
 Route::post('/templates', [TemplateController::class, 'store'])->name('templates.index');
-Route::get('/templates/edit/{name}', [TemplateController::class, 'index'])->name('templates_eidt.index');
+Route::get('/templates/edit/{id}', [TemplateController::class, 'edit'])->name('templates.edit');
 Route::post('/templates/check-or-create', [TemplateController::class, 'checkOrCreate']);
 Route::post('/print-batch', [TemplateController::class, 'printBatch']);
 Route::get('/templates/{id}/preview', [TemplateController::class, 'preview']);

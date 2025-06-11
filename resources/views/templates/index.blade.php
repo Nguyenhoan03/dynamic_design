@@ -286,7 +286,26 @@
         });
     </script>
 
-   
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nếu có biến config (từ controller truyền sang)
+            @if(isset($config) && $config)
+            setTimeout(function() {
+                try {
+                    let json = @json($config);
+                    if (typeof json === 'string') json = JSON.parse(json);
+                    if (window.canvas && json) {
+                        window.canvas.loadFromJSON(json, function() {
+                            window.canvas.renderAll();
+                        });
+                    }
+                } catch (e) {
+                    console.error('Lỗi load config:', e);
+                }
+            }, 300);
+            @endif
+        });
+    </script>
 
 </body>
 
