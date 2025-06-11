@@ -23,6 +23,7 @@
             <strong>
                 <input type="text" placeholder="Nhập tên bản thiết kế" class="name_design"
                     value="{{ $template->name ?? '' }}">
+                <input type="hidden" id="template_id" value="{{ $template->id ?? '' }}">
                 <span class="size_design"></span>
             </strong>
             <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
@@ -53,6 +54,7 @@
                 <input type="hidden" name="template_width" id="template_width">
                 <input type="hidden" name="template_height" id="template_height">
                 <input type="hidden" name="template_config" id="template_config">
+                <input type="hidden" name="template_id" id="template_id">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">In hàng loạt</h5>

@@ -73,6 +73,7 @@ function clearCanvas() {
 
 async function SaveCanvas() {
     const name_design = document.querySelector('.name_design').value;
+    const template_id = document.getElementById('template_id')?.value || '';
     if (!name_design || name_design.trim() === "") {
         alert("Vui lòng nhập tên bản thiết kế trước khi lưu!");
         return;
@@ -82,23 +83,31 @@ async function SaveCanvas() {
     const height = window.canvas.getHeight();
 
     try {
+        const fd = new FormData();
+        fd.append('name', name_design);
+        fd.append('width', width);
+        fd.append('height', height);
+        fd.append('config', config);
+        if (template_id) fd.append('template_id', template_id);
+
         const resp = await fetch('/templates', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
             },
-            body: (() => {
-                const fd = new FormData();
-                fd.append('name', name_design);
-                fd.append('width', width);
-                fd.append('height', height);
-                fd.append('config', config);
-                return fd;
-            })()
+            body: fd
         });
-        if (!resp.ok) throw new Error('Lưu thiết kế thất bại!');
+        if (!resp.ok) {
+            const data = await resp.json().catch(() => ({}));
+            throw new Error(data.message || 'Lưu thiết kế thất bại!');
+        }
         alert('Lưu thiết kế thành công!');
+        // Nếu server trả về id mới, cập nhật lại input ẩn template_id
+        const data = await resp.json().catch(() => ({}));
+        if (data.template && data.template.id) {
+            document.getElementById('template_id').value = data.template.id;
+        }
     } catch (e) {
         alert(e.message);
     }

@@ -36,13 +36,23 @@ class TemplateController extends Controller
 
     public function store(Request $request)
     {
-        $this->createOrUpdateTemplate(
+        $id = $request->input('template_id');
+        $template = $this->createOrUpdateTemplate(
             $request->input('name'),
             $request->input('width'),
             $request->input('height'),
             $request->input('config'),
-            $request->input('elements', [])
+            $request->input('elements', []),
+            $id 
         );
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'template' => $template
+            ]);
+        }
+
         return redirect()->route('templates.index')->with('success', 'Template saved successfully!');
     }
 
@@ -53,7 +63,9 @@ class TemplateController extends Controller
                 $request->input('template_name'),
                 $request->input('template_width'),
                 $request->input('template_height'),
-                $request->input('template_config')
+                $request->input('template_config'),
+                $request->input('elements', []),
+                $request->input('template_id')
             );
 
             $qrVariables = $this->saveTemplateElements($template);
@@ -72,7 +84,7 @@ class TemplateController extends Controller
         } catch (\Throwable $th) {
             $message = str_contains($th->getMessage(), 'Column \'name\' cannot be null')
                 ? 'Vui lòng nhập tên bản thiết kế!'
-                : 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!';
+                : ($th->getMessage() === 'Tên bản thiết kế đã tồn tại!' ? $th->getMessage() : 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!');
             return redirect()->back()->with('error', $message);
         }
     }
@@ -110,9 +122,27 @@ class TemplateController extends Controller
     /**
      * Tạo mới hoặc cập nhật template theo tên.
      */
-    private function createOrUpdateTemplate($name, $width, $height, $config, $elements = [])
+    private function createOrUpdateTemplate($name, $width, $height, $config, $elements = [], $id = null)
     {
-        $template = Template::firstOrNew(['name' => $name]);
+
+        if ($id) {
+            $template = Template::find($id);
+            if ($template) {
+                // Nếu đổi tên, kiểm tra trùng tên với template khác
+                $existing = Template::where('name', $name)->where('id', '!=', $id)->first();
+                if ($existing) {
+                    throw new \Exception('Tên bản thiết kế đã tồn tại!');
+                }
+                $template->name = $name;
+            } else {
+                $template = new Template();
+                $template->name = $name;
+            }
+        } else {
+            $template = Template::where('name', $name)->first() ?? new Template();
+            $template->name = $name;
+        }
+
         $template->width = $width;
         $template->height = $height;
         $template->config = $config;

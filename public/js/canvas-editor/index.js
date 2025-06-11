@@ -22,11 +22,12 @@ function saveCanvasToLocal() {
 const saved = localStorage.getItem('canvas_design');
 const savedName = localStorage.getItem('canvas_design_name');
 if (saved) {
-    window.canvas.loadFromJSON(saved, function() {
+    window.canvas.loadFromJSON(saved, function () {
         window.canvas.renderAll();
         if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
-        if (savedName && document.querySelector('.name_design')) {
-            document.querySelector('.name_design').value = savedName;
+        const nameInput = document.querySelector('.name_design');
+        if (savedName && nameInput && !nameInput.value) {
+            nameInput.value = savedName;
         }
         saveCanvasToLocal();
     });
@@ -35,7 +36,7 @@ if (saved) {
 }
 
 // Khi trang load xong, cập nhật kích thước canvas-box và thẻ canvas cho đúng
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const width = localStorage.getItem('canvas_design_width') || window.defaultCanvasWidth || 750;
     const height = localStorage.getItem('canvas_design_height') || window.defaultCanvasHeight || 350;
 
