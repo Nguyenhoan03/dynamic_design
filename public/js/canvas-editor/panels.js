@@ -3,13 +3,20 @@ function showPanel(panel) {
         el.classList.remove('active');
     });
     document.querySelector('.sidebar-canvas .sidebar-item[onclick="showPanel(\'' + panel + '\')"]').classList.add('active');
-    document.querySelectorAll('.sidebar-panel').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sidebar-panel').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = '';
+    });
     const panelEl = document.getElementById('panel-' + panel);
-    if (panelEl) panelEl.classList.add('active');
+    if (panelEl) {
+        panelEl.classList.add('active');
+        panelEl.style.display = ''; 
+    }
 }
 
 function closePanel(panel) {
-    document.getElementById('panel-' + panel).style.display = 'none';
+    const panelEl = document.getElementById('panel-' + panel);
+    if (panelEl) panelEl.style.display = 'none';
 }
 
 let isDragging = false;
