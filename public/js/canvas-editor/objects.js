@@ -108,11 +108,11 @@ function openPrintModal() {
                 matches.forEach(m => dynamicFields.add(m.replace(/[#\{\}]/g, '')));
             }
         }
-       
+        // Nếu là group QR động thì thêm 'qrcode'
         if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             dynamicFields.add('qrcode');
         }
-      
+        // Nếu là group thì duyệt tiếp các object con
         if (obj.objects && Array.isArray(obj.objects)) {
             obj.objects.forEach(findDynamic);
         }
@@ -121,16 +121,25 @@ function openPrintModal() {
         config.objects.forEach(findDynamic);
     }
 
+    let labelFields;
     if (dynamicFields.size === 0) {
-        dynamicFields.add('name');
-        dynamicFields.add('code');
-        dynamicFields.add('qrcode');
+        labelFields = [];
+    } else if (
+        dynamicFields.size === 2 &&
+        dynamicFields.has('code') &&
+        dynamicFields.has('qrcode')
+    ) {
+        labelFields = ['qrcode'];
+    } else if (dynamicFields.size === 1 && dynamicFields.has('qrcode')) {
+        labelFields = ['qrcode'];
+    } else {
+        labelFields = Array.from(dynamicFields);
     }
 
     // Hiển thị danh sách trường động lên label
     const labelSpan = document.getElementById('dynamic-fields-label');
     if (labelSpan) {
-        labelSpan.textContent = Array.from(dynamicFields).join(', ');
+        labelSpan.textContent = labelFields.join(', ');
     }
 
     const printModal = new bootstrap.Modal(document.getElementById('printModal'));
