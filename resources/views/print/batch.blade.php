@@ -26,13 +26,24 @@
         @endphp
 
         @if ($type === 'text' || $type === 'dynamic' || $type === 'textbox')
+        @php
+        $text = $obj['text'] ?? '';
+        $text = preg_replace_callback('/#\{(.*?)\}/', function($m) use ($data) {
+        return $data[$m[1]] ?? $m[0];
+        }, $text);
+        @endphp
         <div style="position: absolute; left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px; font-size: {{ $obj['fontSize'] ?? 16 }}px; color: {{ $obj['fill'] ?? '#000' }};">
-            {{ str_replace(['#{name}', '#{code}'], [$data['name'] ?? '', $data['code'] ?? ''], $obj['text'] ?? '') }}
+            {{ $text }}
         </div>
-        @elseif ($type === 'qr' && !empty($data['qr_image_base64']))
+        @elseif ($type === 'qr')
+        @php
+        $qrField = isset($obj['variable']) ? preg_replace('/[#{\}]/', '', $obj['variable']) : null;
+        $qrImg = $qrField ? ($data['qr_image_base64_' . $qrField] ?? null) : null; @endphp
+        @if ($qrImg)
         <div style="position: absolute; left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px;">
-            <img src="{{ $data['qr_image_base64'] }}" width="100" height="100" alt="QR Code">
+            <img src="{{ $qrImg }}" width="100" height="100" alt="QR Code">
         </div>
+        @endif
         @elseif ($type === 'image' && !empty($obj['src']))
         <div style="position: absolute; left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px;">
             <img src="{{ $obj['src'] }}"

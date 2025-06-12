@@ -70,15 +70,22 @@ class TemplateController extends Controller
 
             $qrVariables = $this->saveTemplateElements($template);
 
+            // Lấy fields động từ client
+            $fields = array_filter(array_map('trim', explode(',', $request->input('fields', ''))));
+           
             $rows = $this->parseCsvRowsAndGenerateQr(
                 $request->input('csv_rows'),
-                $qrVariables
+                $qrVariables,
+                $fields
             );
+            // dd($rows);
 
             $pdf = \Barryvdh\DomPDF\Facade\PDF::loadView('print.batch', [
                 'template' => $template,
                 'rows' => $rows,
             ]);
+            //  dd($request->input('fields'),$qrVariables, $fields);
+
 
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
@@ -188,40 +195,34 @@ class TemplateController extends Controller
     /**
      * Parse CSV và sinh QR code cho từng dòng.
      */
-    private function parseCsvRowsAndGenerateQr($csv, $qrVariables)
+    private function parseCsvRowsAndGenerateQr($csv, $qrVariables, $fields = [])
     {
         $rows = [];
-        foreach (explode("\n", $csv) as $line) {
+        $lines = explode("\n", trim($csv));
+        foreach ($lines as $line) {
             $parts = str_getcsv(trim($line));
-            $row = [
-                'name' => mb_convert_encoding($parts[0] ?? '', 'UTF-8', 'auto'),
-                'code' => mb_convert_encoding($parts[1] ?? '', 'UTF-8', 'auto'),
-                'qrcode' => (count($parts) > 2) ? mb_convert_encoding($parts[2], 'UTF-8', 'auto') : null,
-            ];
-
-            if (!empty($qrVariables)) {
-                $qrContent = $row['qrcode'] ?? null;
-                if (!$qrContent) {
-                    $qrTemplate = $qrVariables[0];
-                    $qrContent = str_replace(
-                        ['#{name}', '#{code}'],
-                        [$row['name'], $row['code']],
-                        $qrTemplate
-                    );
+            $row = [];
+            foreach ($fields as $i => $field) {
+                $row[$field] = mb_convert_encoding($parts[$i] ?? '', 'UTF-8', 'auto');
+            }
+            // Sinh QR cho từng biến QR động
+            foreach ($qrVariables as $qrVar) {
+                $qrField = preg_replace('/[#{\}]/', '', $qrVar); 
+                $qrContent = $row[$qrField] ?? '';
+                if ($qrContent) {
+                    $qrFileName = 'qr_codes/' . md5($qrContent) . '.png';
+                    if (!Storage::disk('public')->exists($qrFileName)) {
+                        $qrImage = QrCode::format('png')->size(200)->margin(1)->generate($qrContent);
+                        Storage::disk('public')->put($qrFileName, $qrImage);
+                    }
+                    $qrBinary = Storage::disk('public')->get($qrFileName);
+                    $row['qr_image_base64_' . $qrField] = 'data:image/png;base64,' . base64_encode($qrBinary);
                 }
-                $qrContent = mb_convert_encoding($qrContent, 'UTF-8', 'auto');
-                $qrFileName = 'qr_codes/' . md5($qrContent) . '.png';
-
-                if (!Storage::disk('public')->exists($qrFileName)) {
-                    $qrImage = QrCode::format('png')->size(200)->margin(1)->generate($qrContent);
-                    Storage::disk('public')->put($qrFileName, $qrImage);
-                }
-                $qrBinary = Storage::disk('public')->get($qrFileName);
-                $row['qr_image_base64'] = 'data:image/png;base64,' . base64_encode($qrBinary);
             }
 
             $rows[] = $row;
         }
+
         return $rows;
     }
 }

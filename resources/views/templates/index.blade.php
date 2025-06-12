@@ -26,8 +26,12 @@
                 <input type="hidden" id="template_id" value="{{ $template->id ?? '' }}">
                 <span class="size_design"></span>
             </strong>
-            <button class="btn btn-sm btn-outline-light" onclick="changeCanvasSize()">Đổi cỡ</button>
-            <button class="btn btn-sm btn-outline-light text-weight-bold" onclick="createNewDesign()">Tạo thiết kế mới</button>
+           <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="changeCanvasSize()">
+                <i class="bi bi-arrows-angle-expand"></i> Đổi cỡ
+            </button>
+            <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="createNewDesign()">
+                <i class="bi bi-plus-circle"></i> Tạo thiết kế mới
+            </button>
         </div>
         <div class="tools">
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
@@ -55,6 +59,7 @@
                 <input type="hidden" name="template_height" id="template_height">
                 <input type="hidden" name="template_config" id="template_config">
                 <input type="hidden" name="template_id" id="template_id">
+                <input type="hidden" name="fields" id="fields">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">In hàng loạt</h5>
@@ -122,17 +127,12 @@
                 <button type="button" class="btn-close btn-sm" onclick="closePanel('dynamic')"></button>
             </div>
             <div class="panel-group">
-                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{name}')">
-                    <i class="bi bi-person me-2"></i> Tên
-                </button>
-                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{code}')">
-                    <i class="bi bi-upc-scan me-2"></i> Mã
-                </button>
-                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicText('#{name} - #{code}')">
-                    <i class="bi bi-card-text me-2"></i> Tên + Mã
+               
+                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="promptDynamicField()">
+                    <i class="bi bi-plus-circle me-2"></i> Thêm trường động
                 </button>
                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicQR()">
-                    <i class="bi bi-qr-code me-2"></i> QR code mã
+                    <i class="bi bi-qr-code me-2"></i> Thêm QR động
                 </button>
             </div>
         </div>
@@ -220,7 +220,6 @@
 
             </div>
         </div>
-
         <!-- Canvas area -->
 
         <div class="canvas-container" style="position: relative;">
@@ -283,6 +282,7 @@
     <script type="module" src="{{ asset('./js/canvas-editor/index.js') }}"></script>
 
     <script>
+        
         document.querySelector('#printForm').addEventListener('submit', function(e) {
             const name_design = document.querySelector('.name_design').value;
             const json = canvas.toJSON(['customType', 'variable']);

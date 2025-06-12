@@ -188,8 +188,8 @@
             localStorage.setItem('canvas_design_width', width);
             localStorage.setItem('canvas_design_height', height);
             localStorage.setItem('canvas_design_unit', unit);
-
-            // Chuyển trang
+            
+            console.log(width, height, unit);
             window.location.href = `/templates?width=${width}&height=${height}&unit=${unit}`;
         });
     </script>

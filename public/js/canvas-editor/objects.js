@@ -41,46 +41,114 @@ function addText() {
     window.canvas.add(text).setActiveObject(text);
 }
 
-function addQRCode() {
-    const rect = new fabric.Rect({
-        width: 70,
-        height: 70,
-        fill: '#eee',
-        stroke: '#333',
-        strokeWidth: 1
-    });
-    const label = new fabric.Text('QR: #{code}', {
-        fontSize: 12,
-        left: 10,
-        top: 25,
-        fill: '#333'
-    });
-    const group = new fabric.Group([rect, label], {
-        left: 300,
-        top: 120
-    });
-    window.canvas.add(group).setActiveObject(group);
-}
+// function addQRCode() {
+//     const rect = new fabric.Rect({
+//         width: 90,
+//         height: 90,
+//         fill: '#eee',
+//         stroke: '#333',
+//         strokeWidth: 1
+//     });
+//     const label = new fabric.Text('QR: #{code}', {
+//         fontSize: 12,
+//         left: 10,
+//         top: 25,
+//         fill: '#333'
+//     });
+//     const group = new fabric.Group([rect, label], {
+//         left: 300,
+//         top: 120
+//     });
+//     window.canvas.add(group).setActiveObject(group);
+// }
 
 function addDynamicText(content) {
-    const text = new fabric.Textbox(content, {
+    // Thêm hậu tố _text nếu chưa có
+    let field = content.replace(/[#\{\}]/g, '');
+    if (!field.endsWith('_text')) field += '_text';
+    const text = new fabric.Textbox(`#{${field}}`, {
         left: 120, top: 60, fontSize: 22, fill: '#222', width: 200, fontFamily: 'Arial',
         customType: 'dynamic',
-        variable: content
+        variable: `#{${field}}`
     });
     window.canvas.add(text).setActiveObject(text);
+    updateDynamicFieldsLabel(); 
+}
+
+function promptDynamicField() {
+    const field = prompt('Nhập tên biến (không dấu, không khoảng trắng):');
+    if (field && /^[a-zA-Z0-9_]+$/.test(field)) {
+        addDynamicText(`#{${field}}`);
+    } else if (field) {
+        alert('Tên biến không hợp lệ!');
+    }
 }
 
 function addDynamicQR() {
-    const rect = new fabric.Rect({
-        width: 70, height: 70, fill: '#eee', stroke: '#333', strokeWidth: 1
-    });
-    const label = new fabric.Text('QR: #{code}', {
-        fontSize: 12, left: 10, top: 25, fill: '#333'
-    });
-    const group = new fabric.Group([rect, label], { left: 300, top: 120, customType: 'dynamicQR', variable: '#{code}' });
-    window.canvas.add(group).setActiveObject(group);
+    let field = prompt('Nhập tên biến QR (không dấu, không khoảng trắng):');
+    if (field && /^[a-zA-Z0-9_]+$/.test(field)) {
+        // Thêm hậu tố _qr nếu chưa có
+        if (!field.endsWith('_qr')) field += '_qr';
+        const rect = new fabric.Rect({
+            width: 70, height: 70, fill: '#eee', stroke: '#333', strokeWidth: 1
+        });
+        const label = new fabric.Text(`#{${field}}`, {
+            fontSize: 12, left: 10, top: 25, fill: '#333'
+        });
+        const group = new fabric.Group([rect, label], { left: 300, top: 120, customType: 'dynamicQR', variable: `#{${field}}` });
+        window.canvas.add(group).setActiveObject(group);
+        updateDynamicFieldsLabel();
+    } else if (field) {
+        alert('Tên biến không hợp lệ!');
+    }
 }
+
+function getDynamicFieldsFromCanvas() {
+    const config = window.canvas.toJSON(['customType', 'variable']);
+    const fields = [];
+    const exists = new Set();
+    function scan(obj) {
+        ['text', 'variable'].forEach(key => {
+            if (typeof obj[key] === 'string') {
+                (obj[key].match(/#\{(.*?)\}/g) || []).forEach(m => {
+                    const field = m.replace(/[#\{\}]/g, '');
+                    if (!exists.has(field)) {
+                        exists.add(field);
+                        fields.push(field);
+                    }
+                });
+            }
+        });
+        // Nếu là group QR động thì lấy đúng tên biến QR động từ obj.variable
+        if (obj.type === 'group' && obj.customType === 'dynamicQR') {
+            const qrField = (obj.variable || '').replace(/[#\{\}]/g, '');
+            if (qrField && !exists.has(qrField)) {
+                exists.add(qrField);
+                fields.push(qrField);
+            }
+        }
+        if (Array.isArray(obj.objects)) obj.objects.forEach(scan);
+    }
+    if (config.objects && Array.isArray(config.objects)) {
+        config.objects.forEach(scan);
+    }
+    return fields;
+}
+
+function updateDynamicFieldsLabel() {
+    const fields = getDynamicFieldsFromCanvas();
+    const labelSpan = document.getElementById('dynamic-fields-label');
+    if (labelSpan) {
+        labelSpan.textContent = fields.length ? fields.join(', ') : '';
+    }
+    // Nếu cần truyền fields lên server:
+    const fieldsInput = document.getElementById('fields');
+    if (fieldsInput) {
+        fieldsInput.value = fields.join(',');
+    }
+}
+
+// Gọi lại khi mở modal in
 function openPrintModal() {
     const name = document.querySelector('.name_design').value;
     if (!name || name.trim() === "") {
@@ -93,64 +161,23 @@ function openPrintModal() {
     const config = window.canvas.toJSON(['customType', 'variable']);
     document.getElementById('template_config').value = JSON.stringify(config);
 
-    // Tìm các trường động từ config
-    const dynamicFields = new Set();
-    function findDynamic(obj) {
-        if (obj.text && typeof obj.text === 'string') {
-            const matches = obj.text.match(/#\{(.*?)\}/g);
-            if (matches) {
-                matches.forEach(m => dynamicFields.add(m.replace(/[#\{\}]/g, '')));
-            }
-        }
-        if (obj.variable && typeof obj.variable === 'string') {
-            const matches = obj.variable.match(/#\{(.*?)\}/g);
-            if (matches) {
-                matches.forEach(m => dynamicFields.add(m.replace(/[#\{\}]/g, '')));
-            }
-        }
-        // Nếu là group QR động thì thêm 'qrcode'
-        if (obj.type === 'group' && obj.customType === 'dynamicQR') {
-            dynamicFields.add('qrcode');
-        }
-        // Nếu là group thì duyệt tiếp các object con
-        if (obj.objects && Array.isArray(obj.objects)) {
-            obj.objects.forEach(findDynamic);
-        }
-    }
-    if (config.objects && Array.isArray(config.objects)) {
-        config.objects.forEach(findDynamic);
-    }
-
-    let labelFields;
-    if (dynamicFields.size === 0) {
-        labelFields = [];
-    } else if (
-        dynamicFields.size === 2 &&
-        dynamicFields.has('code') &&
-        dynamicFields.has('qrcode')
-    ) {
-        labelFields = ['qrcode'];
-    } else if (dynamicFields.size === 1 && dynamicFields.has('qrcode')) {
-        labelFields = ['qrcode'];
-    } else {
-        labelFields = Array.from(dynamicFields);
-    }
-
-    // Hiển thị danh sách trường động lên label
-    const labelSpan = document.getElementById('dynamic-fields-label');
-    if (labelSpan) {
-        labelSpan.textContent = labelFields.join(', ');
-    }
+    updateDynamicFieldsLabel();
 
     const printModal = new bootstrap.Modal(document.getElementById('printModal'));
     printModal.show();
 }
 
+// Luôn cập nhật label khi canvas thay đổi
+window.canvas.on('object:added', updateDynamicFieldsLabel);
+window.canvas.on('object:removed', updateDynamicFieldsLabel);
+window.canvas.on('object:modified', updateDynamicFieldsLabel);
+
 window.addLine = addLine;
+window.promptDynamicField = promptDynamicField;
 window.addRect = addRect;
 window.addCircle = addCircle;
 window.addText = addText;
-window.addQRCode = addQRCode;
+// window.addQRCode = addQRCode;
 window.addDynamicText = addDynamicText;
 window.addDynamicQR = addDynamicQR;
 window.openPrintModal = openPrintModal;
