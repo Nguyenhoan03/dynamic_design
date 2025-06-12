@@ -62,7 +62,9 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                        <label class="form-label">Dán dữ liệu (CSV: name,code,qrcode):</label>
+                       <label class="form-label">
+                            Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
+                        </label>
                         <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
                     </div>
                     <div class="modal-footer">

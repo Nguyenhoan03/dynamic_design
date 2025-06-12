@@ -90,7 +90,48 @@ function openPrintModal() {
     document.getElementById('template_name').value = name;
     document.getElementById('template_width').value = window.canvas.getWidth();
     document.getElementById('template_height').value = window.canvas.getHeight();
-    document.getElementById('template_config').value = JSON.stringify(window.canvas.toJSON(['customType', 'variable']));
+    const config = window.canvas.toJSON(['customType', 'variable']);
+    document.getElementById('template_config').value = JSON.stringify(config);
+
+    // Tìm các trường động từ config
+    const dynamicFields = new Set();
+    function findDynamic(obj) {
+        if (obj.text && typeof obj.text === 'string') {
+            const matches = obj.text.match(/#\{(.*?)\}/g);
+            if (matches) {
+                matches.forEach(m => dynamicFields.add(m.replace(/[#\{\}]/g, '')));
+            }
+        }
+        if (obj.variable && typeof obj.variable === 'string') {
+            const matches = obj.variable.match(/#\{(.*?)\}/g);
+            if (matches) {
+                matches.forEach(m => dynamicFields.add(m.replace(/[#\{\}]/g, '')));
+            }
+        }
+       
+        if (obj.type === 'group' && obj.customType === 'dynamicQR') {
+            dynamicFields.add('qrcode');
+        }
+      
+        if (obj.objects && Array.isArray(obj.objects)) {
+            obj.objects.forEach(findDynamic);
+        }
+    }
+    if (config.objects && Array.isArray(config.objects)) {
+        config.objects.forEach(findDynamic);
+    }
+
+    if (dynamicFields.size === 0) {
+        dynamicFields.add('name');
+        dynamicFields.add('code');
+        dynamicFields.add('qrcode');
+    }
+
+    // Hiển thị danh sách trường động lên label
+    const labelSpan = document.getElementById('dynamic-fields-label');
+    if (labelSpan) {
+        labelSpan.textContent = Array.from(dynamicFields).join(', ');
+    }
 
     const printModal = new bootstrap.Modal(document.getElementById('printModal'));
     printModal.show();
