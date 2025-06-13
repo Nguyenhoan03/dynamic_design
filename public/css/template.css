@@ -333,3 +333,107 @@ canvas#templateCanvas {
     border-color: #0d6efd;
     box-shadow: 0 0 0 2px #0d6efd22;
 }
+.right-sidebar {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    width: 270px;
+    background: #f9fafb;
+    border-left: 1px solid #e5e7eb;
+    box-shadow: -2px 0 12px rgba(0,0,0,0.06);
+    padding: 24px 16px 24px 16px;
+    z-index: 1050;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    transition: transform 0.3s;
+    border-radius: 12px 0 0 12px;
+}
+.sidebar-content > * { margin-bottom: 10px; width: 100%; }
+.sidebar-content button, .sidebar-content select {
+    font-size: 15px;
+}
+.sidebar-content button {
+    text-align: left;
+}
+@media (max-width: 1199.98px) {
+    .right-sidebar {
+        transform: translateX(100%);
+        top: 0;
+        height: 100vh;
+        width: 90vw;
+        max-width: 320px;
+        padding-top: 50px;
+        border-radius: 0;
+    }
+    .right-sidebar.active {
+        transform: translateX(0);
+    }
+    #closeRightSidebar { display: block !important; }
+}
+@media (min-width: 1200px) {
+    #closeRightSidebar { display: none !important; }
+}
+
+/* Responsive: mobile & tablet */
+@media (max-width: 1199.98px) {
+    #toggleRightSidebar {
+        display: block !important;
+    }
+    .right-sidebar {
+        transform: translateX(100%);
+        top: 0;
+        height: 100vh;
+        width: 90vw;
+        max-width: 320px;
+        padding-top: 50px;
+    }
+    .right-sidebar.active {
+        transform: translateX(0);
+    }
+    .canvas-info {
+        right: 10px;
+    }
+}
+/* PC: luôn hiện sidebar, info không bị đè */
+@media (min-width: 1200px) {
+    #toggleRightSidebar, #closeRightSidebar { display: none !important; }
+    .right-sidebar {
+        transform: none !important;
+        position: fixed;
+        right: 0;
+        top: 60px;
+        height: calc(100vh - 60px);
+        width: 260px;
+        box-shadow: -2px 0 8px rgba(0,0,0,0.04);
+        z-index: 1050;
+    }
+    .canvas-info {
+        right: 270px;
+    }
+}
+
+/* canvas-info chung */
+.canvas-info {
+    position: absolute;
+    top: 10px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 15px;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    z-index: 100;
+}
+.canvas-info.canvas-info-bottom-center {
+    margin-top: 12px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 20px;
+    font-size: 15px;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 100;
+    pointer-events: none;
+    align-self: center;
+    border: 1px solid #eee;
+}

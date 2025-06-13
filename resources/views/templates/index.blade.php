@@ -222,58 +222,67 @@
         </div>
         <!-- Canvas area -->
 
-        <div class="canvas-container" style="position: relative;">
-            <div class="canvas-box" id="canvasBox" style="width:750px;height:350px;">
-                <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
-                <div id="objectToolbar" class="object-toolbar">
-                    <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
-                    <button onclick="flipSelected()" title="Lật">&#8646;</button>
-                    <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
-                </div>
-            </div>
-            <div id="canvasInfo" class="canvas-info canvas-info-bottom"></div>
+      <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
+    <div class="canvas-box" id="canvasBox" style="width:750px;height:350px; position:relative;">
+        <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
+        <div id="objectToolbar" class="object-toolbar">
+            <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
+            <button onclick="flipSelected()" title="Lật">&#8646;</button>
+            <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
         </div>
     </div>
+    <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
+</div>
+    </div>
+    
 
-    <!-- Thêm các nút chức năng mới vào thanh công cụ hoặc sidebar -->
-    <div style="position:fixed;bottom:20px;left:15%;z-index:1000;justify-content: center;display: flex;flex-wrap: wrap;gap: 5px;">
-        <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
-        <button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button>
-        <button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
-        <button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
-        <button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
-        <button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
-        <button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
-        <button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
-        <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
-        <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
-        <select onchange="setFont(this.value)">
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Tahoma">Tahoma</option>
-            <option value="Courier New">Courier New</option>
-        </select>
-        <select onchange="setFontSize(this.value)">
-            <option value="9">9</option>
-            <option value="10">10</option>
-            <option value="12">12</option>
-            <option value="14">14</option>
-            <option value="16">16</option>
-            <option value="18">18</option>
-            <option value="20">20</option>
-            <option value="22" selected>22</option>
-            <option value="26">26</option>
-            <option value="28">28</option>
-            <option value="36">36</option>
-        </select>
-        <select onchange="setAlign(this.value)">
-            <option value="left">Trái</option>
-            <option value="center">Giữa</option>
-            <option value="right">Phải</option>
-        </select>
-        <button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
-        <button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
+    <!-- Nút mở sidebar cho mobile/tablet (hiện cả tablet) -->
+    <button id="toggleRightSidebar" class="btn btn-primary" style="position:fixed;bottom:20px;right:20px;z-index:1100;display:none;">
+        <i class="bi bi-list"></i> Menu
+    </button>
+
+    <!-- Sidebar chức năng bên phải -->
+    <div id="rightSidebar" class="right-sidebar">
+        <button class="btn-close" id="closeRightSidebar" style="position:absolute;top:10px;right:10px;display:none;"></button>
+        <div class="sidebar-content">
+            <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
+<button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
+<button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
+<button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
+<button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
+<button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
+<button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
+<button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
+<button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
+<select onchange="setFont(this.value)">
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Tahoma">Tahoma</option>
+    <option value="Courier New">Courier New</option>
+</select>
+<select onchange="setFontSize(this.value)">
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="12">12</option>
+    <option value="14">14</option>
+    <option value="16">16</option>
+    <option value="18">18</option>
+    <option value="20">20</option>
+    <option value="22" selected>22</option>
+    <option value="26">26</option>
+    <option value="28">28</option>
+    <option value="36">36</option>
+</select>
+<select onchange="setAlign(this.value)">
+    <option value="left">Trái</option>
+    <option value="center">Giữa</option>
+    <option value="right">Phải</option>
+</select>
+<button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
@@ -358,6 +367,31 @@
         });
     </script>
 
-</body>
+ 
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('rightSidebar');
+    const toggleBtn = document.getElementById('toggleRightSidebar');
+    const closeBtn = document.getElementById('closeRightSidebar');
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.add('active');
+        });
+    }
+    if (closeBtn && sidebar) {
+        closeBtn.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+        });
+    }
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth < 1200 && sidebar.classList.contains('active')) {
+            if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
+                sidebar.classList.remove('active');
+            }
+        }
+    });
+});
+</script>
+</body>
 </html>
