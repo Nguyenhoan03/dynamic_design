@@ -160,6 +160,8 @@ function openPrintModal() {
     document.getElementById('template_height').value = window.canvas.getHeight();
     const config = window.canvas.toJSON(['customType', 'variable']);
     document.getElementById('template_config').value = JSON.stringify(config);
+   
+    console.log(JSON.stringify(config))
 
     updateDynamicFieldsLabel();
 
@@ -171,6 +173,22 @@ function openPrintModal() {
 window.canvas.on('object:added', updateDynamicFieldsLabel);
 window.canvas.on('object:removed', updateDynamicFieldsLabel);
 window.canvas.on('object:modified', updateDynamicFieldsLabel);
+
+// Đảm bảo customType và variable luôn được lưu/khôi phục với mọi object và group
+if (fabric.Object.prototype.toObject) {
+    const origToObject = fabric.Object.prototype.toObject;
+    fabric.Object.prototype.toObject = function(propertiesToInclude) {
+        propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable']);
+        return origToObject.call(this, propertiesToInclude);
+    };
+}
+if (fabric.Group && fabric.Group.prototype.toObject) {
+    const origGroupToObject = fabric.Group.prototype.toObject;
+    fabric.Group.prototype.toObject = function(propertiesToInclude) {
+        propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable']);
+        return origGroupToObject.call(this, propertiesToInclude);
+    };
+}
 
 window.addLine = addLine;
 window.promptDynamicField = promptDynamicField;
