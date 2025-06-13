@@ -51,34 +51,40 @@
 
 
     <div class="modal fade" id="printModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form id="printForm" method="POST" action="/print-batch">
-                @csrf
-                <input type="hidden" name="template_name" id="template_name">
-                <input type="hidden" name="template_width" id="template_width">
-                <input type="hidden" name="template_height" id="template_height">
-                <input type="hidden" name="template_config" id="template_config">
-                <input type="hidden" name="template_id" id="template_id">
-                <input type="hidden" name="fields" id="fields">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">In hàng loạt</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                       <label class="form-label">
-                            Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
-                        </label>
-                        <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">In</button>
+    <div class="modal-dialog">
+        <form id="printForm" method="POST" action="/print-batch">
+            @csrf
+            <input type="hidden" name="template_name" id="template_name">
+            <input type="hidden" name="template_width" id="template_width">
+            <input type="hidden" name="template_height" id="template_height">
+            <input type="hidden" name="template_config" id="template_config">
+            <input type="hidden" name="template_id" id="template_id">
+            <input type="hidden" name="fields" id="fields">
+            <!-- Thêm input ẩn để chứa ảnh canvas -->
+            <input type="hidden" name="template_image" id="template_image">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">In hàng loạt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
+                    <label class="form-label">
+                        Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
+                    </label>
+                    <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+                    <!-- Xem trước ảnh canvas nếu muốn -->
+                    <div class="mt-3">
+                        <img id="canvasPreview" style="max-width:100%;border:1px solid #eee;display:none;">
                     </div>
                 </div>
-            </form>
-        </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">In</button>
+                </div>
+            </div>
+        </form>
     </div>
+</div>
 
 
 

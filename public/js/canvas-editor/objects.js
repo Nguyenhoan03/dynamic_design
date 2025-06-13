@@ -160,8 +160,24 @@ function openPrintModal() {
     document.getElementById('template_height').value = window.canvas.getHeight();
     const config = window.canvas.toJSON(['customType', 'variable']);
     document.getElementById('template_config').value = JSON.stringify(config);
-   
-    console.log(JSON.stringify(config))
+
+    // Lấy ảnh canvas đúng phần nhìn thấy
+    const dataUrl = window.canvas.toDataURL({
+        left: 0,
+        top: 0,
+        width: window.canvas.getWidth(),
+        height: window.canvas.getHeight(),
+        format: 'png',
+        multiplier: 1
+    });
+    document.getElementById('template_image').value = dataUrl;
+
+    // Hiển thị preview ảnh canvas
+    const preview = document.getElementById('canvasPreview');
+    if (preview) {
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+    }
 
     updateDynamicFieldsLabel();
 
