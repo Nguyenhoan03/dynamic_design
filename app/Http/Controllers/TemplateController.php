@@ -11,8 +11,8 @@ class TemplateController extends Controller
 {
     public function index(Request $request)
     {
-        $width = $request->query('width', 750);
-        $height = $request->query('height', 350);
+        $width = $request->query('width');
+        $height = $request->query('height');
         $unit = $request->query('unit', 'px');
         return view('templates.index', compact('width', 'height', 'unit'));
     }

@@ -24,7 +24,17 @@
                 value="{{ $template->name ?? '' }}">
             <input type="hidden" id="template_id" value="{{ $template->id ?? '' }}">
             <span class="size_design"></span>
+
+            <button class="d-none d-sm-block btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="changeCanvasSize()">
+                <i class="bi bi-arrows-angle-expand"></i> Đổi cỡ
+            </button>
+            <button class="d-none d-sm-block btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="createNewDesign()">
+                <i class="bi bi-plus-circle"></i> Tạo thiết kế mới
+            </button>
+
+
         </div>
+
         <!-- Nút menu mobile -->
         <button id="topbarMenuBtn" class="btn btn-primary d-md-none" style="margin-left:auto;">
             <i class="bi bi-list"></i>
@@ -34,6 +44,8 @@
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
+
+
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
                 <i class="bi bi-download"></i>Lưu thiết kế
             </button>
@@ -50,6 +62,14 @@
     <div id="topbarOffcanvas" class="topbar-offcanvas">
         <button class="btn-close" id="closeTopbarOffcanvas"></button>
         <div class="offcanvas-content">
+            <button class="d-none d-sm-flex btn btn-sm btn-primary" onclick="changeCanvasSize()">
+                <i class="bi bi-arrows-angle-expand"></i> Đổi cỡ
+            </button>
+            <button class="d-none d-sm-flex btn btn-sm btn-primary" onclick="createNewDesign()">
+                <i class="bi bi-plus-circle"></i> Tạo thiết kế mới
+            </button>
+
+
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
@@ -67,40 +87,40 @@
 
 
     <div class="modal fade" id="printModal" tabindex="-1">
-    <div class="modal-dialog">
-        <form id="printForm" method="POST" action="/print-batch">
-            @csrf
-            <input type="hidden" name="template_name" id="template_name">
-            <input type="hidden" name="template_width" id="template_width">
-            <input type="hidden" name="template_height" id="template_height">
-            <input type="hidden" name="template_config" id="template_config">
-            <input type="hidden" name="template_id" id="template_id">
-            <input type="hidden" name="fields" id="fields">
-            <!-- Thêm input ẩn để chứa ảnh canvas -->
-            <input type="hidden" name="template_image" id="template_image">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">In hàng loạt</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                    <label class="form-label">
-                        Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
-                    </label>
-                    <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
-                    <!-- Xem trước ảnh canvas nếu muốn -->
-                    <div class="mt-3">
-                        <img id="canvasPreview" style="max-width:100%;border:1px solid #eee;display:none;">
+        <div class="modal-dialog">
+            <form id="printForm" method="POST" action="/print-batch">
+                @csrf
+                <input type="hidden" name="template_name" id="template_name">
+                <input type="hidden" name="template_width" id="template_width">
+                <input type="hidden" name="template_height" id="template_height">
+                <input type="hidden" name="template_config" id="template_config">
+                <input type="hidden" name="template_id" id="template_id">
+                <input type="hidden" name="fields" id="fields">
+                <!-- Thêm input ẩn để chứa ảnh canvas -->
+                <input type="hidden" name="template_image" id="template_image">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">In hàng loạt</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
+                        <label class="form-label">
+                            Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
+                        </label>
+                        <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+                        <!-- Xem trước ảnh canvas nếu muốn -->
+                        <div class="mt-3">
+                            <img id="canvasPreview" style="max-width:100%;border:1px solid #eee;display:none;">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">In</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">In</button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
 
 
@@ -126,7 +146,7 @@
                 <i class="bi bi-award"></i>
                 <span>Thương hiệu</span>
             </div>
-           
+
             <div class="sidebar-item" onclick="showPanel('ingredient')">
                 <i class="bi bi-award"></i>
                 <span>Thành phần</span>
@@ -149,8 +169,8 @@
                 <button type="button" class="btn-close btn-sm" onclick="closePanel('dynamic')"></button>
             </div>
             <div class="panel-group">
-               
-                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="promptDynamicField()">
+
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="promptDynamicField()">
                     <i class="bi bi-plus-circle me-2"></i> Thêm trường động
                 </button>
                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicQR()">
@@ -244,22 +264,22 @@
         </div>
         <!-- Canvas area -->
 
-      <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
-    <div class="canvas-box" id="canvasBox" style="width:750px;height:350px; position:relative;">
-        <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
-        <div id="objectToolbar" class="object-toolbar">
-            <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
-            <button onclick="flipSelected()" title="Lật">&#8646;</button>
-            <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
+        <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            <div class="canvas-box" id="canvasBox" style="width:750px;height:350px; position:relative;">
+                <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
+                <div id="objectToolbar" class="object-toolbar">
+                    <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
+                    <button onclick="flipSelected()" title="Lật">&#8646;</button>
+                    <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
+                </div>
+            </div>
+            <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
         </div>
     </div>
-    <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
-</div>
-    </div>
-    
+
 
     <!-- Nút mở sidebar cho mobile/tablet (hiện cả tablet) -->
-    <button id="toggleRightSidebar" class="btn btn-primary" style="position:fixed;top:17%;right:20px;z-index:1100;display:none;">
+    <button id="toggleRightSidebar" class="btn btn-primary">
         <i class="bi bi-list"></i> Menu
     </button>
 
@@ -269,41 +289,41 @@
         <div class="sidebar-content">
             <!-- <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
 <button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button> -->
-<button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
-<button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
-<button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
-<button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
-<button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
-<button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
-<button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
-<button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
-<button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
-<select onchange="setFont(this.value)">
-    <option value="Arial">Arial</option>
-    <option value="Times New Roman">Times New Roman</option>
-    <option value="Tahoma">Tahoma</option>
-    <option value="Courier New">Courier New</option>
-</select>
-<select onchange="setFontSize(this.value)">
-    <option value="9">9</option>
-    <option value="10">10</option>
-    <option value="12">12</option>
-    <option value="14">14</option>
-    <option value="16">16</option>
-    <option value="18">18</option>
-    <option value="20">20</option>
-    <option value="22" selected>22</option>
-    <option value="26">26</option>
-    <option value="28">28</option>
-    <option value="36">36</option>
-</select>
-<select onchange="setAlign(this.value)">
-    <option value="left">Trái</option>
-    <option value="center">Giữa</option>
-    <option value="right">Phải</option>
-</select>
-<button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
-<button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
+            <button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
+            <button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
+            <button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
+            <button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
+            <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
+            <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
+            <select onchange="setFont(this.value)">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+            <select onchange="setFontSize(this.value)">
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="22" selected>22</option>
+                <option value="26">26</option>
+                <option value="28">28</option>
+                <option value="36">36</option>
+            </select>
+            <select onchange="setAlign(this.value)">
+                <option value="left">Trái</option>
+                <option value="center">Giữa</option>
+                <option value="right">Phải</option>
+            </select>
+            <button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
         </div>
     </div>
 
@@ -313,7 +333,6 @@
     <script type="module" src="{{ asset('./js/canvas-editor/index.js') }}"></script>
 
     <script>
-        
         document.querySelector('#printForm').addEventListener('submit', function(e) {
             const name_design = document.querySelector('.name_design').value;
             const json = canvas.toJSON(['customType', 'variable']);
@@ -325,6 +344,12 @@
     </script>
 
     <script>
+    window.defaultCanvasWidth = {{ $width ?? 750 }};
+    window.defaultCanvasHeight = {{ $height ?? 350 }};
+    window.defaultCanvasUnit = "{{ $unit ?? 'px' }}";
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Nếu vừa vào edit, luôn load từ DB và xóa localStorage
             @if(isset($config) && $config)
@@ -333,27 +358,35 @@
             localStorage.removeItem('canvas_design_width');
             localStorage.removeItem('canvas_design_height');
             setTimeout(function() {
-            try {
-                let json = @json($config);
-                if (typeof json === 'string') json = JSON.parse(json);
-                if (window.canvas && json) {
-                    window.canvas.loadFromJSON(json, function() {
-                        // Set lại kích thước canvas theo backend
-                        window.canvas.setWidth({{ $width }});
-                        window.canvas.setHeight({{ $height }});
-                        // Set lại kích thước box chứa canvas nếu có
-                        const box = document.getElementById('canvasBox');
-                        if (box) {
-                            box.style.width = '{{ $width }}px';
-                            box.style.height = '{{ $height }}px';
-                        }
-                        window.canvas.renderAll();
-                    });
+                try {
+                    let json = @json($config);
+                    if (typeof json === 'string') json = JSON.parse(json);
+                    if (window.canvas && json) {
+                        window.canvas.loadFromJSON(json, function() {
+                            // Set lại kích thước canvas theo backend
+                            window.canvas.setWidth({
+                                {
+                                    $width
+                                }
+                            });
+                            window.canvas.setHeight({
+                                {
+                                    $height
+                                }
+                            });
+                            // Set lại kích thước box chứa canvas nếu có
+                            const box = document.getElementById('canvasBox');
+                            if (box) {
+                                box.style.width = '{{ $width }}px';
+                                box.style.height = '{{ $height }}px';
+                            }
+                            window.canvas.renderAll();
+                        });
+                    }
+                } catch (e) {
+                    console.error('Lỗi load config:', e);
                 }
-            } catch (e) {
-                console.error('Lỗi load config:', e);
-            }
-        }, 300);
+            }, 300);
             @else
             // Nếu không phải edit (hoặc sau khi đã thao tác), ưu tiên load từ localStorage
             const saved = localStorage.getItem('canvas_design');
@@ -389,46 +422,49 @@
         });
     </script>
 
- 
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('rightSidebar');
-    const toggleBtn = document.getElementById('toggleRightSidebar');
-    const closeBtn = document.getElementById('closeRightSidebar');
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.add('active');
-        });
-    }
-    if (closeBtn && sidebar) {
-        closeBtn.addEventListener('click', function() {
-            sidebar.classList.remove('active');
-        });
-    }
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth < 1200 && sidebar.classList.contains('active')) {
-            if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
-                sidebar.classList.remove('active');
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('rightSidebar');
+            const toggleBtn = document.getElementById('toggleRightSidebar');
+            const closeBtn = document.getElementById('closeRightSidebar');
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.add('active');
+                });
             }
-        }
-    });
-});
-</script>
+            if (closeBtn && sidebar) {
+                closeBtn.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                });
+            }
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth < 1200 && sidebar.classList.contains('active')) {
+                    if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+        });
+    </script>
 
-<script>
-document.getElementById('toggleLeftSidebar').onclick = function() {
-    document.getElementById('leftSidebar').classList.toggle('active');
-};
+    <script>
+        document.getElementById('topbarMenuBtn').onclick = function() {
+            document.getElementById('topbarOffcanvas').classList.add('active');
+        };
+        document.getElementById('closeTopbarOffcanvas').onclick = function() {
+            document.getElementById('topbarOffcanvas').classList.remove('active');
+        };
+    </script>
 
-document.getElementById('topbarMenuBtn').onclick = function() {
-    document.getElementById('topbarOffcanvas').classList.add('active');
-};
-document.getElementById('closeTopbarOffcanvas').onclick = function() {
-    document.getElementById('topbarOffcanvas').classList.remove('active');
-};
-</script>
+    <script>
+        document.getElementById('toggleLeftSidebar').onclick = function() {
+            document.getElementById('leftSidebar').classList.toggle('active');
+        };
+    </script>
 
 
 </body>
+
 </html>
