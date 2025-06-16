@@ -20,20 +20,36 @@
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
-            <strong>
-                <input type="text" placeholder="Nhập tên bản thiết kế" class="name_design"
-                    value="{{ $template->name ?? '' }}">
-                <input type="hidden" id="template_id" value="{{ $template->id ?? '' }}">
-                <span class="size_design"></span>
-            </strong>
-           <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="changeCanvasSize()">
-                <i class="bi bi-arrows-angle-expand"></i> Đổi cỡ
+            <input type="text" placeholder="Nhập tên bản thiết kế" class="name_design"
+                value="{{ $template->name ?? '' }}">
+            <input type="hidden" id="template_id" value="{{ $template->id ?? '' }}">
+            <span class="size_design"></span>
+        </div>
+        <!-- Nút menu mobile -->
+        <button id="topbarMenuBtn" class="btn btn-primary d-md-none" style="margin-left:auto;">
+            <i class="bi bi-list"></i>
+        </button>
+        <!-- Các nút thao tác, ẩn trên mobile -->
+        <div class="tools d-none d-md-flex">
+            <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
+            <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
+            <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
+            <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
+                <i class="bi bi-download"></i>Lưu thiết kế
             </button>
-            <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="createNewDesign()">
-                <i class="bi bi-plus-circle"></i> Tạo thiết kế mới
+            <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="downloadCanvas()">
+                <i class="bi bi-download"></i>Tải xuống PNG
+            </button>
+            <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="openPrintModal()">
+                <i class="bi bi-printer"></i> In hàng loạt
             </button>
         </div>
-        <div class="tools">
+    </div>
+
+    <!-- Offcanvas menu cho mobile -->
+    <div id="topbarOffcanvas" class="topbar-offcanvas">
+        <button class="btn-close" id="closeTopbarOffcanvas"></button>
+        <div class="offcanvas-content">
             <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
             <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
             <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
@@ -251,8 +267,8 @@
     <div id="rightSidebar" class="right-sidebar">
         <button class="btn-close" id="closeRightSidebar" style="position:absolute;top:10px;right:10px;display:none;"></button>
         <div class="sidebar-content">
-            <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
-<button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button>
+            <!-- <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
+<button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button> -->
 <button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
 <button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
 <button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
@@ -399,5 +415,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+document.getElementById('toggleLeftSidebar').onclick = function() {
+    document.getElementById('leftSidebar').classList.toggle('active');
+};
+
+document.getElementById('topbarMenuBtn').onclick = function() {
+    document.getElementById('topbarOffcanvas').classList.add('active');
+};
+document.getElementById('closeTopbarOffcanvas').onclick = function() {
+    document.getElementById('topbarOffcanvas').classList.remove('active');
+};
+</script>
+
+
 </body>
 </html>

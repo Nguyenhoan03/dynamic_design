@@ -6,33 +6,165 @@ html {
 }
 
 .topbar {
-    background: linear-gradient(to right, #00bcd4, #673ab7);
-    color: white;
-    padding: 10px 20px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    padding: 12px 10px;
+    background: linear-gradient(90deg, #1cb5e0 0%, #000851 100%);
+    color: #fff;
+}
+
+.topbar .d-flex {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.topbar input.name_design {
+    min-width: 180px;
+    max-width: 220px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
 }
 
 .topbar .tools {
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
+@media (max-width: 600px) {
+    .topbar {
+        max-height: 55vh;
+        overflow-y: auto;
+        padding-bottom: 12px;
+    }
+
+    .tools {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* Offcanvas menu cho topbar mobile */
+.topbar-offcanvas {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    z-index: 2000;
+    box-shadow: 0 4px 24px #0002;
+    padding: 16px 12px 12px 12px;
+    border-radius: 0 0 16px 16px;
+    animation: slideDown 0.25s;
+}
+
+.topbar-offcanvas.active {
+    display: block;
+}
+
+.topbar-offcanvas .btn-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.topbar-offcanvas .offcanvas-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@media (min-width: 768px) {
+    .topbar-offcanvas {
+        display: none !important;
+    }
+
+    #topbarMenuBtn {
+        display: none !important;
+    }
+
+    .tools {
+        display: flex !important;
+    }
+}
+
+
 .left-sidebar {
-    width: 120px;
-    background-color: #f8f9fa;
-    height: calc(100vh - 50px);
-    padding-top: 10px;
-    border-right: 1px solid #dee2e6;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 70px;
+    height: 100vh;
+    background: #f5f7fa;
+    border-right: 1px solid #e0e0e0;
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+    transition: transform 0.3s;
+    transform: translateX(0);
+}
+
+.left-sidebar:not(.active) {
+    transform: translateX(-100%);
+}
+
+@media (min-width: 601px) {
+    #toggleLeftSidebar {
+        display: none;
+    }
+
+    .left-sidebar {
+        transform: translateX(0) !important;
+    }
 }
 
 .left-sidebar .nav-link {
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 0;
+    font-size: 13px;
     color: #333;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    transition: background 0.2s;
 }
+
+.left-sidebar .nav-link:hover {
+    background: #e3f2fd;
+}
+
+@media (max-width: 600px) {
+    .left-sidebar {
+        width: 54px;
+        padding-top: 48px;
+    }
+
+    .left-sidebar .nav-link {
+        font-size: 11px;
+        padding: 7px 0;
+    }
+}
+
 
 .canvas-container {
     flex: 1;
@@ -62,13 +194,33 @@ canvas#templateCanvas {
 }
 
 .canvas-box {
-    position: relative;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 4px 24px #0001;
+    border-radius: 12px;
+    padding: 8px;
+    max-width: 100vw;
+    max-height: 70vh;
+    overflow: auto;
     display: flex;
-    align-items: center;
     justify-content: center;
-    overflow: hidden;
-    box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.3);
-    border: none;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .canvas-box {
+        max-width: 100vw;
+        max-height: 55vh;
+        padding: 2px;
+        border-radius: 6px;
+    }
+
+    canvas#templateCanvas {
+        width: 98vw !important;
+        height: auto !important;
+        max-width: 98vw !important;
+        max-height: 50vh !important;
+    }
 }
 
 .canvas-toolbar {
@@ -94,7 +246,7 @@ canvas#templateCanvas {
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
-  
+
     font-size: 13px;
     gap: 5px;
 }
@@ -114,24 +266,28 @@ canvas#templateCanvas {
 
 
 .sidebar-canvas {
-    width: 80px;
-    background: #f7fafd;
-    border-right: 1px solid #e3e6ea;
+    width: 72px;
+    background: #f5f7fa;
+    border-right: 1px solid #e0e0e0;
     min-height: 100vh;
-    padding-top: 10px;
+    padding-top: 60px;
+    align-items: center;
+    gap: 4px;
 }
 
 .sidebar-canvas .sidebar-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 0 8px 0;
-    color: #555;
+    gap: 2px;
+    padding: 12px 0 8px 0;
     font-size: 13px;
+    color: #333;
+    border-radius: 8px;
+    margin-bottom: 2px;
     cursor: pointer;
-    border-left: 3px solid transparent;
-    transition: background 0.2s, border-color 0.2s;
-    user-select: none;
+    transition: background 0.2s, color 0.2s;
+    width: 100%;
 }
 
 .sidebar-canvas .sidebar-item.active,
@@ -159,6 +315,40 @@ canvas#templateCanvas {
     display: none;
     position: relative;
     z-index: 10;
+}
+
+.sidebar-item span {
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.1;
+    word-break: break-word;
+}
+
+.sidebar-item:hover,
+.sidebar-item.active {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+@media (max-width: 600px) {
+    .sidebar-canvas {
+        width: 48px;
+        padding-top: 48px;
+        gap: 2px;
+    }
+
+    .sidebar-item {
+        padding: 8px 0 6px 0;
+        font-size: 11px;
+    }
+
+    .sidebar-item i {
+        font-size: 18px;
+    }
+
+    .sidebar-item span {
+        display: none;
+    }
 }
 
 .sidebar-panel.active {
@@ -244,9 +434,9 @@ canvas#templateCanvas {
 }
 
 .sub-sidebar-content {
-     display: flex;
+    display: flex;
     flex-direction: column;
-     align-items: stretch;
+    align-items: stretch;
     padding: 16px;
     overflow-y: auto;
     height: calc(100vh - 56px);
@@ -345,15 +535,15 @@ canvas#templateCanvas {
     width: 270px;
     background: #f9fafb;
     border-left: 1px solid #e5e7eb;
-    box-shadow: -2px 0 12px rgba(0,0,0,0.06);
-    padding: 48px 16px 24px 16px; 
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.06);
+    padding: 48px 16px 24px 16px;
     z-index: 1200;
     height: 100vh;
     overflow-y: auto;
     transition: transform 0.3s;
     border-radius: 12px 0 0 12px;
     transform: translateX(100%);
-     scrollbar-width: thin;        
+    scrollbar-width: thin;
     scrollbar-color: #bdbdbd #f9fafb;
 }
 
@@ -431,6 +621,7 @@ canvas#templateCanvas {
     .right-sidebar {
         padding: 12px 4px;
     }
+
     .sidebar-content button,
     .sidebar-content select {
         font-size: 14px;
@@ -447,9 +638,10 @@ canvas#templateCanvas {
     padding: 4px 12px;
     font-size: 15px;
     color: #333;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     z-index: 100;
 }
+
 .canvas-info.canvas-info-bottom-center {
     margin-top: 12px;
     background: #fff;
@@ -457,7 +649,7 @@ canvas#templateCanvas {
     padding: 6px 20px;
     font-size: 15px;
     color: #333;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     z-index: 100;
     pointer-events: none;
     align-self: center;
