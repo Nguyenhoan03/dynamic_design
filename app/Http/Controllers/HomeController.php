@@ -9,8 +9,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $templates = Template::all();
+        $templates = Template::orderBy('created_at', 'DESC')->get();
         return view('home', compact('templates'));
     }
-   
 }

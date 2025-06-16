@@ -243,7 +243,7 @@
     
 
     <!-- Nút mở sidebar cho mobile/tablet (hiện cả tablet) -->
-    <button id="toggleRightSidebar" class="btn btn-primary" style="position:fixed;bottom:20px;right:20px;z-index:1100;display:none;">
+    <button id="toggleRightSidebar" class="btn btn-primary" style="position:fixed;top:17%;right:20px;z-index:1100;display:none;">
         <i class="bi bi-list"></i> Menu
     </button>
 
