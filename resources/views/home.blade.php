@@ -105,8 +105,9 @@
                         <label for="unit" class="form-label">Đơn vị</label>
                         <select class="form-select" id="unit">
                             <option value="px" selected>px</option>
-                            <!-- <option value="cm">cm</option>
-                            <option value="in">in</option> -->
+                            <option value="cm">cm</option>
+                            <option value="inch">inch</option>
+                            <option value="mm">mm</option>
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-end ">

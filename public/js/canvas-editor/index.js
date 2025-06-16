@@ -37,23 +37,49 @@ if (saved) {
 
 // Khi trang load xong, cập nhật kích thước canvas-box và thẻ canvas cho đúng
 document.addEventListener('DOMContentLoaded', function () {
-    const width = localStorage.getItem('canvas_design_width') || window.defaultCanvasWidth || 750;
-    const height = localStorage.getItem('canvas_design_height') || window.defaultCanvasHeight || 350;
+    // Lấy giá trị width, height, unit từ biến toàn cục hoặc localStorage
+    let width = window.defaultCanvasWidth || localStorage.getItem('canvas_design_width') || 750;
+    let height = window.defaultCanvasHeight || localStorage.getItem('canvas_design_height') || 350;
+    let unit = window.defaultCanvasUnit || localStorage.getItem('canvas_design_unit') || 'px';
+
+    width = Number(width);
+    height = Number(height);
+
+    // Chuyển width/height về px nếu cần
+    let pxW = width, pxH = height;
+    if (unit === 'mm') {
+        pxW = width * 3.7795275591;
+        pxH = height * 3.7795275591;
+    } else if (unit === 'cm') {
+        pxW = width * 37.795275591;
+        pxH = height * 37.795275591;
+    } else if (unit === 'inch') {
+        pxW = width * 96;
+        pxH = height * 96;
+    }
 
     const box = document.getElementById('canvasBox');
     if (box) {
-        box.style.width = width + 'px';
-        box.style.height = height + 'px';
+        box.style.width = pxW + 'px';
+        box.style.height = pxH + 'px';
     }
     const canvasEl = document.getElementById('templateCanvas');
     if (canvasEl) {
-        canvasEl.width = width;
-        canvasEl.height = height;
+        canvasEl.width = pxW;
+        canvasEl.height = pxH;
     }
-    // Đảm bảo fabric canvas cũng cập nhật kích thước
     if (window.canvas) {
-        window.canvas.setWidth(Number(width));
-        window.canvas.setHeight(Number(height));
+        window.canvas.setWidth(pxW);
+        window.canvas.setHeight(pxH);
         window.canvas.renderAll();
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') &&
+        !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        if (typeof deleteSelected === 'function') {
+            deleteSelected();
+        }
     }
 });

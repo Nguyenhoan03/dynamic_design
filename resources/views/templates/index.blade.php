@@ -265,8 +265,8 @@
         <!-- Canvas area -->
 
         <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
-            <div class="canvas-box" id="canvasBox" style="width:750px;height:350px; position:relative;">
-                <canvas id="templateCanvas" width="750" height="350" style="border:1px solid #ccc;"></canvas>
+            <div class="canvas-box" id="canvasBox">
+                <canvas id="templateCanvas"></canvas>
                 <div id="objectToolbar" class="object-toolbar">
                     <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
                     <button onclick="flipSelected()" title="Lật">&#8646;</button>
@@ -342,6 +342,11 @@
             document.getElementById('template_config').value = JSON.stringify(json);
         });
     </script>
+    <script>
+    window.defaultCanvasWidth = {{ $width ?? 750 }};
+    window.defaultCanvasHeight = {{ $height ?? 350 }};
+    window.defaultCanvasUnit = "{{ $unit ?? 'px' }}";
+</script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

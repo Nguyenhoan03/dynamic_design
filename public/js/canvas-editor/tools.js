@@ -18,46 +18,103 @@ function zoomOut() {
 }
 
 function changeCanvasSize() {
-    let w = prompt('Nhập chiều rộng (px):', window.canvas.getWidth());
-    let h = prompt('Nhập chiều cao (px):', window.canvas.getHeight());
-    if (w && h) {
-        w = Number(w);
-        h = Number(h);
+    // Các đơn vị hợp lệ
+    const allowedUnits = ['px', 'mm', 'cm', 'inch'];
+    // Lấy đơn vị hiện tại
+    let currentUnit = window.defaultCanvasUnit || localStorage.getItem('canvas_design_unit') || 'px';
 
-        const oldW = window.canvas.getWidth();
-        const oldH = window.canvas.getHeight();
+    // Lấy kích thước hiện tại (ưu tiên localStorage, fallback về canvas)
+    let w = Number(localStorage.getItem('canvas_design_width')) || window.canvas.getWidth();
+    let h = Number(localStorage.getItem('canvas_design_height')) || window.canvas.getHeight();
 
-        const scaleX = w / oldW;
-        const scaleY = h / oldH;
-        window.canvas.getObjects().forEach(obj => {
-            obj.left = (obj.left || 0) * scaleX;
-            obj.top = (obj.top || 0) * scaleY;
-            // Không scale scaleX/scaleY ở đây!
-            obj.setCoords();
-        });
-
-        // Đổi kích thước box, thẻ canvas, fabric canvas
-        const canvasBox = document.querySelector('.canvas-box');
-        if (canvasBox) {
-            canvasBox.style.width = w + 'px';
-            canvasBox.style.height = h + 'px';
-        }
-        const canvasEl = document.getElementById('templateCanvas');
-        if (canvasEl) {
-            canvasEl.width = w;
-            canvasEl.height = h;
-        }
-        window.canvas.setWidth(w);
-        window.canvas.setHeight(h);
-
-        window.canvas.discardActiveObject();
-        window.canvas.getObjects().forEach(obj => obj.setCoords());
-        window.canvas.renderAll();
-
-        localStorage.setItem('canvas_design_width', w);
-        localStorage.setItem('canvas_design_height', h);
+    // Bước 1: Hỏi đơn vị
+    let u = prompt('Chọn đơn vị (px, mm, cm, inch):', currentUnit);
+    if (!u) return;
+    u = u.trim().toLowerCase();
+    if (!allowedUnits.includes(u)) {
+        alert('Đơn vị không hợp lệ! Chỉ chấp nhận: px, mm, cm, inch');
+        return;
     }
+
+    // Bước 2: Gợi ý width/height theo đơn vị đã chọn
+    let displayW = w, displayH = h;
+    if (u !== 'px') {
+        if (u === 'mm') {
+            displayW = +(w / 3.7795275591).toFixed(2);
+            displayH = +(h / 3.7795275591).toFixed(2);
+        } else if (u === 'cm') {
+            displayW = +(w / 37.795275591).toFixed(2);
+            displayH = +(h / 37.795275591).toFixed(2);
+        } else if (u === 'inch') {
+            displayW = +(w / 96).toFixed(2);
+            displayH = +(h / 96).toFixed(2);
+        }
+    }
+
+    // Bước 3: Nhập width/height mới
+    w = prompt(`Nhập chiều rộng (${u}):`, displayW);
+    h = prompt(`Nhập chiều cao (${u}):`, displayH);
+    if (!w || !h) return;
+    w = Number(w);
+    h = Number(h);
+
+    // Bước 4: Kiểm tra min cho từng đơn vị
+    const minSize = { px: 100, mm: 20, cm: 2, inch: 1 };
+    if (w < minSize[u] || h < minSize[u]) {
+        alert(`Kích thước tối thiểu: ${minSize[u]} ${u}`);
+        return;
+    }
+
+    // Bước 5: Đổi ra px để set cho canvas
+    let pxW = w, pxH = h;
+    if (u === 'mm') {
+        pxW = w * 3.7795275591;
+        pxH = h * 3.7795275591;
+    } else if (u === 'cm') {
+        pxW = w * 37.795275591;
+        pxH = h * 37.795275591;
+    } else if (u === 'inch') {
+        pxW = w * 96;
+        pxH = h * 96;
+    }
+
+    // Bước 6: Scale lại các object
+    const oldW = window.canvas.getWidth();
+    const oldH = window.canvas.getHeight();
+    const scaleX = pxW / oldW;
+    const scaleY = pxH / oldH;
+    window.canvas.getObjects().forEach(obj => {
+        obj.left = (obj.left || 0) * scaleX;
+        obj.top = (obj.top || 0) * scaleY;
+        obj.setCoords();
+    });
+
+    // Bước 7: Đổi kích thước box, thẻ canvas, fabric canvas
+    const canvasBox = document.querySelector('.canvas-box');
+    if (canvasBox) {
+        canvasBox.style.width = pxW + 'px';
+        canvasBox.style.height = pxH + 'px';
+    }
+    const canvasEl = document.getElementById('templateCanvas');
+    if (canvasEl) {
+        canvasEl.width = pxW;
+        canvasEl.height = pxH;
+    }
+    window.canvas.setWidth(pxW);
+    window.canvas.setHeight(pxH);
+
+    window.canvas.discardActiveObject();
+    window.canvas.getObjects().forEach(obj => obj.setCoords());
+    window.canvas.renderAll();
+
+    // Bước 8: Lưu lại giá trị mới (theo đơn vị người dùng nhập)
+    localStorage.setItem('canvas_design_width', w);
+    localStorage.setItem('canvas_design_height', h);
+    localStorage.setItem('canvas_design_unit', u);
+    window.defaultCanvasUnit = u;
 }
+
+
 
 
 function setFont(font) {
