@@ -35,13 +35,11 @@ if (saved) {
     saveCanvasToLocal();
 }
 
-
 // Khi trang load xong, cập nhật kích thước canvas-box và thẻ canvas cho đúng
 document.addEventListener('DOMContentLoaded', function () {
-    const width =  window.defaultCanvasWidth || localStorage.getItem('canvas_design_width') ;
-    const height = window.defaultCanvasHeight || localStorage.getItem('canvas_design_height') ;
+    const width = localStorage.getItem('canvas_design_width') || window.defaultCanvasWidth || 750;
+    const height = localStorage.getItem('canvas_design_height') || window.defaultCanvasHeight || 350;
 
-    console.log(width, height);
     const box = document.getElementById('canvasBox');
     if (box) {
         box.style.width = width + 'px';

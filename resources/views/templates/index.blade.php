@@ -344,12 +344,6 @@
     </script>
 
     <script>
-    window.defaultCanvasWidth = {{ $width ?? 750 }};
-    window.defaultCanvasHeight = {{ $height ?? 350 }};
-    window.defaultCanvasUnit = "{{ $unit ?? 'px' }}";
-    </script>
-
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Nếu vừa vào edit, luôn load từ DB và xóa localStorage
             @if(isset($config) && $config)
@@ -358,35 +352,27 @@
             localStorage.removeItem('canvas_design_width');
             localStorage.removeItem('canvas_design_height');
             setTimeout(function() {
-                try {
-                    let json = @json($config);
-                    if (typeof json === 'string') json = JSON.parse(json);
-                    if (window.canvas && json) {
-                        window.canvas.loadFromJSON(json, function() {
-                            // Set lại kích thước canvas theo backend
-                            window.canvas.setWidth({
-                                {
-                                    $width
-                                }
-                            });
-                            window.canvas.setHeight({
-                                {
-                                    $height
-                                }
-                            });
-                            // Set lại kích thước box chứa canvas nếu có
-                            const box = document.getElementById('canvasBox');
-                            if (box) {
-                                box.style.width = '{{ $width }}px';
-                                box.style.height = '{{ $height }}px';
-                            }
-                            window.canvas.renderAll();
-                        });
-                    }
-                } catch (e) {
-                    console.error('Lỗi load config:', e);
+            try {
+                let json = @json($config);
+                if (typeof json === 'string') json = JSON.parse(json);
+                if (window.canvas && json) {
+                    window.canvas.loadFromJSON(json, function() {
+                        // Set lại kích thước canvas theo backend
+                        window.canvas.setWidth({{ $width }});
+                        window.canvas.setHeight({{ $height }});
+                        // Set lại kích thước box chứa canvas nếu có
+                        const box = document.getElementById('canvasBox');
+                        if (box) {
+                            box.style.width = '{{ $width }}px';
+                            box.style.height = '{{ $height }}px';
+                        }
+                        window.canvas.renderAll();
+                    });
                 }
-            }, 300);
+            } catch (e) {
+                console.error('Lỗi load config:', e);
+            }
+        }, 300);
             @else
             // Nếu không phải edit (hoặc sau khi đã thao tác), ưu tiên load từ localStorage
             const saved = localStorage.getItem('canvas_design');
@@ -422,6 +408,8 @@
         });
     </script>
 
+
+  
 
 
     <script>
