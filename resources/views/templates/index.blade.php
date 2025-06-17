@@ -41,9 +41,7 @@
         </button>
         <!-- Các nút thao tác, ẩn trên mobile -->
         <div class="tools d-none d-md-flex">
-            <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
-            <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
-            <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
+           
 
 
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
@@ -70,9 +68,7 @@
             </button>
 
 
-            <button class="btn btn-sm btn-light" onclick="deleteSelected()">Xóa</button>
-            <button class="btn btn-sm btn-light" onclick="flipSelected()">Lật</button>
-            <button class="btn btn-sm btn-light" onclick="changeColor()">Màu</button>
+           
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
                 <i class="bi bi-download"></i>Lưu thiết kế
             </button>
