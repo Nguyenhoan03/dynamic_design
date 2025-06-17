@@ -44,7 +44,7 @@ class TemplateController extends Controller
             $request->input('height'),
             $request->input('config'),
             $request->input('elements', []),
-            $id 
+            $id
         );
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -73,7 +73,7 @@ class TemplateController extends Controller
 
             // Lấy fields động từ client
             $fields = array_filter(array_map('trim', explode(',', $request->input('fields', ''))));
-           
+
             $rows = $this->parseCsvRowsAndGenerateQr(
                 $request->input('csv_rows'),
                 $qrVariables,
@@ -84,7 +84,9 @@ class TemplateController extends Controller
             $pdf = \Barryvdh\DomPDF\Facade\PDF::loadView('print.batch', [
                 'template' => $template,
                 'rows' => $rows,
+                'preview_image' => $request->input('template_image'),
             ]);
+
             //  dd($request->input('fields'),$qrVariables, $fields);
 
 
@@ -208,7 +210,7 @@ class TemplateController extends Controller
             }
             // Sinh QR cho từng biến QR động
             foreach ($qrVariables as $qrVar) {
-                $qrField = preg_replace('/[#{\}]/', '', $qrVar); 
+                $qrField = preg_replace('/[#{\}]/', '', $qrVar);
                 $qrContent = $row[$qrField] ?? '';
                 if ($qrContent) {
                     $qrFileName = 'qr_codes/' . md5($qrContent) . '.png';

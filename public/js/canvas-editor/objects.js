@@ -150,40 +150,76 @@ function updateDynamicFieldsLabel() {
 
 // Gọi lại khi mở modal in
 function openPrintModal() {
-    const name = document.querySelector('.name_design').value;
-    if (!name || name.trim() === "") {
+    const nameInput = document.querySelector('.name_design');
+    if (!nameInput || !nameInput.value.trim()) {
         alert("Vui lòng nhập tên bản thiết kế trước khi in hàng loạt!");
         return;
     }
-    document.getElementById('template_name').value = name;
-    document.getElementById('template_width').value = window.canvas.getWidth();
-    document.getElementById('template_height').value = window.canvas.getHeight();
-    const config = window.canvas.toJSON(['customType', 'variable']);
-    document.getElementById('template_config').value = JSON.stringify(config);
 
-    // Lấy ảnh canvas đúng phần nhìn thấy
-    const dataUrl = window.canvas.toDataURL({
-        left: 0,
-        top: 0,
-        width: window.canvas.getWidth(),
-        height: window.canvas.getHeight(),
-        format: 'png',
-        multiplier: 1
-    });
-    document.getElementById('template_image').value = dataUrl;
+    const name = nameInput.value.trim();
+    const canvas = window.canvas;
 
-    // Hiển thị preview ảnh canvas
-    const preview = document.getElementById('canvasPreview');
-    if (preview) {
-        preview.src = dataUrl;
-        preview.style.display = 'block';
+    if (!canvas) {
+        alert("Canvas chưa được khởi tạo!");
+        return;
     }
 
-    updateDynamicFieldsLabel();
+    // Gán thông tin form ẩn
+    document.getElementById('template_name').value = name;
+    document.getElementById('template_width').value = canvas.getWidth();
+    document.getElementById('template_height').value = canvas.getHeight();
 
-    const printModal = new bootstrap.Modal(document.getElementById('printModal'));
-    printModal.show();
+    // Lưu config bao gồm customType và variable
+    const config = canvas.toJSON(['customType', 'variable']);
+    document.getElementById('template_config').value = JSON.stringify(config);
+
+    // ✅ Tạo clone canvas đảm bảo giữ đúng zoom/pan
+    const cloneCanvas = new fabric.StaticCanvas(null, {
+        width: canvas.getWidth(),
+        height: canvas.getHeight(),
+        backgroundColor: canvas.backgroundColor
+    });
+
+    // Thêm object clone an toàn
+    canvas.getObjects().forEach(original => {
+        if (typeof original.clone === 'function') {
+            original.clone(clone => {
+                cloneCanvas.add(clone);
+                cloneCanvas.renderAll();
+            });
+        }
+    });
+
+    // ⚠️ Gán lại transform thủ công
+    cloneCanvas.setViewportTransform([...canvas.viewportTransform]);
+
+    // Delay render để đảm bảo clone xong mới render
+    setTimeout(() => {
+        const dataUrl = cloneCanvas.toDataURL({
+            format: 'png',
+            quality: 1,
+            multiplier: 2 // Đảm bảo ảnh rõ nét hơn khi in
+        });
+
+        // Gán vào input ẩn
+        document.getElementById('template_image').value = dataUrl;
+
+        // Gán ảnh preview
+        const preview = document.getElementById('canvasPreview');
+        if (preview) {
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+        }
+
+        updateDynamicFieldsLabel();
+
+        // Hiện modal
+        const printModal = new bootstrap.Modal(document.getElementById('printModal'));
+        printModal.show();
+    }, 300); 
 }
+
+
 
 // Luôn cập nhật label khi canvas thay đổi
 window.canvas.on('object:added', updateDynamicFieldsLabel);

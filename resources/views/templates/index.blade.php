@@ -98,6 +98,8 @@
                 <input type="hidden" name="fields" id="fields">
                 <!-- Thêm input ẩn để chứa ảnh canvas -->
                 <input type="hidden" name="template_image" id="template_image">
+                <img id="canvasPreview" style="display: none; max-width: 100%;">
+
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">In hàng loạt</h5>
