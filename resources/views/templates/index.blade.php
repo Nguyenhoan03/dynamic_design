@@ -143,10 +143,10 @@
                 <i class="bi bi-square"></i>
                 <span>Hình khối</span>
             </div>
-            <div class="sidebar-item" onclick="showPanel('brand')">
+            <!-- <div class="sidebar-item" onclick="showPanel('brand')">
                 <i class="bi bi-award"></i>
                 <span>Thương hiệu</span>
-            </div>
+            </div> -->
 
             <div class="sidebar-item" onclick="showPanel('ingredient')">
                 <i class="bi bi-award"></i>
@@ -221,7 +221,7 @@
                 </button>
             </div>
         </div>
-        <div id="panel-brand" class="sidebar-panel">
+        <!-- <div id="panel-brand" class="sidebar-panel">
             <div class="panel-title d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-award"></i> Thương hiệu</span>
                 <button type="button" class="btn-close btn-sm" onclick="closePanel('brand')"></button>
@@ -229,7 +229,7 @@
             <div class="panel-group">
                 <div class="text-muted">Chức năng này đang phát triển...</div>
             </div>
-        </div>
+        </div> -->
         <div id="panel-ingredient" class="sidebar-panel">
             <div class="panel-title d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-award"></i> Thành phần</span>
@@ -273,12 +273,28 @@
         <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
             <div class="canvas-box" id="canvasBox">
                 <canvas id="templateCanvas"></canvas>
-             <div id="objectToolbar" class="object-toolbar">
-                <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
-                <button onclick="flipSelected()" title="Lật">&#8646;</button>
-                <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
-                <button id="changeImageBtn" onclick="changeImage()" title="Đổi ảnh" style="display:none;">🖼️</button>
-                <button id="editQRBtn" onclick="changeQR()" title="Sửa QR" style="display:none;">🖊️ QR</button>
+           <div id="objectToolbar" class="object-toolbar">
+                <button onclick="deleteSelected()" title="Xóa" class="toolbar-btn">
+                    <i class="bi bi-trash"></i>
+                </button>
+                <button onclick="flipSelected()" title="Lật" class="toolbar-btn">
+                    <i class="bi bi-arrow-left-right"></i>
+                </button>
+                <button id="changeColorBtn" onclick="changeColor()" title="Đổi màu" class="toolbar-btn" style="display:none;">
+                    <i class="bi bi-palette"></i>
+                </button>
+                <button id="editTextBtn" onclick="editText()" title="Sửa Text" class="toolbar-btn" style="display:none;">
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+                <button id="changeImageBtn" onclick="changeImage()" title="Đổi ảnh" class="toolbar-btn" style="display:none;">
+                    <i class="bi bi-image"></i>
+                </button>
+                <button id="editQRBtn" onclick="changeQR()" title="Sửa QR" class="toolbar-btn" style="display:none;">
+                    <i class="bi bi-qr-code"></i>
+                </button>
+                <button onclick="duplicateSelected()" title="Sao chép" class="toolbar-btn">
+                    <i class="bi bi-files"></i>
+                </button>
             </div>
             </div>
             <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>

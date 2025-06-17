@@ -166,11 +166,29 @@ function changeColor() {
         colorInput.style.zIndex = 9999;
         colorInput.style.display = 'block';
         colorInput.addEventListener('input', function () {
-            const active = canvas.getActiveObject();
-            if (active && active.type === 'textbox') {
+            const active = window.canvas.getActiveObject();
+            if (!active) return;
+            // Text, textbox, rect, circle: fill
+            if (
+                active.type === 'textbox' ||
+                active.type === 'text' ||
+                active.type === 'rect' ||
+                active.type === 'circle'
+            ) {
                 active.set('fill', this.value);
-                canvas.requestRenderAll();
             }
+            // Line: stroke
+            else if (active.type === 'line') {
+                active.set('stroke', this.value);
+            }
+            // Group: đổi fill/stroke cho từng object con
+            else if (active.type === 'group') {
+                active.getObjects().forEach(obj => {
+                    if (obj.type === 'line') obj.set('stroke', this.value);
+                    else if (obj.set && obj.fill !== undefined) obj.set('fill', this.value);
+                });
+            }
+            window.canvas.requestRenderAll();
             colorInput.style.display = 'none';
         });
         document.body.appendChild(colorInput);

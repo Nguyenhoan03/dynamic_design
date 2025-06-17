@@ -209,6 +209,32 @@ function changeImage() {
     }
 }
 
+// Hàm sao chép object
+function duplicateSelected() {
+    const active = window.canvas.getActiveObject();
+    if (active && typeof active.clone === 'function') {
+        active.clone(function(clone) {
+            clone.set({ left: active.left + 20, top: active.top + 20 });
+            window.canvas.add(clone).setActiveObject(clone);
+        });
+    }
+}
+window.duplicateSelected = duplicateSelected;
+
+// Hàm sửa text (ví dụ: mở prompt, bạn có thể thay bằng modal đẹp hơn)
+function editText() {
+    const active = window.canvas.getActiveObject();
+    if (active && (active.type === 'textbox' || active.type === 'text')) {
+        const newText = prompt('Nhập nội dung mới:', active.text || '');
+        if (newText !== null) {
+            active.text = newText;
+            window.canvas.requestRenderAll();
+        }
+    }
+}
+window.editText = editText;
+
+// Hàm sửa QR (ví dụ: prompt, bạn có thể thay bằng modal đẹp hơn)
 function changeQR() {
     const active = window.canvas.getActiveObject();
     if (active && active.customType === 'staticQR') {
@@ -233,35 +259,42 @@ function changeQR() {
 }
 window.changeQR = changeQR;
 
-
 function showToolbarForActiveObject() {
     const active = window.canvas.getActiveObject();
     const toolbar = document.getElementById('objectToolbar');
     const changeImageBtn = document.getElementById('changeImageBtn');
     const editQRBtn = document.getElementById('editQRBtn');
+    const changeColorBtn = document.getElementById('changeColorBtn');
+    const editTextBtn = document.getElementById('editTextBtn');
 
     if (active && toolbar) {
         toolbar.style.display = 'block';
 
-        // Nếu là ảnh: chỉ hiện nút đổi ảnh, ẩn nút edit QR
+        // Ẩn tất cả các nút đặc biệt trước
+        if (changeImageBtn) changeImageBtn.style.display = 'none';
+        if (editQRBtn) editQRBtn.style.display = 'none';
+        if (changeColorBtn) changeColorBtn.style.display = 'none';
+        if (editTextBtn) editTextBtn.style.display = 'none';
+
+        // Ảnh: chỉ hiện nút đổi ảnh
         if (active.type === 'image' && !active.customType) {
             if (changeImageBtn) changeImageBtn.style.display = 'inline-block';
-            if (editQRBtn) editQRBtn.style.display = 'none';
         }
-        // Nếu là QR tĩnh: chỉ hiện nút edit QR, ẩn nút đổi ảnh
+        // QR tĩnh: chỉ hiện nút sửa QR
         else if (active.customType === 'staticQR') {
-            if (changeImageBtn) changeImageBtn.style.display = 'none';
             if (editQRBtn) editQRBtn.style.display = 'inline-block';
         }
-        // Các loại khác: ẩn cả hai
-        else {
-            if (changeImageBtn) changeImageBtn.style.display = 'none';
-            if (editQRBtn) editQRBtn.style.display = 'none';
+        // Text: hiện nút sửa text và đổi màu
+        else if (active.type === 'textbox' || active.type === 'text') {
+            if (editTextBtn) editTextBtn.style.display = 'inline-block';
+            if (changeColorBtn) changeColorBtn.style.display = 'inline-block';
+        }
+        // Hình khối: chỉ hiện nút đổi màu
+        else if (active.type === 'rect' || active.type === 'circle' || active.type === 'line') {
+            if (changeColorBtn) changeColorBtn.style.display = 'inline-block';
         }
     } else {
         toolbar.style.display = 'none';
-        if (changeImageBtn) changeImageBtn.style.display = 'none';
-        if (editQRBtn) editQRBtn.style.display = 'none';
     }
 }
 
@@ -270,8 +303,6 @@ window.canvas.on('selection:created', showToolbarForActiveObject);
 window.canvas.on('selection:updated', showToolbarForActiveObject);
 window.canvas.on('selection:cleared', () => {
     document.getElementById('objectToolbar').style.display = 'none';
-    document.getElementById('changeImageBtn').style.display = 'none';
-    document.getElementById('editQRBtn').style.display = 'none';
 });
 
 
