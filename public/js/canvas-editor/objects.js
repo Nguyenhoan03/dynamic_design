@@ -41,26 +41,6 @@ function addText() {
     window.canvas.add(text).setActiveObject(text);
 }
 
-// function addQRCode() {
-//     const rect = new fabric.Rect({
-//         width: 90,
-//         height: 90,
-//         fill: '#eee',
-//         stroke: '#333',
-//         strokeWidth: 1
-//     });
-//     const label = new fabric.Text('QR: #{code}', {
-//         fontSize: 12,
-//         left: 10,
-//         top: 25,
-//         fill: '#333'
-//     });
-//     const group = new fabric.Group([rect, label], {
-//         left: 300,
-//         top: 120
-//     });
-//     window.canvas.add(group).setActiveObject(group);
-// }
 
 function addDynamicText(content) {
     // Thêm hậu tố _text nếu chưa có
@@ -147,6 +127,56 @@ function updateDynamicFieldsLabel() {
         fieldsInput.value = fields.join(',');
     }
 }
+
+function changeImage() {
+    const active = window.canvas.getActiveObject();
+    if (active && active.type === 'image') {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                fabric.Image.fromURL(ev.target.result, function(img) {
+                    img.set({
+                        left: active.left,
+                        top: active.top,
+                        scaleX: active.scaleX,
+                        scaleY: active.scaleY,
+                        angle: active.angle
+                    });
+                    window.canvas.remove(active);
+                    window.canvas.add(img).setActiveObject(img);
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    }
+}
+
+function showToolbarForActiveObject() {
+    const active = window.canvas.getActiveObject();
+    const toolbar = document.getElementById('objectToolbar');
+    const changeImageBtn = document.getElementById('changeImageBtn');
+    if (active && toolbar) {
+        // ...tính toán vị trí toolbar như cũ...
+        toolbar.style.display = 'block';
+        // Hiện nút đổi ảnh nếu là ảnh, ẩn nếu không
+        if (changeImageBtn) {
+            changeImageBtn.style.display = (active.type === 'image') ? 'inline-block' : 'none';
+        }
+    } else if (toolbar) {
+        toolbar.style.display = 'none';
+    }
+}
+window.canvas.on('selection:created', showToolbarForActiveObject);
+window.canvas.on('selection:updated', showToolbarForActiveObject);
+window.canvas.on('selection:cleared', () => {
+    document.getElementById('objectToolbar').style.display = 'none';
+});
 
 // Gọi lại khi mở modal in
 function openPrintModal() {
@@ -245,3 +275,5 @@ window.addText = addText;
 window.addDynamicText = addDynamicText;
 window.addDynamicQR = addDynamicQR;
 window.openPrintModal = openPrintModal;
+window.changeImage = changeImage;
+window.showToolbarForActiveObject = showToolbarForActiveObject;

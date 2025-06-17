@@ -177,6 +177,9 @@
                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicQR()">
                     <i class="bi bi-qr-code me-2"></i> Thêm QR động
                 </button>
+                <button id="addStaticQRBtn" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-qr-code"></i> Thêm QR tĩnh
+                </button>
             </div>
         </div>
         <div id="panel-text" class="sidebar-panel">
@@ -268,11 +271,12 @@
         <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
             <div class="canvas-box" id="canvasBox">
                 <canvas id="templateCanvas"></canvas>
-                <div id="objectToolbar" class="object-toolbar">
-                    <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
-                    <button onclick="flipSelected()" title="Lật">&#8646;</button>
-                    <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
-                </div>
+              <div id="objectToolbar" class="object-toolbar">
+                <button onclick="deleteSelected()" title="Xóa">&#128465;</button>
+                <button onclick="flipSelected()" title="Lật">&#8646;</button>
+                <button onclick="changeColor()" title="Đổi màu">&#127912;</button>
+                <button id="changeImageBtn" onclick="changeImage()" title="Đổi ảnh" style="display:none;">🖼️</button>
+            </div>
             </div>
             <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
         </div>
