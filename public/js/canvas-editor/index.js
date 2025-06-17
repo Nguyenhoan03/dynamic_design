@@ -83,3 +83,7 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+document.getElementById('addStaticQRBtn')?.addEventListener('click', function() {
+    addStaticQR();
+});

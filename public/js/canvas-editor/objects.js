@@ -41,6 +41,58 @@ function addText() {
     window.canvas.add(text).setActiveObject(text);
 }
 
+function addStaticQR(qrText = 'https://example.com') {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrText)}`;
+    fabric.Image.fromURL(qrUrl, function(img) {
+        img.set({
+            left: 200,
+            top: 150,
+            scaleX: 1,
+            scaleY: 1,
+            customType: 'staticQR',
+            qrValue: qrText
+        });
+        window.canvas.add(img).setActiveObject(img);
+    });
+}
+
+// Sự kiện click vào QR tĩnh để hiện input đổi nội dung
+function handleStaticQRInput() {
+    const obj = window.canvas.getActiveObject();
+    const qrInput = document.getElementById('staticQRInput');
+    if (obj && obj.customType === 'staticQR') {
+        qrInput.style.display = 'block';
+        qrInput.value = obj.qrValue || '';
+        qrInput.onchange = function() {
+            obj.qrValue = qrInput.value;
+            const newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrInput.value)}`;
+            fabric.Image.fromURL(newUrl, function(newImg) {
+                newImg.set({
+                    left: obj.left,
+                    top: obj.top,
+                    scaleX: obj.scaleX,
+                    scaleY: obj.scaleY,
+                    customType: 'staticQR',
+                    qrValue: qrInput.value
+                });
+                window.canvas.remove(obj);
+                window.canvas.add(newImg).setActiveObject(newImg);
+            });
+        };
+    } else if (qrInput) {
+        qrInput.style.display = 'none';
+    }
+}
+
+// Đăng ký sự kiện khi chọn object
+window.canvas.on('selection:created', handleStaticQRInput);
+window.canvas.on('selection:updated', handleStaticQRInput);
+window.canvas.on('selection:cleared', () => {
+    const qrInput = document.getElementById('staticQRInput');
+    if (qrInput) qrInput.style.display = 'none';
+});
+
+// Đăng ký hàm ra window để gọi từ HTML
 
 function addDynamicText(content) {
     // Thêm hậu tố _text nếu chưa có
@@ -157,26 +209,72 @@ function changeImage() {
     }
 }
 
+function changeQR() {
+    const active = window.canvas.getActiveObject();
+    if (active && active.customType === 'staticQR') {
+        const newValue = prompt('Nhập nội dung mới cho QR:', active.qrValue || '');
+        if (newValue !== null && newValue !== '') {
+            active.qrValue = newValue;
+            const newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(newValue)}`;
+            fabric.Image.fromURL(newUrl, function(newImg) {
+                newImg.set({
+                    left: active.left,
+                    top: active.top,
+                    scaleX: active.scaleX,
+                    scaleY: active.scaleY,
+                    customType: 'staticQR',
+                    qrValue: newValue
+                });
+                window.canvas.remove(active);
+                window.canvas.add(newImg).setActiveObject(newImg);
+            });
+        }
+    }
+}
+window.changeQR = changeQR;
+
+
 function showToolbarForActiveObject() {
     const active = window.canvas.getActiveObject();
     const toolbar = document.getElementById('objectToolbar');
     const changeImageBtn = document.getElementById('changeImageBtn');
+    const editQRBtn = document.getElementById('editQRBtn');
+
     if (active && toolbar) {
-        // ...tính toán vị trí toolbar như cũ...
         toolbar.style.display = 'block';
-        // Hiện nút đổi ảnh nếu là ảnh, ẩn nếu không
-        if (changeImageBtn) {
-            changeImageBtn.style.display = (active.type === 'image') ? 'inline-block' : 'none';
+
+        // Nếu là ảnh: chỉ hiện nút đổi ảnh, ẩn nút edit QR
+        if (active.type === 'image' && !active.customType) {
+            if (changeImageBtn) changeImageBtn.style.display = 'inline-block';
+            if (editQRBtn) editQRBtn.style.display = 'none';
         }
-    } else if (toolbar) {
+        // Nếu là QR tĩnh: chỉ hiện nút edit QR, ẩn nút đổi ảnh
+        else if (active.customType === 'staticQR') {
+            if (changeImageBtn) changeImageBtn.style.display = 'none';
+            if (editQRBtn) editQRBtn.style.display = 'inline-block';
+        }
+        // Các loại khác: ẩn cả hai
+        else {
+            if (changeImageBtn) changeImageBtn.style.display = 'none';
+            if (editQRBtn) editQRBtn.style.display = 'none';
+        }
+    } else {
         toolbar.style.display = 'none';
+        if (changeImageBtn) changeImageBtn.style.display = 'none';
+        if (editQRBtn) editQRBtn.style.display = 'none';
     }
 }
+
+// Đảm bảo gọi lại hàm này khi chọn object
 window.canvas.on('selection:created', showToolbarForActiveObject);
 window.canvas.on('selection:updated', showToolbarForActiveObject);
 window.canvas.on('selection:cleared', () => {
     document.getElementById('objectToolbar').style.display = 'none';
+    document.getElementById('changeImageBtn').style.display = 'none';
+    document.getElementById('editQRBtn').style.display = 'none';
 });
+
+
 
 // Gọi lại khi mở modal in
 function openPrintModal() {
@@ -277,3 +375,4 @@ window.addDynamicQR = addDynamicQR;
 window.openPrintModal = openPrintModal;
 window.changeImage = changeImage;
 window.showToolbarForActiveObject = showToolbarForActiveObject;
+window.addStaticQR = addStaticQR;
