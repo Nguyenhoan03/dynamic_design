@@ -7,7 +7,7 @@ window.canvas = new fabric.Canvas('templateCanvas', {
     width: canvasWidth,
     height: canvasHeight
 });
-console.log(canvasWidth, canvasHeight);
+
 
 function addLine() {
     const line = new fabric.Line([50, 100, 200, 100], {

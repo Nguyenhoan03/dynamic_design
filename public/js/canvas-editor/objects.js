@@ -164,23 +164,21 @@ function openPrintModal() {
         return;
     }
 
-    // Gán thông tin form ẩn
     document.getElementById('template_name').value = name;
     document.getElementById('template_width').value = canvas.getWidth();
     document.getElementById('template_height').value = canvas.getHeight();
+    document.getElementById('template_zoom').value = canvas.getZoom();
+document.getElementById('template_viewport').value = JSON.stringify(canvas.viewportTransform);
 
-    // Lưu config bao gồm customType và variable
     const config = canvas.toJSON(['customType', 'variable']);
     document.getElementById('template_config').value = JSON.stringify(config);
 
-    // ✅ Tạo clone canvas đảm bảo giữ đúng zoom/pan
     const cloneCanvas = new fabric.StaticCanvas(null, {
         width: canvas.getWidth(),
         height: canvas.getHeight(),
         backgroundColor: canvas.backgroundColor
     });
 
-    // Thêm object clone an toàn
     canvas.getObjects().forEach(original => {
         if (typeof original.clone === 'function') {
             original.clone(clone => {
@@ -190,21 +188,17 @@ function openPrintModal() {
         }
     });
 
-    // ⚠️ Gán lại transform thủ công
     cloneCanvas.setViewportTransform([...canvas.viewportTransform]);
 
-    // Delay render để đảm bảo clone xong mới render
     setTimeout(() => {
         const dataUrl = cloneCanvas.toDataURL({
             format: 'png',
             quality: 1,
-            multiplier: 2 // Đảm bảo ảnh rõ nét hơn khi in
+            multiplier: 2
         });
 
-        // Gán vào input ẩn
         document.getElementById('template_image').value = dataUrl;
 
-        // Gán ảnh preview
         const preview = document.getElementById('canvasPreview');
         if (preview) {
             preview.src = dataUrl;
@@ -213,11 +207,11 @@ function openPrintModal() {
 
         updateDynamicFieldsLabel();
 
-        // Hiện modal
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
-    }, 300); 
+    }, 300);
 }
+
 
 
 

@@ -66,11 +66,14 @@ class TemplateController extends Controller
                 $request->input('template_height'),
                 $request->input('template_config'),
                 $request->input('elements', []),
-                $request->input('template_id')
+                $request->input('template_id'),
+               
             );
 
             $qrVariables = $this->saveTemplateElements($template);
-
+            
+            $zoom = floatval($request->input('template_zoom', 1));
+            $viewport = json_decode($request->input('template_viewport', '[]'), true);
             // Lấy fields động từ client
             $fields = array_filter(array_map('trim', explode(',', $request->input('fields', ''))));
 
@@ -85,6 +88,9 @@ class TemplateController extends Controller
                 'template' => $template,
                 'rows' => $rows,
                 'preview_image' => $request->input('template_image'),
+                'zoom' => $zoom,
+                'viewport' => $viewport,
+
             ]);
 
             //  dd($request->input('fields'),$qrVariables, $fields);

@@ -92,6 +92,12 @@
                 <input type="hidden" name="template_config" id="template_config">
                 <input type="hidden" name="template_id" id="template_id">
                 <input type="hidden" name="fields" id="fields">
+
+                <input type="hidden" name="template_zoom" id="template_zoom">
+<input type="hidden" name="template_viewport" id="template_viewport">
+
+
+
                 <!-- Thêm input ẩn để chứa ảnh canvas -->
                 <input type="hidden" name="template_image" id="template_image">
                 <img id="canvasPreview" style="display: none; max-width: 100%;">
@@ -107,10 +113,7 @@
                             Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
                         </label>
                         <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
-                        <!-- Xem trước ảnh canvas nếu muốn -->
-                        <div class="mt-3">
-                            <img id="canvasPreview" style="max-width:100%;border:1px solid #eee;display:none;">
-                        </div>
+                       
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-success">In</button>

@@ -31,24 +31,42 @@
 </head>
 
 <body>
+    @php
+        $zoom = $zoom ?? 1;
+        $viewport = $viewport ?? [1, 0, 0, 1, 0, 0];
+        $offsetX = $viewport[4] ?? 0;
+        $offsetY = $viewport[5] ?? 0;
+
+        function applyTransform($val, $zoom, $offset) {
+            return $val * $zoom + $offset;
+        }
+
+        function scaleSize($val, $scale, $zoom) {
+            return $val * $scale * $zoom;
+        }
+    @endphp
+
     @foreach ($rows as $data)
         <div class="template-container">
             @foreach ($template->elements as $el)
                 @php
                     $obj = is_array($el->data) ? $el->data : json_decode($el->data, true);
                     $type = $el->type;
+                    $left = applyTransform($obj['left'] ?? 0, $zoom, $offsetX);
+                    $top = applyTransform($obj['top'] ?? 0, $zoom, $offsetY);
                 @endphp
 
                 @if (in_array($type, ['text', 'dynamic', 'textbox']))
                     @php
                         $text = $obj['text'] ?? '';
                         $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
+                        $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
                     @endphp
                     <div class="element"
                         style="
-                            left: {{ $obj['left'] ?? 0 }}px;
-                            top: {{ $obj['top'] ?? 0 }}px;
-                            font-size: {{ $obj['fontSize'] ?? 16 }}px;
+                            left: {{ $left }}px;
+                            top: {{ $top }}px;
+                            font-size: {{ $fontSize }}px;
                             color: {{ $obj['fill'] ?? '#000' }};
                             font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
                         ">
@@ -59,83 +77,90 @@
                     @php
                         $qrField = isset($obj['variable']) ? preg_replace('/[#{\}]/', '', $obj['variable']) : null;
                         $qrImg = $qrField ? ($data['qr_image_base64_' . $qrField] ?? null) : null;
-                        $scaleX = $obj['scaleX'] ?? 1;
-                        $scaleY = $obj['scaleY'] ?? 1;
-                        $qrWidth = ($obj['width'] ?? 100) * $scaleX;
-                        $qrHeight = ($obj['height'] ?? 100) * $scaleY;
+                        $qrWidth = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
+                        $qrHeight = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
                     @endphp
                     @if ($qrImg)
-                        <div class="element"
-                            style="left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px;">
+                        <div class="element" style="left: {{ $left }}px; top: {{ $top }}px;">
                             <img src="{{ $qrImg }}"
-                                width="{{ $qrWidth }}"
-                                height="{{ $qrHeight }}"
-                                alt="QR Code">
+                                 width="{{ $qrWidth }}"
+                                 height="{{ $qrHeight }}"
+                                 alt="QR Code">
                         </div>
                     @endif
 
                 @elseif ($type === 'image' && !empty($obj['src']))
                     @php
-                        $scaleX = $obj['scaleX'] ?? 1;
-                        $scaleY = $obj['scaleY'] ?? 1;
-                        $imgWidth = ($obj['width'] ?? 100) * $scaleX;
-                        $imgHeight = ($obj['height'] ?? 100) * $scaleY;
+                        $imgWidth = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
+                        $imgHeight = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
                     @endphp
-                    <div class="element"
-                        style="left: {{ $obj['left'] ?? 0 }}px; top: {{ $obj['top'] ?? 0 }}px;">
+                    <div class="element" style="left: {{ $left }}px; top: {{ $top }}px;">
                         <img src="{{ $obj['src'] }}"
-                            style="width: {{ $imgWidth }}px; height: {{ $imgHeight }}px;" alt="Image">
+                             style="width: {{ $imgWidth }}px; height: {{ $imgHeight }}px;" alt="Image">
                     </div>
 
                 @elseif ($type === 'rect')
+                    @php
+                        $width = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
+                        $height = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
+                    @endphp
                     <div class="element"
-                        style="
-                            left: {{ $obj['left'] ?? 0 }}px;
-                            top: {{ $obj['top'] ?? 0 }}px;
-                            width: {{ ($obj['width'] ?? 100) * ($obj['scaleX'] ?? 1) }}px;
-                            height: {{ ($obj['height'] ?? 100) * ($obj['scaleY'] ?? 1) }}px;
-                            background: {{ $obj['fill'] ?? '#000' }};
-                        ">
+                         style="
+                             left: {{ $left }}px;
+                             top: {{ $top }}px;
+                             width: {{ $width }}px;
+                             height: {{ $height }}px;
+                             background: {{ $obj['fill'] ?? '#000' }};
+                         ">
                     </div>
 
                 @elseif ($type === 'circle')
                     @php
-                        $radius = $obj['radius'] ?? 50;
-                        $diameter = $radius * 2;
+                        $diameter = ($obj['radius'] ?? 50) * 2;
+                        $width = scaleSize($diameter, ($obj['scaleX'] ?? 1), $zoom);
+                        $height = scaleSize($diameter, ($obj['scaleY'] ?? 1), $zoom);
                     @endphp
                     <div class="element"
-                        style="
-                            left: {{ $obj['left'] ?? 0 }}px;
-                            top: {{ $obj['top'] ?? 0 }}px;
-                            width: {{ $diameter * ($obj['scaleX'] ?? 1) }}px;
-                            height: {{ $diameter * ($obj['scaleY'] ?? 1) }}px;
-                            border-radius: 50%;
-                            background: {{ $obj['fill'] ?? '#000' }};
-                        ">
+                         style="
+                             left: {{ $left }}px;
+                             top: {{ $top }}px;
+                             width: {{ $width }}px;
+                             height: {{ $height }}px;
+                             border-radius: 50%;
+                             background: {{ $obj['fill'] ?? '#000' }};
+                         ">
                     </div>
 
                 @elseif ($type === 'triangle')
+                    @php
+                        $halfWidth = scaleSize(($obj['width'] ?? 100) / 2, 1, $zoom);
+                        $height = scaleSize(($obj['height'] ?? 100), 1, $zoom);
+                    @endphp
                     <div class="element"
-                        style="
-                            left: {{ $obj['left'] ?? 0 }}px;
-                            top: {{ $obj['top'] ?? 0 }}px;
-                            width: 0;
-                            height: 0;
-                            border-left: {{ ($obj['width'] ?? 100) / 2 }}px solid transparent;
-                            border-right: {{ ($obj['width'] ?? 100) / 2 }}px solid transparent;
-                            border-bottom: {{ $obj['height'] ?? 100 }}px solid {{ $obj['fill'] ?? '#000' }};
-                        ">
+                         style="
+                             left: {{ $left }}px;
+                             top: {{ $top }}px;
+                             width: 0;
+                             height: 0;
+                             border-left: {{ $halfWidth }}px solid transparent;
+                             border-right: {{ $halfWidth }}px solid transparent;
+                             border-bottom: {{ $height }}px solid {{ $obj['fill'] ?? '#000' }};
+                         ">
                     </div>
 
                 @elseif ($type === 'line')
+                    @php
+                        $lineWidth = ($obj['width'] ?? 100) * $zoom;
+                        $strokeWidth = ($obj['strokeWidth'] ?? 2);
+                    @endphp
                     <div class="element"
-                        style="
-                            left: {{ $obj['left'] ?? 0 }}px;
-                            top: {{ $obj['top'] ?? 0 }}px;
-                            width: {{ $obj['width'] ?? 100 }}px;
-                            height: 0;
-                            border-top: {{ $obj['strokeWidth'] ?? 2 }}px solid {{ $obj['stroke'] ?? '#000' }};
-                        ">
+                         style="
+                             left: {{ $left }}px;
+                             top: {{ $top }}px;
+                             width: {{ $lineWidth }}px;
+                             height: 0;
+                             border-top: {{ $strokeWidth }}px solid {{ $obj['stroke'] ?? '#000' }};
+                         ">
                     </div>
                 @endif
             @endforeach
