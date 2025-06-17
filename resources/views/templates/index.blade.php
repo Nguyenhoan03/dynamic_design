@@ -273,29 +273,34 @@
         <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
             <div class="canvas-box" id="canvasBox">
                 <canvas id="templateCanvas"></canvas>
-           <div id="objectToolbar" class="object-toolbar">
-                <button onclick="deleteSelected()" title="Xóa" class="toolbar-btn">
-                    <i class="bi bi-trash"></i>
-                </button>
-                <button onclick="flipSelected()" title="Lật" class="toolbar-btn">
-                    <i class="bi bi-arrow-left-right"></i>
-                </button>
-                <button id="changeColorBtn" onclick="changeColor()" title="Đổi màu" class="toolbar-btn" style="display:none;">
-                    <i class="bi bi-palette"></i>
-                </button>
-                <button id="editTextBtn" onclick="editText()" title="Sửa Text" class="toolbar-btn" style="display:none;">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
-                <button id="changeImageBtn" onclick="changeImage()" title="Đổi ảnh" class="toolbar-btn" style="display:none;">
-                    <i class="bi bi-image"></i>
-                </button>
-                <button id="editQRBtn" onclick="changeQR()" title="Sửa QR" class="toolbar-btn" style="display:none;">
-                    <i class="bi bi-qr-code"></i>
-                </button>
-                <button onclick="duplicateSelected()" title="Sao chép" class="toolbar-btn">
-                    <i class="bi bi-files"></i>
-                </button>
-            </div>
+                    <div id="objectToolbar" class="object-toolbar">
+                        <button onclick="deleteSelected()" title="Xóa" class="toolbar-btn"><i class="bi bi-trash"></i></button>
+                        <button onclick="flipSelected()" title="Lật" class="toolbar-btn"><i class="bi bi-arrow-left-right"></i></button>
+                        <button onclick="bringToFront()" title="Lên trên" class="toolbar-btn"><i class="bi bi-layers"></i></button>
+                        <button onclick="sendToBack()" title="Xuống dưới" class="toolbar-btn"><i class="bi bi-layers-fill"></i></button>
+                        <button onclick="lockSelected()" title="Khóa" class="toolbar-btn"><i class="bi bi-lock"></i></button>
+                        <button onclick="unlockSelected()" title="Mở khóa" class="toolbar-btn"><i class="bi bi-unlock"></i></button>
+                        <button onclick="increaseSize()" title="Tăng kích thước" class="toolbar-btn"><i class="bi bi-plus-square"></i></button>
+                        <button onclick="decreaseSize()" title="Giảm kích thước" class="toolbar-btn"><i class="bi bi-dash-square"></i></button>
+                        <button onclick="rotateLeft()" title="Xoay trái" class="toolbar-btn"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        <button onclick="rotateRight()" title="Xoay phải" class="toolbar-btn"><i class="bi bi-arrow-clockwise"></i></button>
+                        <button id="changeColorBtn" onclick="changeColor()" title="Đổi màu" class="toolbar-btn" style="display:none;"><i class="bi bi-palette"></i></button>
+                        <select id="fontFamilySelect" class="toolbar-select" style="display:none;" onchange="setFont(this.value)">
+                            <option value="Arial">Arial</option>
+                            <option value="Tahoma">Tahoma</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Roboto">Roboto</option>
+                        </select>
+                        <input id="fontSizeInput" type="number" min="8" max="120" value="22" class="toolbar-input" style="display:none;width:50px;" onchange="setFontSize(this.value)">
+                        <button id="alignLeftBtn" onclick="setAlign('left')" title="Căn trái" class="toolbar-btn" style="display:none;"><i class="bi bi-text-left"></i></button>
+                        <button id="alignCenterBtn" onclick="setAlign('center')" title="Căn giữa" class="toolbar-btn" style="display:none;"><i class="bi bi-text-center"></i></button>
+                        <button id="alignRightBtn" onclick="setAlign('right')" title="Căn phải" class="toolbar-btn" style="display:none;"><i class="bi bi-text-right"></i></button>
+                        <button id="editTextBtn" onclick="editText()" title="Sửa Text" class="toolbar-btn" style="display:none;"><i class="bi bi-pencil-square"></i></button>
+                        <button id="changeImageBtn" onclick="changeImage()" title="Đổi ảnh" class="toolbar-btn" style="display:none;"><i class="bi bi-image"></i></button>
+                        <button id="editQRBtn" onclick="changeQR()" title="Sửa QR" class="toolbar-btn" style="display:none;"><i class="bi bi-qr-code"></i></button>
+                        <button onclick="duplicateSelected()" title="Sao chép" class="toolbar-btn"><i class="bi bi-files"></i></button>
+                    </div>
             </div>
             <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
         </div>

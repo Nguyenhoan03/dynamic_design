@@ -279,7 +279,14 @@ canvas {
     color: #333;
     cursor: pointer;
 }
-
+.toolbar-select, .toolbar-input {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 1rem;
+    margin: 0 4px;
+    height: 32px;
+}
 .bottom-bar {
     position: absolute;
     bottom: 10px;
