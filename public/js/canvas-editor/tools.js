@@ -9,11 +9,13 @@ function sendToBack() {
 
 function zoomIn() {
     window.canvas.setZoom(window.canvas.getZoom() * 1.1);
+     window.canvas.requestRenderAll();
     if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
 }
 
 function zoomOut() {
     window.canvas.setZoom(window.canvas.getZoom() / 1.1);
+     window.canvas.requestRenderAll();
     if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
 }
 

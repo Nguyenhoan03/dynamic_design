@@ -113,7 +113,7 @@ function addStaticQR(qrText = 'https://example.com') {
         }
 
         const dataUrl = qrImg.src;
-        document.body.removeChild(tempDiv); // dọn DOM tạm
+        document.body.removeChild(tempDiv);
 
         fabric.Image.fromURL(dataUrl, function (img) {
             img.set({
@@ -125,7 +125,7 @@ function addStaticQR(qrText = 'https://example.com') {
                 qrValue: qrText
             });
             window.canvas.add(img).setActiveObject(img);
-        });
+        },{ crossOrigin: 'Anonymous' });
     }, 100);
 }
 
@@ -156,7 +156,7 @@ function handleStaticQRInput() {
                     });
                     window.canvas.remove(obj);
                     window.canvas.add(newImg).setActiveObject(newImg);
-                });
+                }, { crossOrigin: 'Anonymous' });
             });
         };
     } else if (qrInput) {
@@ -334,7 +334,7 @@ function editText() {
                     });
                     window.canvas.remove(active);
                     window.canvas.add(newImg).setActiveObject(newImg);
-                });
+                },{ crossOrigin: 'Anonymous'});
             });
         }
     }
@@ -411,7 +411,7 @@ function changeQR() {
 
                     window.canvas.remove(active);
                     window.canvas.add(img).setActiveObject(img);
-                });
+                },{ crossOrigin: 'Anonymous' });
             }, 100);
         }
     }
@@ -537,10 +537,10 @@ function openPrintModal() {
         }
 
         updateDynamicFieldsLabel();
-
+        
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
-    }, 300);
+    }, 700);
 }
 
 
