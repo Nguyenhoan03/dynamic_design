@@ -95,7 +95,7 @@
                 <input type="hidden" name="fields" id="fields">
 
                 <input type="hidden" name="template_zoom" id="template_zoom">
-<input type="hidden" name="template_viewport" id="template_viewport">
+                <input type="hidden" name="template_viewport" id="template_viewport">
 
 
 
@@ -271,8 +271,8 @@
             </div>
         </div>
         <!-- Canvas area -->
-
-        <div class="canvas-container" style="position: relative; display: flex; flex-direction: column; align-items: center;">
+      <div class="canvas-scroll-wrapper">
+        <div class="canvas-container">
             <div class="canvas-box" id="canvasBox">
                 <canvas id="templateCanvas"></canvas>
                     <div id="objectToolbar" class="object-toolbar">
@@ -304,7 +304,13 @@
                 <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
             </div>
         </div>
+ 
 
+
+   <div class="zoom-control">
+    <label for="zoomRange">Zoom:</label>
+    <input type="range" id="zoomRange" min="0.2" max="2" step="0.01" value="1">
+</div>
 
     <!-- Nút mở sidebar cho mobile/tablet (hiện cả tablet) -->
     <button id="toggleRightSidebar" class="btn btn-primary">
@@ -364,6 +370,7 @@
         document.querySelector('#printForm').addEventListener('submit', function(e) {
             const name_design = document.querySelector('.name_design').value;
             const json = canvas.toJSON(['customType', 'variable']);
+            console.log(JSON.stringify(json),"hoanpppp");
             document.getElementById('template_name').value = name_design;
             document.getElementById('template_width').value = canvas.getWidth();
             document.getElementById('template_height').value = canvas.getHeight();
@@ -484,8 +491,35 @@
             document.getElementById('leftSidebar').classList.toggle('active');
         };
     </script>
+    
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zoomRange = document.getElementById('zoomRange');
+    const canvasBox = document.getElementById('canvasBox');
+    const wrapper = document.querySelector('.canvas-scroll-wrapper');
 
+    function centerCanvasBox() {
+        if (wrapper && canvasBox) {
+            setTimeout(() => {
+                const boxRect = canvasBox.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                wrapper.scrollLeft = (canvasBox.offsetLeft + boxRect.width / 2) - wrapperRect.width / 2;
+                wrapper.scrollTop = (canvasBox.offsetTop + boxRect.height / 2) - wrapperRect.height / 2;
+            }, 100);
+        }
+    }
 
-</body>
+    // Căn giữa khi vào trang
+    centerCanvasBox();
 
-</html>
+    // Zoom và căn giữa lại khi thay đổi zoom
+    if (zoomRange && canvasBox) {
+        zoomRange.addEventListener('input', function() {
+            const scale = parseFloat(this.value);
+            canvasBox.style.transform = `scale(${scale})`;
+            canvasBox.style.transformOrigin = 'center center';
+            centerCanvasBox();
+        });
+    }
+});
+</script>

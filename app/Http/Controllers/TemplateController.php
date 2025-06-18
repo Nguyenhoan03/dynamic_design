@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+
 class TemplateController extends Controller
 {
     public function index(Request $request)
@@ -67,11 +68,14 @@ class TemplateController extends Controller
                 $request->input('template_config'),
                 $request->input('elements', []),
                 $request->input('template_id'),
-               
+
             );
 
             $qrVariables = $this->saveTemplateElements($template);
-            
+
+            // $img_staticQR = $request->input('template_config', '');
+            // dd($img_staticQR);
+
             $zoom = floatval($request->input('template_zoom', 1));
             $viewport = json_decode($request->input('template_viewport', '[]'), true);
             // Lấy fields động từ client
@@ -87,7 +91,7 @@ class TemplateController extends Controller
             $pdf = \Barryvdh\DomPDF\Facade\PDF::loadView('print.batch', [
                 'template' => $template,
                 'rows' => $rows,
-                'preview_image' => $request->input('template_image'),
+                // 'preview_image' => $request->input('template_image'),
                 'zoom' => $zoom,
                 'viewport' => $viewport,
 

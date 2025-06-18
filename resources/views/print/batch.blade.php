@@ -45,127 +45,45 @@
             return $val * $scale * $zoom;
         }
     @endphp
+@foreach ($rows as $data)
+    <div class="template-container" style="position: relative;">
+        @foreach ($template->elements as $el)
+            @php
+                $obj = is_array($el->data) ? $el->data : json_decode($el->data, true);
+                $type = $el->type;
+                $left = applyTransform($obj['left'] ?? 0, $zoom, $offsetX);
+                $top = applyTransform($obj['top'] ?? 0, $zoom, $offsetY);
+                $width = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
+                $height = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
+            @endphp
 
-    @foreach ($rows as $data)
-        <div class="template-container">
-            @foreach ($template->elements as $el)
+            @if ($type === 'image' && !empty($obj['src']))
+                <img src="{{ $obj['src'] }}"
+                     style="position: absolute; left: {{ $left }}px; top: {{ $top }}px; width: {{ $width }}px; height: {{ $height }}px;"
+                     alt="Image">
+            @elseif (in_array($type, ['text', 'dynamic', 'textbox']))
                 @php
-                    $obj = is_array($el->data) ? $el->data : json_decode($el->data, true);
-                    $type = $el->type;
-                    $left = applyTransform($obj['left'] ?? 0, $zoom, $offsetX);
-                    $top = applyTransform($obj['top'] ?? 0, $zoom, $offsetY);
+                    $text = $obj['text'] ?? '';
+                    $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
+                    $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
                 @endphp
-
-                @if (in_array($type, ['text', 'dynamic', 'textbox']))
-                    @php
-                        $text = $obj['text'] ?? '';
-                        $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
-                        $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
-                    @endphp
-                    <div class="element"
-                        style="
-                            left: {{ $left }}px;
-                            top: {{ $top }}px;
-                            font-size: {{ $fontSize }}px;
-                            color: {{ $obj['fill'] ?? '#000' }};
-                            font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
-                        ">
-                        {{ $text }}
-                    </div>
-
-                @elseif ($type === 'qr')
-                    @php
-                        $qrField = isset($obj['variable']) ? preg_replace('/[#{\}]/', '', $obj['variable']) : null;
-                        $qrImg = $qrField ? ($data['qr_image_base64_' . $qrField] ?? null) : null;
-                        $qrWidth = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
-                        $qrHeight = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
-                    @endphp
-                    @if ($qrImg)
-                        <div class="element" style="left: {{ $left }}px; top: {{ $top }}px;">
-                            <img src="{{ $qrImg }}"
-                                 width="{{ $qrWidth }}"
-                                 height="{{ $qrHeight }}"
-                                 alt="QR Code">
-                        </div>
-                    @endif
-
-                @elseif ($type === 'image' && !empty($obj['src']))
-                    @php
-                        $imgWidth = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
-                        $imgHeight = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
-                    @endphp
-                    <div class="element" style="left: {{ $left }}px; top: {{ $top }}px;">
-                        <img src="{{ $obj['src'] }}"
-                             style="width: {{ $imgWidth }}px; height: {{ $imgHeight }}px;" alt="Image">
-                    </div>
-
-                @elseif ($type === 'rect')
-                    @php
-                        $width = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
-                        $height = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
-                    @endphp
-                    <div class="element"
-                         style="
-                             left: {{ $left }}px;
-                             top: {{ $top }}px;
-                             width: {{ $width }}px;
-                             height: {{ $height }}px;
-                             background: {{ $obj['fill'] ?? '#000' }};
-                         ">
-                    </div>
-
-                @elseif ($type === 'circle')
-                    @php
-                        $diameter = ($obj['radius'] ?? 50) * 2;
-                        $width = scaleSize($diameter, ($obj['scaleX'] ?? 1), $zoom);
-                        $height = scaleSize($diameter, ($obj['scaleY'] ?? 1), $zoom);
-                    @endphp
-                    <div class="element"
-                         style="
-                             left: {{ $left }}px;
-                             top: {{ $top }}px;
-                             width: {{ $width }}px;
-                             height: {{ $height }}px;
-                             border-radius: 50%;
-                             background: {{ $obj['fill'] ?? '#000' }};
-                         ">
-                    </div>
-
-                @elseif ($type === 'triangle')
-                    @php
-                        $halfWidth = scaleSize(($obj['width'] ?? 100) / 2, 1, $zoom);
-                        $height = scaleSize(($obj['height'] ?? 100), 1, $zoom);
-                    @endphp
-                    <div class="element"
-                         style="
-                             left: {{ $left }}px;
-                             top: {{ $top }}px;
-                             width: 0;
-                             height: 0;
-                             border-left: {{ $halfWidth }}px solid transparent;
-                             border-right: {{ $halfWidth }}px solid transparent;
-                             border-bottom: {{ $height }}px solid {{ $obj['fill'] ?? '#000' }};
-                         ">
-                    </div>
-
-                @elseif ($type === 'line')
-                    @php
-                        $lineWidth = ($obj['width'] ?? 100) * $zoom;
-                        $strokeWidth = ($obj['strokeWidth'] ?? 2);
-                    @endphp
-                    <div class="element"
-                         style="
-                             left: {{ $left }}px;
-                             top: {{ $top }}px;
-                             width: {{ $lineWidth }}px;
-                             height: 0;
-                             border-top: {{ $strokeWidth }}px solid {{ $obj['stroke'] ?? '#000' }};
-                         ">
-                    </div>
+                <div style="position: absolute; left: {{ $left }}px; top: {{ $top }}px; font-size: {{ $fontSize }}px; color: {{ $obj['fill'] ?? '#000' }}; font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};">
+                    {{ $text }}
+                </div>
+            @elseif ($type === 'qr')
+                @php
+                    $qrField = isset($obj['variable']) ? preg_replace('/[#{\}]/', '', $obj['variable']) : null;
+                    $qrImg = $qrField ? ($data['qr_image_base64_' . $qrField] ?? null) : null;
+                @endphp
+                @if ($qrImg)
+                    <img src="{{ $qrImg }}"
+                         style="position: absolute; left: {{ $left }}px; top: {{ $top }}px; width: {{ $width }}px; height: {{ $height }}px;"
+                         alt="QR">
                 @endif
-            @endforeach
-        </div>
-    @endforeach
+            @endif
+        @endforeach
+    </div>
+@endforeach
 </body>
 
 </html>
