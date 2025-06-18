@@ -206,8 +206,8 @@ canvas#templateCanvas {
     align-items: center;
     background: #fff;
     box-shadow: 0 4px 24px #0001;
-  
-       box-shadow: 0 8px 40px 0 rgba(30,42,50,0.10), 0 1.5px 8px #0001;
+
+    box-shadow: 0 8px 40px 0 rgba(30, 42, 50, 0.10), 0 1.5px 8px #0001;
 
 }
 
@@ -232,6 +232,7 @@ canvas {
         align-items: center;
         overflow: hidden;
     }
+
     canvas#templateCanvas {
         width: 98vw !important;
         max-width: 98vw !important;
@@ -262,15 +263,42 @@ canvas {
 }
 
 .object-toolbar {
-    display: none;
-    position: absolute;
-    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
+    padding: 2px 14px;
+    position: absolute;
+    z-index: 1000;
+    min-width: 0;
+    border: 1px solid #e3e3e3;
+    display: none;
+    /* transform: translateY(-10px); */
+}
 
-    font-size: 13px;
-    gap: 5px;
+.toolbar-btn {
+    background: #f8f9fa;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #333;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.toolbar-btn:hover,
+.toolbar-btn:focus {
+    background: #e3f2fd;
+    color: #1976d2;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+    outline: none;
 }
 
 .object-toolbar button {
@@ -278,15 +306,44 @@ canvas {
     background: none;
     color: #333;
     cursor: pointer;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    transition: background 0.2s, color 0.2s;
 }
-.toolbar-select, .toolbar-input {
+
+.object-toolbar button:hover,
+.object-toolbar button:focus {
+    background: #e3f2fd;
+    color: #1976d2;
+    outline: none;
+}
+
+.toolbar-select,
+.toolbar-input {
     border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 2px 8px;
+    border-radius: 8px;
+    padding: 4px 10px;
     font-size: 1rem;
-    margin: 0 4px;
-    height: 32px;
+    margin: 0 2px;
+    height: 34px;
+    min-width: 60px;
+    max-width: 120px;
+    background: #f8f9fa;
+    transition: border 0.2s;
 }
+
+.toolbar-select:focus,
+.toolbar-input:focus {
+    border: 1.5px solid #1976d2;
+    outline: none;
+    background: #fff;
+}
+
 .bottom-bar {
     position: absolute;
     bottom: 10px;
@@ -606,16 +663,13 @@ canvas {
     bottom: 20px;
     right: 20px;
     z-index: 1100;
-    display: block!important;
+    display: block !important;
     border-radius: 12px;
     padding: 8px 18px;
     font-size: 17px;
     box-shadow: 0 2px 8px #0002;
     transition: top 0.2s, right 0.2s, font-size 0.2s, padding 0.2s;
 }
-
-
-
 
 /* Nút đóng sidebar: chỉ hiện khi sidebar mở */
 #closeRightSidebar {
@@ -661,7 +715,7 @@ canvas {
 @media (max-width: 400px) {
     .right-sidebar {
         padding: 40px 10px;
-        width:40vw!important;
+        width: 40vw !important;
         border-radius: 5px;
     }
 
@@ -697,4 +751,40 @@ canvas {
     pointer-events: none;
     align-self: center;
     border: 1px solid #eee;
+}
+
+.toolbar-menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.toolbar-menu {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+    min-width: 180px;
+    padding: 6px 0;
+    margin: 0;
+    list-style: none;
+    z-index: 1001;
+}
+
+.toolbar-menu li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.toolbar-menu li:hover {
+    background: #e3f2fd;
+    color: #1976d2;
 }

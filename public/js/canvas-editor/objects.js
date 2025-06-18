@@ -90,20 +90,28 @@ function unlockSelected() {
     window.canvas.requestRenderAll();
 }
 
-
 function addStaticQR(qrText = 'https://example.com') {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrText)}`;
-    fabric.Image.fromURL(qrUrl, function(img) {
-        img.set({
-            left: 200,
-            top: 150,
-            scaleX: 1,
-            scaleY: 1,
-            customType: 'staticQR',
-            qrValue: qrText
+
+    fetch(qrUrl)
+        .then(res => res.blob())
+        .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = function () {
+                fabric.Image.fromURL(reader.result, function (img) {
+                    img.set({
+                        left: 200,
+                        top: 150,
+                        scaleX: 1,
+                        scaleY: 1,
+                        customType: 'staticQR',
+                        qrValue: qrText
+                    });
+                    window.canvas.add(img).setActiveObject(img);
+                });
+            };
+            reader.readAsDataURL(blob);
         });
-        window.canvas.add(img).setActiveObject(img);
-    });
 }
 
 // Sự kiện click vào QR tĩnh để hiện input đổi nội dung

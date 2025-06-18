@@ -69,7 +69,7 @@ function showToolbar(e) {
     const bound = obj.getBoundingRect();
     objectToolbar.style.display = 'flex';
     objectToolbar.style.left = (bound.left + bound.width / 2 - 50) + 'px';
-    objectToolbar.style.top = (bound.top - 30) + 'px';
+    objectToolbar.style.top = (bound.top - 50) + 'px';
 }
 canvas.on('object:moving', showToolbar);
 canvas.on('object:scaling', showToolbar);

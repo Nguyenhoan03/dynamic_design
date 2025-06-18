@@ -53,7 +53,7 @@ document.getElementById('uploadImg')?.addEventListener('change', function (e) {
                 scaleY: 0.5
             });
             window.canvas.add(img).setActiveObject(img);
-        });
+        }, { crossOrigin: 'anonymous' }); 
     };
     reader.readAsDataURL(file);
     e.target.value = '';
