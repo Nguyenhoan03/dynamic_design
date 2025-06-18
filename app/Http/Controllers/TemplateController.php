@@ -68,11 +68,11 @@ class TemplateController extends Controller
                 $request->input('template_config'),
                 $request->input('elements', []),
                 $request->input('template_id'),
-
+               
             );
 
             $qrVariables = $this->saveTemplateElements($template);
-
+            
             $zoom = floatval($request->input('template_zoom', 1));
             $viewport = json_decode($request->input('template_viewport', '[]'), true);
             // Lấy fields động từ client
@@ -88,7 +88,7 @@ class TemplateController extends Controller
             $pdf = \Barryvdh\DomPDF\Facade\PDF::loadView('print.batch', [
                 'template' => $template,
                 'rows' => $rows,
-                 'preview_image' => $request->input('template_image'),
+                'preview_image' => $request->input('template_image'),
                 'zoom' => $zoom,
                 'viewport' => $viewport,
 
@@ -99,7 +99,6 @@ class TemplateController extends Controller
 
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
-            Log::info('Error printing batch: ' . $th->getMessage());
             $message = str_contains($th->getMessage(), 'Column \'name\' cannot be null')
                 ? 'Vui lòng nhập tên bản thiết kế!'
                 : ($th->getMessage() === 'Tên bản thiết kế đã tồn tại!' ? $th->getMessage() : 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!');

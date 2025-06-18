@@ -54,6 +54,8 @@
                     $type = $el->type;
                     $left = applyTransform($obj['left'] ?? 0, $zoom, $offsetX);
                     $top = applyTransform($obj['top'] ?? 0, $zoom, $offsetY);
+                    $width  = ($obj['width']  ?? 0) * ($obj['scaleX'] ?? 1) * $zoom;
+                    $height = ($obj['height'] ?? 0) * ($obj['scaleY'] ?? 1) * $zoom;
                 @endphp
 
                 @if (in_array($type, ['text', 'dynamic', 'textbox']))
