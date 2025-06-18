@@ -282,12 +282,60 @@ window.duplicateSelected = duplicateSelected;
 // Hàm sửa text (ví dụ: mở prompt, bạn có thể thay bằng modal đẹp hơn)
 function editText() {
     const active = window.canvas.getActiveObject();
-    if (active && (active.type === 'textbox' || active.type === 'text')) {
+    if (!active) return;
+    // Nếu là text
+    if (active.type === 'textbox' || active.type === 'text') {
         const newText = prompt('Nhập nội dung mới:', active.text || '');
         if (newText !== null) {
             active.text = newText;
             window.canvas.requestRenderAll();
         }
+    }
+    // Nếu là QR tĩnh
+    else if (active.customType === 'staticQR') {
+        const newValue = prompt('Nhập nội dung mới cho QR:', active.qrValue || '');
+        if (newValue !== null && newValue !== '') {
+            active.qrValue = newValue;
+            const newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(newValue)}`;
+            fabric.Image.fromURL(newUrl, function(newImg) {
+                newImg.set({
+                    left: active.left,
+                    top: active.top,
+                    scaleX: active.scaleX,
+                    scaleY: active.scaleY,
+                    customType: 'staticQR',
+                    qrValue: newValue
+                });
+                window.canvas.remove(active);
+                window.canvas.add(newImg).setActiveObject(newImg);
+            });
+        }
+    }
+    // Nếu là ảnh
+    else if (active.type === 'image' && !active.customType) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                fabric.Image.fromURL(ev.target.result, function(img) {
+                    img.set({
+                        left: active.left,
+                        top: active.top,
+                        scaleX: active.scaleX,
+                        scaleY: active.scaleY,
+                        angle: active.angle
+                    });
+                    window.canvas.remove(active);
+                    window.canvas.add(img).setActiveObject(img);
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
     }
 }
 window.editText = editText;

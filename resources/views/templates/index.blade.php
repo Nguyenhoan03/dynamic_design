@@ -278,10 +278,11 @@
                 <canvas id="templateCanvas"></canvas>
                     <div id="objectToolbar" class="object-toolbar">
     <!-- Nút cơ bản -->
-    <button onclick="editText()" title="Sửa" class="toolbar-btn"><i class="bi bi-magic"></i></button>
-    <!-- <button onclick="addComment()" title="Bình luận" class="toolbar-btn"><i class="bi bi-chat-left-dots"></i></button> -->
+    <button id="editMainBtn" onclick="editMain()" title="Sửa" class="toolbar-btn">
+        <i id="editMainIcon" class="bi"></i>
+    </button>    <!-- <button onclick="addComment()" title="Bình luận" class="toolbar-btn"><i class="bi bi-chat-left-dots"></i></button> -->
     <button onclick="lockSelected()" title="Khóa" class="toolbar-btn"><i class="bi bi-lock"></i></button>
-    <button onclick="duplicateSelected()" title="Sao chép" class="toolbar-btn"><i class="bi bi-files"></i></button>
+    <button onclick="duplicateSelected()" title="Paste" class="toolbar-btn"><i class="bi bi-files"></i></button>
     <button onclick="deleteSelected()" title="Xóa" class="toolbar-btn"><i class="bi bi-trash"></i></button>
     <!-- Nút ba chấm -->
     <div class="toolbar-menu-wrapper" style="display:inline-block;position:relative;">

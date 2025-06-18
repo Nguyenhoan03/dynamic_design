@@ -72,6 +72,50 @@ document.addEventListener('mousedown', function(e) {
     if (menu && !menu.contains(e.target)) menu.style.display = 'none';
 });
 
+function updateEditMainBtn() {
+    const btn = document.getElementById('editMainBtn');
+    const icon = document.getElementById('editMainIcon');
+    const active = window.canvas.getActiveObject();
+    if (!active) {
+        btn.style.display = 'none';
+        return;
+    }
+    btn.style.display = '';
+    if (active.type === 'textbox' || active.type === 'text') {
+        icon.className = 'bi bi-pencil-square';
+        btn.title = 'Sửa text';
+    } else if (active.customType === 'staticQR') {
+        icon.className = 'bi bi-qr-code';
+        btn.title = 'Sửa QR';
+    } else if (active.type === 'image' && !active.customType) {
+        icon.className = 'bi bi-image';
+        btn.title = 'Đổi ảnh';
+    } else {
+        icon.className = 'bi bi-pencil-square';
+        btn.title = 'Sửa';
+    }
+}
+
+// Gọi hàm này mỗi khi chọn object
+window.canvas.on('selection:created', updateEditMainBtn);
+window.canvas.on('selection:updated', updateEditMainBtn);
+window.canvas.on('selection:cleared', updateEditMainBtn);
+
+// Hàm xử lý khi bấm nút
+function editMain() {
+    const active = window.canvas.getActiveObject();
+    if (!active) return;
+    if (active.type === 'textbox' || active.type === 'text') {
+        editText();
+    } else if (active.customType === 'staticQR') {
+        changeQR();
+    } else if (active.type === 'image' && !active.customType) {
+        changeImage();
+    }
+}
+
+
+window.editMain = editMain;
 window.showToolbar = showToolbar;
 window.groupSelected = groupSelected;
 window.ungroupSelected = ungroupSelected;
