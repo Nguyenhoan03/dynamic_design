@@ -6,7 +6,7 @@ use App\Models\Template;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Log;
 class TemplateController extends Controller
 {
     public function index(Request $request)
@@ -98,6 +98,7 @@ class TemplateController extends Controller
 
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
+            Log::info('Error printing batch: ' . $th->getMessage());
             $message = str_contains($th->getMessage(), 'Column \'name\' cannot be null')
                 ? 'Vui lòng nhập tên bản thiết kế!'
                 : ($th->getMessage() === 'Tên bản thiết kế đã tồn tại!' ? $th->getMessage() : 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!');

@@ -91,28 +91,45 @@ function unlockSelected() {
 }
 
 function addStaticQR(qrText = 'https://example.com') {
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrText)}`;
+    // Tạo thẻ tạm để render QR bằng thư viện
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px'; // ẩn khỏi màn hình
+    document.body.appendChild(tempDiv);
 
-    fetch(qrUrl)
-        .then(res => res.blob())
-        .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = function () {
-                fabric.Image.fromURL(reader.result, function (img) {
-                    img.set({
-                        left: 200,
-                        top: 150,
-                        scaleX: 1,
-                        scaleY: 1,
-                        customType: 'staticQR',
-                        qrValue: qrText
-                    });
-                    window.canvas.add(img).setActiveObject(img);
-                });
-            };
-            reader.readAsDataURL(blob);
+    const qr = new QRCode(tempDiv, {
+        text: qrText,
+        width: 80,
+        height: 80,
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Đợi render xong rồi lấy base64
+    setTimeout(() => {
+        const qrImg = tempDiv.querySelector('img');
+        if (!qrImg || !qrImg.src) {
+            alert("Không thể tạo QR code.");
+            return;
+        }
+
+        const dataUrl = qrImg.src;
+        document.body.removeChild(tempDiv); // dọn DOM tạm
+
+        fabric.Image.fromURL(dataUrl, function (img) {
+            img.set({
+                left: 200,
+                top: 150,
+                scaleX: 1,
+                scaleY: 1,
+                customType: 'staticQR',
+                qrValue: qrText
+            });
+            window.canvas.add(img).setActiveObject(img);
         });
+    }, 100);
 }
+
+
 
 // Sự kiện click vào QR tĩnh để hiện input đổi nội dung
 function handleStaticQRInput() {
@@ -123,18 +140,23 @@ function handleStaticQRInput() {
         qrInput.value = obj.qrValue || '';
         qrInput.onchange = function() {
             obj.qrValue = qrInput.value;
-            const newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrInput.value)}`;
-            fabric.Image.fromURL(newUrl, function(newImg) {
-                newImg.set({
-                    left: obj.left,
-                    top: obj.top,
-                    scaleX: obj.scaleX,
-                    scaleY: obj.scaleY,
-                    customType: 'staticQR',
-                    qrValue: qrInput.value
+            QRCode.toDataURL(qrInput.value, { width: 80, margin: 1 }, function (err, url) {
+                if (err) {
+                    alert('Lỗi tạo QR code');
+                    return;
+                }
+                fabric.Image.fromURL(url, function(newImg) {
+                    newImg.set({
+                        left: obj.left,
+                        top: obj.top,
+                        scaleX: obj.scaleX,
+                        scaleY: obj.scaleY,
+                        customType: 'staticQR',
+                        qrValue: qrInput.value
+                    });
+                    window.canvas.remove(obj);
+                    window.canvas.add(newImg).setActiveObject(newImg);
                 });
-                window.canvas.remove(obj);
-                window.canvas.add(newImg).setActiveObject(newImg);
             });
         };
     } else if (qrInput) {
@@ -162,7 +184,7 @@ function addDynamicText(content) {
         variable: `#{${field}}`
     });
     window.canvas.add(text).setActiveObject(text);
-    updateDynamicFieldsLabel(); 
+    updateDynamicFieldsLabel();
 }
 
 function promptDynamicField() {
@@ -244,12 +266,12 @@ function changeImage() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.onchange = function(e) {
+        input.onchange = function (e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(ev) {
-                fabric.Image.fromURL(ev.target.result, function(img) {
+            reader.onload = function (ev) {
+                fabric.Image.fromURL(ev.target.result, function (img) {
                     img.set({
                         left: active.left,
                         top: active.top,
@@ -271,7 +293,7 @@ function changeImage() {
 function duplicateSelected() {
     const active = window.canvas.getActiveObject();
     if (active && typeof active.clone === 'function') {
-        active.clone(function(clone) {
+        active.clone(function (clone) {
             clone.set({ left: active.left + 20, top: active.top + 20 });
             window.canvas.add(clone).setActiveObject(clone);
         });
@@ -296,18 +318,23 @@ function editText() {
         const newValue = prompt('Nhập nội dung mới cho QR:', active.qrValue || '');
         if (newValue !== null && newValue !== '') {
             active.qrValue = newValue;
-            const newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(newValue)}`;
-            fabric.Image.fromURL(newUrl, function(newImg) {
-                newImg.set({
-                    left: active.left,
-                    top: active.top,
-                    scaleX: active.scaleX,
-                    scaleY: active.scaleY,
-                    customType: 'staticQR',
-                    qrValue: newValue
+            QRCode.toDataURL(newValue, { width: 80, margin: 1 }, function (err, url) {
+                if (err) {
+                    alert('Lỗi tạo QR code');
+                    return;
+                }
+                fabric.Image.fromURL(url, function (newImg) {
+                    newImg.set({
+                        left: active.left,
+                        top: active.top,
+                        scaleX: active.scaleX,
+                        scaleY: active.scaleY,
+                        customType: 'staticQR',
+                        qrValue: newValue
+                    });
+                    window.canvas.remove(active);
+                    window.canvas.add(newImg).setActiveObject(newImg);
                 });
-                window.canvas.remove(active);
-                window.canvas.add(newImg).setActiveObject(newImg);
             });
         }
     }
@@ -316,12 +343,12 @@ function editText() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.onchange = function(e) {
+        input.onchange = function (e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(ev) {
-                fabric.Image.fromURL(ev.target.result, function(img) {
+            reader.onload = function (ev) {
+                fabric.Image.fromURL(ev.target.result, function (img) {
                     img.set({
                         left: active.left,
                         top: active.top,
@@ -340,30 +367,56 @@ function editText() {
 }
 window.editText = editText;
 
-// Hàm sửa QR (ví dụ: prompt, bạn có thể thay bằng modal đẹp hơn)
+// Hàm sửa QR
 function changeQR() {
     const active = window.canvas.getActiveObject();
     if (active && active.customType === 'staticQR') {
         const newValue = prompt('Nhập nội dung mới cho QR:', active.qrValue || '');
-        if (newValue !== null && newValue !== '') {
-            active.qrValue = newValue;
-            const newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(newValue)}`;
-            fabric.Image.fromURL(newUrl, function(newImg) {
-                newImg.set({
-                    left: active.left,
-                    top: active.top,
-                    scaleX: active.scaleX,
-                    scaleY: active.scaleY,
-                    customType: 'staticQR',
-                    qrValue: newValue
-                });
-                window.canvas.remove(active);
-                window.canvas.add(newImg).setActiveObject(newImg);
+        if (newValue !== null && newValue.trim() !== '') {
+            const cleanedValue = newValue.trim();
+            active.qrValue = cleanedValue;
+
+            // Tạo QR mới bằng QRCode.js
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            new QRCode(tempDiv, {
+                text: cleanedValue,
+                width: 80,
+                height: 80,
+                correctLevel: QRCode.CorrectLevel.H
             });
+
+            setTimeout(() => {
+                const newImg = tempDiv.querySelector('img');
+                if (!newImg || !newImg.src) {
+                    alert("Không thể tạo mã QR mới.");
+                    return;
+                }
+
+                const dataUrl = newImg.src;
+                document.body.removeChild(tempDiv);
+
+                fabric.Image.fromURL(dataUrl, function (img) {
+                    img.set({
+                        left: active.left,
+                        top: active.top,
+                        scaleX: active.scaleX,
+                        scaleY: active.scaleY,
+                        customType: 'staticQR',
+                        qrValue: cleanedValue
+                    });
+
+                    window.canvas.remove(active);
+                    window.canvas.add(img).setActiveObject(img);
+                });
+            }, 100);
         }
     }
 }
-window.changeQR = changeQR;
+
 
 function showToolbarForActiveObject() {
     const active = window.canvas.getActiveObject();
@@ -446,7 +499,7 @@ function openPrintModal() {
     document.getElementById('template_width').value = canvas.getWidth();
     document.getElementById('template_height').value = canvas.getHeight();
     document.getElementById('template_zoom').value = canvas.getZoom();
-document.getElementById('template_viewport').value = JSON.stringify(canvas.viewportTransform);
+    document.getElementById('template_viewport').value = JSON.stringify(canvas.viewportTransform);
 
     const config = canvas.toJSON(['customType', 'variable']);
     document.getElementById('template_config').value = JSON.stringify(config);
@@ -501,14 +554,14 @@ window.canvas.on('object:modified', updateDynamicFieldsLabel);
 // Đảm bảo customType và variable luôn được lưu/khôi phục với mọi object và group
 if (fabric.Object.prototype.toObject) {
     const origToObject = fabric.Object.prototype.toObject;
-    fabric.Object.prototype.toObject = function(propertiesToInclude) {
+    fabric.Object.prototype.toObject = function (propertiesToInclude) {
         propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable']);
         return origToObject.call(this, propertiesToInclude);
     };
 }
 if (fabric.Group && fabric.Group.prototype.toObject) {
     const origGroupToObject = fabric.Group.prototype.toObject;
-    fabric.Group.prototype.toObject = function(propertiesToInclude) {
+    fabric.Group.prototype.toObject = function (propertiesToInclude) {
         propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable']);
         return origGroupToObject.call(this, propertiesToInclude);
     };
@@ -521,7 +574,7 @@ window.promptDynamicField = promptDynamicField;
 window.addRect = addRect;
 window.addCircle = addCircle;
 window.addText = addText;
-// window.addQRCode = addQRCode;
+window.changeQR = changeQR;
 window.addDynamicText = addDynamicText;
 window.addDynamicQR = addDynamicQR;
 window.openPrintModal = openPrintModal;
