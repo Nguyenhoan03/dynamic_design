@@ -163,6 +163,29 @@
             box-shadow: 0 4px 16px rgba(37, 99, 235, 0.13);
         }
 
+
+
+#bulkDeleteForm {
+    position: fixed;
+    right: 32px;
+    bottom: 32px;
+    z-index: 1000;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    display: none;
+}
+#bulkDeleteBtn {
+    margin-bottom: 0 !important;
+}
+
+
+
+
         @media (max-width: 900px) {
             .custom-form-wrapper {
                 padding: 18px 8px;
@@ -174,3 +197,5 @@
             }
         }
    
+
+        

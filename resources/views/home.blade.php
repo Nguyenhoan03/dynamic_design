@@ -12,7 +12,7 @@
 
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-   
+
 </head>
 
 <body>
@@ -119,72 +119,84 @@
         </div>
 
         <h5 class="fw-semibold mb-3 p-3">Các thiết kế đã lưu</h5>
-        <div class="row row-cols-1 row-cols-md-3 g-4 p-2">
-    @foreach ($templates as $template)
-    <div class="col">
-        <div class="card h-100 shadow-sm border-0 position-relative">
-            <div class="card-canvas-preview w-100"
-                style="height: 180px; background-size: cover; background-position: center;"
-                data-template-config='@json($template->config)'>
-                <!-- Có thể thêm ảnh preview nếu có -->
-            </div>
-            <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots"></i>
+
+        <form id="bulkDeleteForm" method="POST" action="{{ route('templates.bulkDelete') }}">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger mb-3" id="bulkDeleteBtn" disabled>
+                <i class="bi bi-trash"></i> Xóa các bản đã chọn
             </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a href="{{ route('templates.edit', $template->id) }}" class="dropdown-item">
-                        <i class="bi bi-eye me-1"></i> Xem chi tiết
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('templates.copy', $template->id) }}" class="dropdown-item">
-                        <i class="bi bi-files me-1"></i> Tạo bản sao
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('templates.download', $template->id) }}" class="dropdown-item">
-                        <i class="bi bi-download me-1"></i> Tải xuống
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="shareTemplate({{ $template->id }})" class="dropdown-item">
-                        <i class="bi bi-share me-1"></i> Chia sẻ
-                    </a>
-                </li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li>
-                    <form action="{{ route('templates.destroy', $template->id) }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="dropdown-item text-danger">
-                            <i class="bi bi-trash me-1"></i> Đưa vào thùng rác
-                        </button>
-                    </form>
-                </li>
-            </ul>
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="card-title mb-0 text-primary fw-semibold">
-                        {{ $template->name }}
-                    </h5>
-                    <span class="badge bg-secondary ms-2">
-                        {{ $template->width }} x {{ $template->height }} px
-                    </span>
+            <input type="hidden" name="ids" id="bulkDeleteIds">
+        </form>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4 p-2">
+            @foreach ($templates as $template)
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                    <input type="checkbox" class="form-check-input position-absolute top-0 start-0 m-2 template-checkbox"
+                        value="{{ $template->id }}" style="z-index:2; width: 20px; height: 20px;">
+                    <div class="card-canvas-preview w-100"
+                        style="height: 180px; background-size: cover; background-position: center;"
+                        data-template-config='@json($template->config)'>
+                        <!-- Có thể thêm ảnh preview nếu có -->
+                    </div>
+                    <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a href="{{ route('templates.edit', $template->id) }}" class="dropdown-item">
+                                <i class="bi bi-eye me-1"></i> Xem chi tiết
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('templates.copy', $template->id) }}" class="dropdown-item">
+                                <i class="bi bi-files me-1"></i> Tạo bản sao
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('templates.download', $template->id) }}" class="dropdown-item">
+                                <i class="bi bi-download me-1"></i> Tải xuống
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="shareTemplate({{ $template->id }})" class="dropdown-item">
+                                <i class="bi bi-share me-1"></i> Chia sẻ
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <form action="{{ route('templates.destroy', $template->id) }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-trash me-1"></i> Đưa vào thùng rác
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0 text-primary fw-semibold">
+                                {{ $template->name }}
+                            </h5>
+                            <span class="badge bg-secondary ms-2">
+                                {{ $template->width }} x {{ $template->height }} px
+                            </span>
+                        </div>
+                        <p class="card-text text-muted small mb-3">
+                            Cập nhật: {{ $template->updated_at->timezone('Asia/Ho_Chi_Minh')->format("d/m/Y H:i:s") }}
+                        </p>
+                        <a href="{{ route('templates.edit', $template->id) }}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-eye me-1"></i> Xem chi tiết
+                        </a>
+                    </div>
                 </div>
-                <p class="card-text text-muted small mb-3">
-                    Cập nhật: {{ $template->updated_at->timezone('Asia/Ho_Chi_Minh')->format("d/m/Y H:i:s") }}
-                </p>
-                <a href="{{ route('templates.edit', $template->id) }}" class="btn btn-sm btn-primary w-100">
-                    <i class="bi bi-eye me-1"></i> Xem chi tiết
-                </a>
             </div>
+            @endforeach
         </div>
-    </div>
-    @endforeach
-</div>
 
     </div>
     </div>
@@ -229,7 +241,7 @@
             localStorage.setItem('canvas_design_width', width);
             localStorage.setItem('canvas_design_height', height);
             localStorage.setItem('canvas_design_unit', unit);
-            
+
             console.log(width, height, unit);
             window.location.href = `/templates?width=${width}&height=${height}&unit=${unit}`;
         });
@@ -272,13 +284,31 @@
 
     <script>
         function shareTemplate(id) {
-    fetch(`/templates/${id}/share`)
-        .then(res => res.json())
-        .then(data => {
-            navigator.clipboard.writeText(data.url);
-            alert('Đã copy link chia sẻ: ' + data.url);
+            fetch(`/templates/${id}/share`)
+                .then(res => res.json())
+                .then(data => {
+                    navigator.clipboard.writeText(data.url);
+                    alert('Đã copy link chia sẻ: ' + data.url);
+                });
+        }
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.template-checkbox');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const bulkDeleteIds = document.getElementById('bulkDeleteIds');
+            const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+            checkboxes.forEach(cb => cb.addEventListener('change', updateBulkDelete));
+
+            function updateBulkDelete() {
+                const checked = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+                bulkDeleteBtn.disabled = checked.length === 0;
+                bulkDeleteIds.value = checked.join(',');
+                bulkDeleteForm.style.display = checked.length > 0 ? 'flex' : 'none';
+            }
         });
-}
     </script>
 
 

@@ -238,7 +238,7 @@ class TemplateController extends Controller
 
 
 
-    
+
     // Tạo bản sao template
     public function copy($id)
     {
@@ -273,5 +273,13 @@ class TemplateController extends Controller
         $template = Template::findOrFail($id);
         $template->delete();
         return redirect()->route('templates.index')->with('success', 'Đã xóa template!');
+    }
+    public function bulkDelete(Request $request)
+    {
+        $ids = explode(',', $request->input('ids', ''));
+        if ($ids && count($ids)) {
+            Template::whereIn('id', $ids)->delete();
+        }
+        return redirect()->route('templates.index')->with('success', 'Đã xóa các bản thiết kế đã chọn!');
     }
 }

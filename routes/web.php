@@ -32,3 +32,4 @@ Route::get('/templates/{id}/copy', [TemplateController::class, 'copy'])->name('t
 Route::get('/templates/{id}/download', [TemplateController::class, 'download'])->name('templates.download');
 Route::get('/templates/{id}/share', [TemplateController::class, 'share'])->name('templates.share');
 Route::delete('/templates/{id}', [TemplateController::class, 'destroy'])->name('templates.destroy');
+Route::delete('/templates/bulk-delete', [TemplateController::class, 'bulkDelete'])->name('templates.bulkDelete');
