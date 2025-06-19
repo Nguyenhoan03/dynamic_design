@@ -19,10 +19,16 @@ use App\Http\Controllers\TemplateController;
 // });
 Route::get('/', [HomeController::class, 'index']);
 
-Route::get('/templates', [TemplateController::class, 'index']);
-Route::post('/templates', [TemplateController::class, 'store'])->name('templates.index');
+Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
+Route::post('/templates', [TemplateController::class, 'store']);
 Route::get('/templates/edit/{id}', [TemplateController::class, 'edit'])->name('templates.edit');
 Route::post('/templates/check-or-create', [TemplateController::class, 'checkOrCreate']);
 Route::post('/print-batch', [TemplateController::class, 'printBatch']);
 Route::get('/templates/{id}/preview', [TemplateController::class, 'preview']);
 Route::post('/templates/{id}/print', [TemplateController::class, 'print']);
+
+
+Route::get('/templates/{id}/copy', [TemplateController::class, 'copy'])->name('templates.copy');
+Route::get('/templates/{id}/download', [TemplateController::class, 'download'])->name('templates.download');
+Route::get('/templates/{id}/share', [TemplateController::class, 'share'])->name('templates.share');
+Route::delete('/templates/{id}', [TemplateController::class, 'destroy'])->name('templates.destroy');

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-
+use DragonCode\Support\Facades\Helpers\Str;
 class TemplateController extends Controller
 {
     public function index(Request $request)
@@ -234,5 +234,44 @@ class TemplateController extends Controller
         }
 
         return $rows;
+    }
+
+
+
+    
+    // Tạo bản sao template
+    public function copy($id)
+    {
+        $template = Template::findOrFail($id);
+        $new = $template->replicate();
+        $new->name = $template->name . ' (Bản sao)';
+        $new->save();
+        return redirect()->route('templates.edit', $new->id)->with('success', 'Đã tạo bản sao!');
+    }
+
+    // Tải xuống template (ví dụ: file JSON)
+    public function download($id)
+    {
+        $template = Template::findOrFail($id);
+        $filename = Str::slug($template->name) . '.json';
+        return response()->json($template)->withHeaders([
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    }
+
+    // Chia sẻ template (ví dụ: trả về link chia sẻ)
+    public function share($id)
+    {
+        $template = Template::findOrFail($id);
+        $shareUrl = route('templates.edit', $template->id);
+        return response()->json(['url' => $shareUrl]);
+    }
+
+    // Xóa template (đưa vào thùng rác hoặc xóa hẳn)
+    public function destroy($id)
+    {
+        $template = Template::findOrFail($id);
+        $template->delete();
+        return redirect()->route('templates.index')->with('success', 'Đã xóa template!');
     }
 }
