@@ -183,7 +183,7 @@
                                 {{ $template->name }}
                             </h5>
                             <span class="badge bg-secondary ms-2">
-                                {{ $template->width }} x {{ $template->height }} px
+                                {{ $template->width }} x {{ $template->height }} {{$template->unit }}
                             </span>
                         </div>
                         <p class="card-text text-muted small mb-3">

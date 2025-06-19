@@ -14,7 +14,7 @@ class TemplateController extends Controller
     {
         $width = $request->query('width');
         $height = $request->query('height');
-        $unit = $request->query('unit', 'px');
+        $unit = $request->query('unit');
         return view('templates.index', compact('width', 'height', 'unit'));
     }
 
@@ -34,6 +34,7 @@ class TemplateController extends Controller
             'unit' => $template->unit ?? 'px',
 
         ]);
+
     }
 
     public function store(Request $request)
@@ -43,6 +44,7 @@ class TemplateController extends Controller
             $request->input('name'),
             $request->input('width'),
             $request->input('height'),
+            $request->input('unit'),
             $request->input('config'),
             $request->input('elements', []),
             $id
@@ -143,7 +145,7 @@ class TemplateController extends Controller
     /**
      * Tạo mới hoặc cập nhật template theo tên.
      */
-    private function createOrUpdateTemplate($name, $width, $height, $config, $elements = [], $id = null)
+    private function createOrUpdateTemplate($name, $width, $height,$unit, $config, $elements = [], $id = null)
     {
 
         if ($id) {
@@ -166,6 +168,7 @@ class TemplateController extends Controller
 
         $template->width = $width;
         $template->height = $height;
+        $template->unit = $unit;
         $template->config = $config;
         $template->save();
 

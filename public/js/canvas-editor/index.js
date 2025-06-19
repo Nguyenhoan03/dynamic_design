@@ -37,37 +37,41 @@ if (saved) {
 
 // Khi trang load xong, cập nhật kích thước canvas-box và thẻ canvas cho đúng
 document.addEventListener('DOMContentLoaded', function () {
-    // Lấy giá trị width, height, unit từ biến toàn cục hoặc localStorage
-    let width = window.defaultCanvasWidth || localStorage.getItem('canvas_design_width') || 750;
-    let height = window.defaultCanvasHeight || localStorage.getItem('canvas_design_height') || 350;
-    let unit = window.defaultCanvasUnit || localStorage.getItem('canvas_design_unit') || 'px';
-
-    width = Number(width);
-    height = Number(height);
-
-    // Chuyển width/height về px nếu cần
-    let pxW = width, pxH = height;
-    if (unit === 'mm') {
-        pxW = width * 3.7795275591;
-        pxH = height * 3.7795275591;
-    } else if (unit === 'cm') {
-        pxW = width * 37.795275591;
-        pxH = height * 37.795275591;
-    } else if (unit === 'inch') {
-        pxW = width * 96;
-        pxH = height * 96;
+    // Helper: Chuyển đơn vị sang px
+    function convertToPx(value, unit) {
+        const factors = {
+            mm: 3.7795275591,
+            cm: 37.795275591,
+            inch: 96,
+            px: 1
+        };
+        return value * (factors[unit] || 1);
     }
 
+    // Lấy width, height, unit từ localStorage hoặc window
+    const width = Number(localStorage.getItem('canvas_design_width')) || window.defaultCanvasWidth || 750;
+    const height = Number(localStorage.getItem('canvas_design_height')) || window.defaultCanvasHeight || 350;
+    const unit = localStorage.getItem('canvas_design_unit') || window.defaultCanvasUnit || 'px';
+
+    const pxW = convertToPx(width, unit);
+    const pxH = convertToPx(height, unit);
+    
+
+    // Cập nhật canvas box
     const box = document.getElementById('canvasBox');
     if (box) {
         box.style.width = pxW + 'px';
         box.style.height = pxH + 'px';
     }
+
+    // Cập nhật thẻ canvas
     const canvasEl = document.getElementById('templateCanvas');
     if (canvasEl) {
         canvasEl.width = pxW;
         canvasEl.height = pxH;
     }
+
+    // Cập nhật fabric canvas
     if (window.canvas) {
         window.canvas.setWidth(pxW);
         window.canvas.setHeight(pxH);
@@ -75,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if ((e.key === 'Delete' || e.key === 'Backspace') &&
         !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         if (typeof deleteSelected === 'function') {
@@ -84,7 +88,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-document.getElementById('addStaticQRBtn')?.addEventListener('click', function() {
+document.getElementById('addStaticQRBtn')?.addEventListener('click', function () {
     addStaticQR();
 });
 

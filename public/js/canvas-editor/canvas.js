@@ -74,20 +74,30 @@ function clearCanvas() {
 async function SaveCanvas(isSilent = false) {
     const name_design = document.querySelector('.name_design').value;
     const template_id = document.getElementById('template_id')?.value || '';
+
     if (!name_design || name_design.trim() === "") {
         if (!isSilent) alert("Vui lòng nhập tên bản thiết kế trước khi lưu!");
         return;
     }
+
     const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable']));
-    const width = window.canvas.getWidth();
-    const height = window.canvas.getHeight();
+    const width = window.canvas.getWidth();  // px
+    const height = window.canvas.getHeight(); // px
+
+    // Lấy thông tin gốc người dùng đã nhập
+    const unit = localStorage.getItem('canvas_design_unit');
+    const user_width = localStorage.getItem('canvas_design_width') || width;
+    const user_height = localStorage.getItem('canvas_design_height') || height;
 
     try {
         const fd = new FormData();
         fd.append('name', name_design);
-        fd.append('width', width);
-        fd.append('height', height);
+        fd.append('width', user_width); // px
+        fd.append('height', user_height); // px
         fd.append('config', config);
+        fd.append('unit', unit);
+        // fd.append('user_width', user_width);
+        // fd.append('user_height', user_height);
         if (template_id) fd.append('template_id', template_id);
 
         const resp = await fetch('/templates', {
@@ -98,11 +108,13 @@ async function SaveCanvas(isSilent = false) {
             },
             body: fd
         });
+
         if (!resp.ok) {
             const data = await resp.json().catch(() => ({}));
             if (!isSilent) throw new Error(data.message || 'Lưu thiết kế thất bại!');
             return;
         }
+
         if (!isSilent) alert('Lưu thiết kế thành công!');
         const data = await resp.json().catch(() => ({}));
         if (data.template && data.template.id) {
@@ -112,6 +124,7 @@ async function SaveCanvas(isSilent = false) {
         if (!isSilent) alert(e.message);
     }
 }
+
 
 function downloadCanvas() {
     const name_design = document.querySelector('.name_design').value;

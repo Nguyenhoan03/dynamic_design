@@ -386,76 +386,100 @@
     <script>
     window.defaultCanvasWidth = {{ $width ?? 750 }};
     window.defaultCanvasHeight = {{ $height ?? 350 }};
-    window.defaultCanvasUnit = "{{ $unit ?? 'px' }}";
+    window.defaultCanvasUnit = "{{ $unit ?? 'px' }}" !== "" ? "{{ $unit ?? 'px' }}" : (localStorage.getItem('canvas_design_unit') || 'px');
 </script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Nếu vừa vào edit, luôn load từ DB và xóa localStorage
-            @if(isset($config) && $config)
-            localStorage.removeItem('canvas_design');
-            localStorage.removeItem('canvas_design_name');
-            localStorage.removeItem('canvas_design_width');
-            localStorage.removeItem('canvas_design_height');
-            setTimeout(function() {
-            try {
-                let json = @json($config);
-                if (typeof json === 'string') json = JSON.parse(json);
-                if (window.canvas && json) {
-                    window.canvas.loadFromJSON(json, function() {
-                        // Set lại kích thước canvas theo backend
-                        window.canvas.setWidth({{ $width }});
-                        window.canvas.setHeight({{ $height }});
-                        // Set lại kích thước box chứa canvas nếu có
-                        const box = document.getElementById('canvasBox');
-                        if (box) {
-                            box.style.width = '{{ $width }}px';
-                            box.style.height = '{{ $height }}px';
-                        }
-                        window.canvas.renderAll();
-                    });
+        document.addEventListener('DOMContentLoaded', function () {
+    // Hàm chuyển đổi đơn vị sang px
+    function convertToPx(value, unit) {
+        const factors = {
+            mm: 3.7795275591,
+            cm: 37.795275591,
+            inch: 96,
+            px: 1
+        };
+        return value * (factors[unit] || 1);
+    }
+
+    @if(isset($config) && $config)
+        // Nếu vào edit, luôn lấy dữ liệu từ DB và xóa localStorage
+        localStorage.removeItem('canvas_design');
+        localStorage.removeItem('canvas_design_name');
+        localStorage.removeItem('canvas_design_width');
+        localStorage.removeItem('canvas_design_height');
+        localStorage.removeItem('canvas_design_unit');
+
+        // Lưu giá trị gốc để hiển thị info
+        window.originWidth = {{ $width }};
+        window.originHeight = {{ $height }};
+        window.originUnit = "{{ $unit ?? 'px' }}";
+
+        setTimeout(function() {
+            let json = @json($config);
+            if (typeof json === 'string') json = JSON.parse(json);
+            if (window.canvas && json) {
+                // Chuyển width/height sang px
+                const pxW = convertToPx({{ $width }}, "{{ $unit ?? 'px' }}");
+                const pxH = convertToPx({{ $height }}, "{{ $unit ?? 'px' }}");
+                window.canvas.setWidth(pxW);
+                window.canvas.setHeight(pxH);
+                window.canvas.loadFromJSON(json, function() {
+                    window.canvas.renderAll();
+                });
+                // Cập nhật box
+                const box = document.getElementById('canvasBox');
+                if (box) {
+                    box.style.width = pxW + 'px';
+                    box.style.height = pxH + 'px';
                 }
-            } catch (e) {
-                console.error('Lỗi load config:', e);
             }
         }, 300);
-            @else
-            // Nếu không phải edit (hoặc sau khi đã thao tác), ưu tiên load từ localStorage
+    @else
+        // Nếu không phải edit, ưu tiên lấy từ localStorage
+        let width, height, unit;
+        if (localStorage.getItem('canvas_design_width') && localStorage.getItem('canvas_design_unit')) {
+            width = Number(localStorage.getItem('canvas_design_width'));
+            height = Number(localStorage.getItem('canvas_design_height'));
+            unit = localStorage.getItem('canvas_design_unit');
+        } else {
+            width = window.defaultCanvasWidth || 750;
+            height = window.defaultCanvasHeight || 350;
+            unit = window.defaultCanvasUnit || 'px';
+        }
+        window.originWidth = width;
+        window.originHeight = height;
+        window.originUnit = unit;
+
+        const pxW = convertToPx(width, unit);
+        const pxH = convertToPx(height, unit);
+
+        const box = document.getElementById('canvasBox');
+        if (box) {
+            box.style.width = pxW + 'px';
+            box.style.height = pxH + 'px';
+        }
+        const canvasEl = document.getElementById('templateCanvas');
+        if (canvasEl) {
+            canvasEl.width = pxW;
+            canvasEl.height = pxH;
+        }
+        if (window.canvas) {
+            window.canvas.setWidth(pxW);
+            window.canvas.setHeight(pxH);
+            // Load từ localStorage nếu có
             const saved = localStorage.getItem('canvas_design');
             if (saved) {
                 window.canvas.loadFromJSON(saved, function() {
                     window.canvas.renderAll();
                 });
+            } else {
+                window.canvas.renderAll();
             }
-            @endif
-        });
-
-        // Khi có thao tác trên canvas thì lưu vào localStorage
-        if (window.canvas) {
-            window.canvas.on('object:added', saveCanvasToLocal);
-            window.canvas.on('object:modified', saveCanvasToLocal);
-            window.canvas.on('object:removed', saveCanvasToLocal);
         }
-
-        function saveCanvasToLocal() {
-            const json = window.canvas.toJSON(['customType', 'variable']);
-            const name_design = document.querySelector('.name_design')?.value || '';
-            localStorage.setItem('canvas_design', JSON.stringify(json));
-            localStorage.setItem('canvas_design_name', name_design);
-            localStorage.setItem('canvas_design_width', window.canvas.getWidth());
-            localStorage.setItem('canvas_design_height', window.canvas.getHeight());
-        }
-
-        // Khi người dùng reload hoặc thoát trang, tự động gọi SaveCanvas để update lên server
-        window.addEventListener('beforeunload', function(e) {
-            if (typeof SaveCanvas === 'function') {
-                SaveCanvas(true);
-            }
-        });
-    </script>
-
-
-  
+    @endif
+});
+</script>
 
 
     <script>

@@ -34,7 +34,8 @@ function updateCanvasInfo() {
     const zoom = (window.canvas.getZoom() * 100).toFixed(0) + '%';
     const width = window.canvas.getWidth();
     const height = window.canvas.getHeight();
-    document.getElementById('canvasInfo').innerText = `Zoom: ${zoom} | Kích thước: ${width} x ${height}px`;
+    const unit = window.defaultCanvasUnit;
+    document.getElementById('canvasInfo').innerText = `Zoom: ${zoom} | Kích thước: ${width} x ${height} ${unit}`;
 }
 window.updateCanvasInfo = updateCanvasInfo;
 // Gọi khi zoom hoặc đổi kích thước
