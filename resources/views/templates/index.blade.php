@@ -93,6 +93,7 @@
             <input type="hidden" name="template_height" id="template_height">
             <input type="hidden" name="template_config" id="template_config">
             <input type="hidden" name="template_id" id="template_id">
+            <input type="hidden" name="template_unit" id="template_unit">
             <input type="hidden" name="fields" id="fields">
             <input type="hidden" name="template_zoom" id="template_zoom">
             <input type="hidden" name="template_viewport" id="template_viewport">
@@ -380,6 +381,7 @@
             document.getElementById('template_name').value = name_design;
             document.getElementById('template_width').value = canvas.getWidth();
             document.getElementById('template_height').value = canvas.getHeight();
+            document.getElementById('template_unit').value = window.defaultCanvasUnit || 'px';
             document.getElementById('template_config').value = JSON.stringify(json);
         });
     </script>

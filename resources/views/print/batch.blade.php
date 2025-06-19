@@ -6,7 +6,7 @@
     <title>{{ $template->name }}</title>
     <style>
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+          
             margin: 0;
             padding: 0;
         }

@@ -67,13 +67,14 @@ class TemplateController extends Controller
                 $request->input('template_name'),
                 $request->input('template_width'),
                 $request->input('template_height'),
+                $request->input('template_unit'),
                 $request->input('template_config'),
                 $request->input('elements', []),
                 $request->input('template_id'),
                
             );
 
-
+            // dd($request->input('template_unit'));
             $qrVariables = $this->saveTemplateElements($template);
             
             $zoom = floatval($request->input('template_zoom', 1));
