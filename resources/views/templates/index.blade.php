@@ -389,6 +389,7 @@
     window.defaultCanvasWidth = {{ $width ?? 750 }};
     window.defaultCanvasHeight = {{ $height ?? 350 }};
     window.defaultCanvasUnit = "{{ $unit ?? 'px' }}" !== "" ? "{{ $unit ?? 'px' }}" : (localStorage.getItem('canvas_design_unit') || 'px');
+
 </script>
 
     <script>

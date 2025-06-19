@@ -35,6 +35,7 @@ function updateCanvasInfo() {
     const width = window.canvas.getWidth();
     const height = window.canvas.getHeight();
     const unit = window.defaultCanvasUnit;
+    console.log(unit);
     document.getElementById('canvasInfo').innerText = `Zoom: ${zoom} | Kích thước: ${width} x ${height} ${unit}`;
 }
 window.updateCanvasInfo = updateCanvasInfo;
@@ -52,7 +53,8 @@ document.querySelector('.canvas-box').addEventListener('wheel', function (e) {
     else zoom = Math.max(zoom / 1.1, minZoom);
     // Zoom tại vị trí chuột
     window.canvas.zoomToPoint({ x: e.offsetX, y: e.offsetY }, zoom);
-    if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
+    if (typeof updateCanvasInfo === 'function')
+         window.canvas.requestRenderAll(); updateCanvasInfo();
 }, { passive: false });
 
 // Gọi khi khởi tạo
