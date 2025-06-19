@@ -84,45 +84,50 @@
 
 
     <div class="modal fade" id="printModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form id="printForm" method="POST" action="/print-batch">
-                @csrf
-                <input type="hidden" name="template_name" id="template_name">
-                <input type="hidden" name="template_width" id="template_width">
-                <input type="hidden" name="template_height" id="template_height">
-                <input type="hidden" name="template_config" id="template_config">
-                <input type="hidden" name="template_id" id="template_id">
-                <input type="hidden" name="fields" id="fields">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form id="printForm" method="POST" action="/print-batch" class="w-100">
+            @csrf
+            <!-- Hidden fields -->
+            <input type="hidden" name="template_name" id="template_name">
+            <input type="hidden" name="template_width" id="template_width">
+            <input type="hidden" name="template_height" id="template_height">
+            <input type="hidden" name="template_config" id="template_config">
+            <input type="hidden" name="template_id" id="template_id">
+            <input type="hidden" name="fields" id="fields">
+            <input type="hidden" name="template_zoom" id="template_zoom">
+            <input type="hidden" name="template_viewport" id="template_viewport">
+            <input type="hidden" name="template_image" id="template_image">
 
-                <input type="hidden" name="template_zoom" id="template_zoom">
-                <input type="hidden" name="template_viewport" id="template_viewport">
+            <!-- Preview Image (optional, can be shown if needed) -->
+            <img id="canvasPreview" style="display: none; max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
 
-
-
-                <!-- Thêm input ẩn để chứa ảnh canvas -->
-                <input type="hidden" name="template_image" id="template_image">
-                <img id="canvasPreview" style="display: none; max-width: 100%;">
-
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">In hàng loạt</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                        <label class="form-label">
-                            Dán dữ liệu (CSV: <span id="dynamic-fields-label">...</span>):
-                        </label>
-                        <textarea class="form-control" name="csv_rows" rows="6" placeholder="Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
-                       
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">In</button>
-                    </div>
+            <div class="modal-content shadow-sm border-0">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">📄 In hàng loạt</h5>
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>
                 </div>
-            </form>
-        </div>
+
+                <div class="modal-body p-4">
+                    <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
+                    <label class="form-label fw-semibold mb-2">
+                        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
+                    </label>
+
+                    <textarea class="form-control border border-1 rounded-3 shadow-sm"
+                              name="csv_rows"
+                              rows="6"
+                              placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-end px-4 pb-4">
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-printer-fill me-1"></i> In
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
+</div>
 
 
 

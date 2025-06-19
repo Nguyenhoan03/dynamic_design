@@ -765,6 +765,27 @@ canvas#templateCanvas {
     align-self: flex-end;
 }
 
+
+
+.modal-content {
+    border-radius: 10px;
+}
+
+textarea.form-control {
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-footer {
+    border-top: none;
+}
+
+
 /* Responsive: mobile & tablet */
 @media (max-width: 1199.98px) {
     .right-sidebar {
