@@ -44,6 +44,19 @@
         function scaleSize($val, $scale, $zoom) {
             return $val * $scale * $zoom;
         }
+
+  
+        function mapFontFamily($font) {
+            return match (strtolower($font)) {
+                'arial' => 'Helvetica',
+                'times new roman' => 'Times-Roman',
+                'courier new' => 'Courier',
+                'tahoma' => 'DejaVu Sans',
+                default => 'DejaVu Sans'
+            };
+        }
+
+
     @endphp
 
     @foreach ($rows as $data)
@@ -66,16 +79,18 @@
                         $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
                         $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
                     @endphp
-                    <div class="element"
-                        style="
-                            left: {{ $left }}px;
-                            top: {{ $top }}px;
-                            font-size: {{ $fontSize }}px;
-                            color: {{ $obj['fill'] ?? '#000' }};
-                            font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
-                        ">
-                        {{ $text }}
-                    </div>
+                   <div class="element"
+                    style="
+                        left: {{ $left }}px;
+                        top: {{ $top }}px;
+                        font-size: {{ $fontSize }}px;
+                        color: {{ $obj['fill'] ?? '#000' }};
+                        font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
+                        font-family: '{{ mapFontFamily($obj['fontFamily'] ?? '') }}';
+                    ">
+                    {{ $text }}
+                </div>
+
 
                 @elseif ($type === 'qr')
                     @php
