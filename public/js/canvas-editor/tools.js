@@ -114,6 +114,8 @@ function changeCanvasSize() {
     localStorage.setItem('canvas_design_height', h);
     localStorage.setItem('canvas_design_unit', u);
     // window.defaultCanvasUnit = u;
+
+    updateCanvasInfo();
 }
 
 

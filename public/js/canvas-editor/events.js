@@ -32,10 +32,24 @@ document.addEventListener('keydown', function (e) {
 
 function updateCanvasInfo() {
     const zoom = (window.canvas.getZoom() * 100).toFixed(0) + '%';
-    const width = window.canvas.getWidth();
-    const height = window.canvas.getHeight();
-    const unit = window.defaultCanvasUnit;
-    console.log(unit);
+    const pxWidth = window.canvas.getWidth();
+    const pxHeight = window.canvas.getHeight();
+    const unit = window.originalCanvasUnit || window.defaultCanvasUnit || 'px';
+
+    let width = pxWidth, height = pxHeight;
+
+    // Chuyển đổi px về đơn vị gốc khi hiển thị
+    if (unit === 'mm') {
+        width = (pxWidth / 3.7795275591).toFixed(2);
+        height = (pxHeight / 3.7795275591).toFixed(2);
+    } else if (unit === 'cm') {
+        width = (pxWidth / 37.795275591).toFixed(2);
+        height = (pxHeight / 37.795275591).toFixed(2);
+    } else if (unit === 'inch') {
+        width = (pxWidth / 96).toFixed(2);
+        height = (pxHeight / 96).toFixed(2);
+    }
+
     document.getElementById('canvasInfo').innerText = `Zoom: ${zoom} | Kích thước: ${width} x ${height} ${unit}`;
 }
 window.updateCanvasInfo = updateCanvasInfo;
