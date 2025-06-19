@@ -87,3 +87,7 @@ document.addEventListener('keydown', function(e) {
 document.getElementById('addStaticQRBtn')?.addEventListener('click', function() {
     addStaticQR();
 });
+
+window.canvas.on('object:added', () => window.canvas.requestRenderAll());
+window.canvas.on('object:removed', () => window.canvas.requestRenderAll());
+window.canvas.on('object:modified', () => window.canvas.requestRenderAll());
