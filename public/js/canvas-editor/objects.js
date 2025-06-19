@@ -540,7 +540,7 @@ function openPrintModal() {
         
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
-    }, 700);
+    }, 200);
 }
 
 

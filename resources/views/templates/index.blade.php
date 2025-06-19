@@ -369,7 +369,8 @@
     <script>
         document.querySelector('#printForm').addEventListener('submit', function(e) {
             const name_design = document.querySelector('.name_design').value;
-            const json = canvas.toJSON(['customType', 'variable']);
+            // const json = canvas.toJSON(['customType', 'variable']);
+            const json = canvas.toJSON(['customType', 'variable', 'qrValue']);
             console.log(JSON.stringify(json),"hoanpppp");
             document.getElementById('template_name').value = name_design;
             document.getElementById('template_width').value = canvas.getWidth();

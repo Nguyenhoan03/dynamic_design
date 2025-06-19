@@ -58,6 +58,8 @@
                     $height = ($obj['height'] ?? 0) * ($obj['scaleY'] ?? 1) * $zoom;
                 @endphp
 
+
+
                 @if (in_array($type, ['text', 'dynamic', 'textbox']))
                     @php
                         $text = $obj['text'] ?? '';
@@ -100,6 +102,21 @@
                         <img src="{{ $obj['src'] }}"
                              style="width: {{ $imgWidth }}px; height: {{ $imgHeight }}px;" alt="Image">
                     </div>
+
+                
+                    @elseif ($type === 'staticQR' && !empty($obj['src']))
+                        @php
+                            $imgWidth = scaleSize(($obj['width'] ?? 100), ($obj['scaleX'] ?? 1), $zoom);
+                            $imgHeight = scaleSize(($obj['height'] ?? 100), ($obj['scaleY'] ?? 1), $zoom);
+                        @endphp
+                        <div class="element" style="left: {{ $left }}px; top: {{ $top }}px;">
+                            <img src="{{ $obj['src'] }}"
+                                style="width: {{ $imgWidth }}px; height: {{ $imgHeight }}px;"
+                                alt="Static QR Code">
+                        </div>
+
+
+
 
                 @elseif ($type === 'rect')
                     @php

@@ -71,6 +71,7 @@ class TemplateController extends Controller
                
             );
 
+
             $qrVariables = $this->saveTemplateElements($template);
             
             $zoom = floatval($request->input('template_zoom', 1));
