@@ -12,7 +12,7 @@ window.canvas.on('object:modified', saveCanvasToLocal);
 window.canvas.on('object:removed', saveCanvasToLocal);
 
 function saveCanvasToLocal() {
-    const json = window.canvas.toJSON(['customType', 'variable']);
+    const json = window.canvas.toJSON(['customType', 'variable','qrValue']);
     const name_design = document.querySelector('.name_design')?.value || '';
     localStorage.setItem('canvas_design', JSON.stringify(json));
     localStorage.setItem('canvas_design_name', name_design);

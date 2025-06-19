@@ -7,6 +7,11 @@ window.canvas = new fabric.Canvas('templateCanvas', {
     width: canvasWidth,
     height: canvasHeight
 });
+window.canvas.getObjects().forEach(obj => {
+    if (obj.customType === 'staticQR') {
+        console.log(obj.qrValue); 
+    }
+});
 
 
 function addLine() {
@@ -80,7 +85,7 @@ async function SaveCanvas(isSilent = false) {
         return;
     }
 
-    const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable']));
+    const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable', 'qrValue']));
     const width = window.canvas.getWidth();  // px
     const height = window.canvas.getHeight(); // px
 

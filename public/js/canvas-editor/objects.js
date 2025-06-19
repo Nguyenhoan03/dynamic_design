@@ -216,7 +216,7 @@ function addDynamicQR() {
 }
 
 function getDynamicFieldsFromCanvas() {
-    const config = window.canvas.toJSON(['customType', 'variable']);
+    const config = window.canvas.toJSON(['customType', 'variable', 'qrValue']);
     const fields = [];
     const exists = new Set();
     function scan(obj) {
@@ -555,14 +555,14 @@ window.canvas.on('object:modified', updateDynamicFieldsLabel);
 if (fabric.Object.prototype.toObject) {
     const origToObject = fabric.Object.prototype.toObject;
     fabric.Object.prototype.toObject = function (propertiesToInclude) {
-        propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable']);
+        propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable', 'qrValue']);
         return origToObject.call(this, propertiesToInclude);
     };
 }
 if (fabric.Group && fabric.Group.prototype.toObject) {
     const origGroupToObject = fabric.Group.prototype.toObject;
     fabric.Group.prototype.toObject = function (propertiesToInclude) {
-        propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable']);
+        propertiesToInclude = (propertiesToInclude || []).concat(['customType', 'variable', 'qrValue']);
         return origGroupToObject.call(this, propertiesToInclude);
     };
 }
