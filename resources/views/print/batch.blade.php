@@ -31,13 +31,16 @@
 </head>
 
 <body>
-    @php
-        $zoom = $zoom ?? 1;
-        $viewport = $viewport ?? [1, 0, 0, 1, 0, 0];
-        $offsetX = $viewport[4] ?? 0;
-        $offsetY = $viewport[5] ?? 0;
+   @php
+    $zoom = $zoom ?? 1;
+    $viewport = $viewport ?? [1, 0, 0, 1, 0, 0];
 
-        function applyTransform($val, $zoom, $offset) {
+    $scaleX = $viewport[0] ?? 1;
+    $scaleY = $viewport[3] ?? 1;
+    $offsetX = $viewport[4] ?? 0;
+    $offsetY = $viewport[5] ?? 0;
+
+     function applyTransform($val, $zoom, $offset) {
             return $val * $zoom + $offset;
         }
 
@@ -45,19 +48,18 @@
             return $val * $scale * $zoom;
         }
 
-  
-        function mapFontFamily($font) {
-            return match (strtolower($font)) {
-                'arial' => 'Helvetica',
-                'times new roman' => 'Times-Roman',
-                'courier new' => 'Courier',
-                'tahoma' => 'DejaVu Sans',
-                default => 'DejaVu Sans'
-            };
-        }
+        
+    function mapFontFamily($font) {
+        return match (strtolower($font)) {
+            'arial' => 'Helvetica',
+            'times new roman' => 'Times-Roman',
+            'courier new' => 'Courier',
+            'tahoma' => 'DejaVu Sans',
+            default => 'DejaVu Sans'
+        };
+    }
+@endphp
 
-
-    @endphp
 
     @foreach ($rows as $data)
         <div class="template-container">
@@ -65,10 +67,12 @@
                 @php
                     $obj = is_array($el->data) ? $el->data : json_decode($el->data, true);
                     $type = $el->type;
-                    $left = applyTransform($obj['left'] ?? 0, $zoom, $offsetX);
-                    $top = applyTransform($obj['top'] ?? 0, $zoom, $offsetY);
-                    $width  = ($obj['width']  ?? 0) * ($obj['scaleX'] ?? 1) * $zoom;
-                    $height = ($obj['height'] ?? 0) * ($obj['scaleY'] ?? 1) * $zoom;
+                  $left = ($obj['left'] ?? 0) * $scaleX + $offsetX;
+                $top = ($obj['top'] ?? 0) * $scaleY + $offsetY;
+                $width  = ($obj['width'] ?? 0) * ($obj['scaleX'] ?? 1) * $scaleX * $zoom;
+                $height = ($obj['height'] ?? 0) * ($obj['scaleY'] ?? 1) * $scaleY * $zoom;
+
+
                 @endphp
 
 

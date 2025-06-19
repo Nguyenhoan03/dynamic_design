@@ -76,6 +76,8 @@ class TemplateController extends Controller
             
             $zoom = floatval($request->input('template_zoom', 1));
             $viewport = json_decode($request->input('template_viewport', '[]'), true);
+
+            
             // Lấy fields động từ client
             $fields = array_filter(array_map('trim', explode(',', $request->input('fields', ''))));
 
@@ -100,6 +102,7 @@ class TemplateController extends Controller
 
             return $pdf->download($template->name . '.pdf');
         } catch (\Throwable $th) {
+            Log::info('Error printing batch: ' . $th->getMessage());
             $message = str_contains($th->getMessage(), 'Column \'name\' cannot be null')
                 ? 'Vui lòng nhập tên bản thiết kế!'
                 : ($th->getMessage() === 'Tên bản thiết kế đã tồn tại!' ? $th->getMessage() : 'Đã xảy ra lỗi khi in. Vui lòng thử lại sau!');
