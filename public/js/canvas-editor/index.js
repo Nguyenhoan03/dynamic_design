@@ -37,6 +37,7 @@ if (saved) {
 
 // Khi trang load xong, cập nhật kích thước canvas-box và thẻ canvas cho đúng
 document.addEventListener('DOMContentLoaded', function () {
+
     // Helper: Chuyển đơn vị sang px
     function convertToPx(value, unit) {
         const factors = {

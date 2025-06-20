@@ -213,26 +213,25 @@
                  <input id="staticQRInput" type="text" class="form-control mt-2" placeholder="Nhập link hoặc text QR" style="display:none;">
             </div>
         </div>
-        <div id="panel-upload" class="sidebar-panel">
-            <div class="panel-title d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh, File</span>
-                <button type="button" class="btn-close btn-sm" onclick="closePanel('upload')"></button>
-            </div>
-            <div class="panel-group">
-                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadFile').click()">
-                    <i class="bi bi-cloud-arrow-up me-2"></i> Tải ảnh lên
-                </button>
-                <input type="file" id="uploadImg" accept="image/*" style="display:none">
-            </div>
-
-             <div class="panel-group">
-                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadFile').click()">
-                    <i class="bi bi-cloud-arrow-up me-2"></i> Tải file lên
-                </button>
-                <input type="file" id="uploadFile" accept="image/*,.pdf,video/*,audio/*" style="display:none">
-            </div>
-
-        </div>
+      <div id="panel-upload" class="sidebar-panel">
+    <div class="panel-title d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh, File</span>
+        <button type="button" class="btn-close btn-sm" onclick="closePanel('upload')"></button>
+    </div>
+    <div class="panel-group">
+        <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2"
+            onclick="document.getElementById('uploadFile').click()">
+            <i class="bi bi-cloud-arrow-up me-2"></i> Tải file lên
+        </button>
+        <input type="file" id="uploadFile" accept="image/*,.pdf,video/*,audio/*" style="display:none">
+    </div>
+    <div class="panel-group">
+        <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2"
+            onclick="showExportOptions()">
+            <i class="bi bi-download me-2"></i> Xuất file
+        </button>
+    </div>
+</div>
         <div id="panel-shape" class="sidebar-panel">
             <div class="panel-title d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-square"></i> Hình khối</span>
@@ -399,7 +398,12 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.js"></script>
+
+<script>
+    window.pdfjsLib = window.pdfjsLib || pdfjsLib;
+</script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script type="module" src="{{ asset('./js/canvas-editor/index.js') }}"></script>

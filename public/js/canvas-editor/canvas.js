@@ -75,12 +75,7 @@ document.getElementById('uploadFile')?.addEventListener('change', function (e) {
         const reader = new FileReader();
         reader.onload = function (f) {
             fabric.Image.fromURL(f.target.result, function (img) {
-                img.set({
-                    left: 50,
-                    top: 50,
-                    scaleX: 0.5,
-                    scaleY: 0.5
-                });
+                img.set({ left: 50, top: 50, scaleX: 0.5, scaleY: 0.5 });
                 window.canvas.add(img).setActiveObject(img);
             }, { crossOrigin: 'Anonymous' });
         };
@@ -113,38 +108,65 @@ document.getElementById('uploadFile')?.addEventListener('change', function (e) {
     }
     // Video (hiển thị video động trên canvas)
     else if (file.type.startsWith('video/')) {
-        const url = URL.createObjectURL(file);
-        const video = document.createElement('video');
-        video.src = url;
-        video.autoplay = false;
-        video.loop = true;
-        video.muted = true;
-        video.width = 320;
-        video.height = 240;
-        video.onloadeddata = function() {
-            const fabricVideo = new fabric.Image(video, {
-                left: 80,
-                top: 80,
-                scaleX: 0.5,
-                scaleY: 0.5
-            });
-            window.canvas.add(fabricVideo).setActiveObject(fabricVideo);
-            window.canvas.requestRenderAll();
-            video.play();
-        };
-    }
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.src = url;
+    video.autoplay = false;
+    video.loop = true;
+    video.controls = true; // Cho phép điều khiển phát/tạm dừng
+    // video.muted = true; // BỎ DÒNG NÀY để có tiếng
+
+    video.onloadeddata = function() {
+        const canvas = window.canvas;
+        const maxWidth = canvas.getWidth() * 0.8;
+        const maxHeight = canvas.getHeight() * 0.8;
+        let scale = 1;
+        if (video.videoWidth > maxWidth) scale = maxWidth / video.videoWidth;
+        if (video.videoHeight * scale > maxHeight) scale = maxHeight / video.videoHeight;
+
+        video.width = video.videoWidth;
+        video.height = video.videoHeight;
+
+        const fabricVideo = new fabric.Image(video, {
+            left: (canvas.getWidth() - video.videoWidth * scale) / 2,
+            top: (canvas.getHeight() - video.videoHeight * scale) / 2,
+            scaleX: scale,
+            scaleY: scale,
+            selectable: true
+        });
+
+        canvas.add(fabricVideo).setActiveObject(fabricVideo);
+        canvas.requestRenderAll();
+
+        video.play();
+
+        // Vòng lặp render canvas
+        function renderLoop() {
+            canvas.requestRenderAll();
+            fabricVideo.set('dirty', true);
+            requestAnimationFrame(renderLoop);
+        }
+        renderLoop();
+
+        // Lưu video element vào object để điều khiển sau này
+        fabricVideo._element = video;
+        window.lastVideoObject = fabricVideo; // Lưu tham chiếu video cuối cùng
+    };
+}
     // Audio (thêm icon, click để phát)
     else if (file.type.startsWith('audio/')) {
         const url = URL.createObjectURL(file);
+        // Khi thêm icon audio vào canvas
         fabric.Image.fromURL('https://cdn-icons-png.flaticon.com/512/727/727245.png', function(img) {
             img.set({ left: 100, top: 100, scaleX: 0.15, scaleY: 0.15, selectable: true });
-            img.audioUrl = url;
+            img.audioUrl = url; // url là URL.createObjectURL(file)
             window.canvas.add(img).setActiveObject(img);
             window.canvas.requestRenderAll();
         });
-        // Click icon để phát audio
-        window.canvas.off('mouse:down'); // tránh lặp nhiều lần
-        window.canvas.on('mouse:down', function(opt) {
+
+        // Đảm bảo chỉ gắn 1 lần sự kiện click
+        window.canvas.off('mouse:down.audio');
+        window.canvas.on('mouse:down.audio', function(opt) {
             const obj = opt.target;
             if (obj && obj.audioUrl) {
                 const audio = new Audio(obj.audioUrl);
