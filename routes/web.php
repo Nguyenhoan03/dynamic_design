@@ -17,7 +17,7 @@ use App\Http\Controllers\TemplateController;
 
 //     return view('home');
 // });
-Route::get('/', [HomeController::class, 'index']);
+Route::get('/', [HomeController::class, 'index'])->name('templates.home');
 
 Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
 Route::post('/templates', [TemplateController::class, 'store']);
@@ -28,8 +28,8 @@ Route::get('/templates/{id}/preview', [TemplateController::class, 'preview']);
 Route::post('/templates/{id}/print', [TemplateController::class, 'print']);
 
 
+Route::delete('/templates/bulk-delete', [TemplateController::class, 'bulkDelete'])->name('templates.bulkDelete');
+Route::delete('/templates/{id}', [TemplateController::class, 'destroy'])->name('templates.destroy');
 Route::get('/templates/{id}/copy', [TemplateController::class, 'copy'])->name('templates.copy');
 Route::get('/templates/{id}/download', [TemplateController::class, 'download'])->name('templates.download');
 Route::get('/templates/{id}/share', [TemplateController::class, 'share'])->name('templates.share');
-Route::delete('/templates/{id}', [TemplateController::class, 'destroy'])->name('templates.destroy');
-Route::delete('/templates/bulk-delete', [TemplateController::class, 'bulkDelete'])->name('templates.bulkDelete');

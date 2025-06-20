@@ -187,7 +187,7 @@
                             </span>
                         </div>
                         <p class="card-text text-muted small mb-3">
-                            Cập nhật: {{ $template->updated_at->timezone('Asia/Ho_Chi_Minh')->format("d/m/Y H:i:s") }}
+                            Đã sửa: {{ $template->updated_at->timezone('Asia/Ho_Chi_Minh')->diffForHumans() }}
                         </p>
                         <a href="{{ route('templates.edit', $template->id) }}" class="btn btn-sm btn-primary w-100">
                             <i class="bi bi-eye me-1"></i> Xem chi tiết

@@ -279,15 +279,20 @@ class TemplateController extends Controller
     public function destroy($id)
     {
         $template = Template::findOrFail($id);
+        $template->elements()->delete();
         $template->delete();
-        return redirect()->route('templates.index')->with('success', 'Đã xóa template!');
+        return redirect()->back()->with('success', 'Đã xóa template!');
     }
     public function bulkDelete(Request $request)
     {
         $ids = explode(',', $request->input('ids', ''));
         if ($ids && count($ids)) {
-            Template::whereIn('id', $ids)->delete();
+            $templates = Template::whereIn('id', $ids)->get();
+            foreach($templates as $template ) {
+                $template->elements()->delete();
+                $template->delete();
+            }
         }
-        return redirect()->route('templates.index')->with('success', 'Đã xóa các bản thiết kế đã chọn!');
+        return redirect()->route('templates.home')->with('success', 'Đã xóa các bản thiết kế đã chọn!');
     }
 }
