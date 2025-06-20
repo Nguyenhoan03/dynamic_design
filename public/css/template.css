@@ -490,6 +490,56 @@ canvas#templateCanvas {
     color: #1976d2;
 }
 
+
+
+/* Ẩn submenu mặc định */
+.submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    min-width: 140px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 8px 0;
+    z-index: 1000;
+}
+.submenu-parent {
+    position: relative;
+}
+.submenu-parent:hover > .submenu,
+.submenu-parent:focus-within > .submenu {
+    display: block;
+}
+.submenu-toggle {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: #1976d2;
+    background: #e3f0ff;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+}
+.submenu li a {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+}
+.submenu li a:hover {
+    background: #f5f5f5;
+}
+
+
+
+
+
+
 @media (max-width: 600px) {
     .sidebar-canvas {
         width: 48px;
@@ -866,8 +916,20 @@ textarea.form-control {
     margin: 0;
     list-style: none;
     z-index: 1001;
+   
+   
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
-
+.toolbar-menu::-webkit-scrollbar {
+    width: 8px;
+    border-radius: 14px;
+    background: transparent;
+}
+.toolbar-menu::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 14px;
+}
 .toolbar-menu li {
     display: flex;
     align-items: center;
@@ -880,6 +942,53 @@ textarea.form-control {
 }
 
 .toolbar-menu li:hover {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+/* Menu đa cấp */
+.align-submenu {
+    position: relative;
+}
+
+.align-submenu > span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.align-submenu .submenu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    display: none;
+    list-style: none;
+    padding: 6px 0;
+    margin: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    min-width: 160px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.12);
+    z-index: 1002;
+}
+
+.align-submenu:hover .submenu {
+    display: block;
+}
+
+.align-submenu .submenu li {
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.align-submenu .submenu li:hover {
     background: #e3f2fd;
     color: #1976d2;
 }

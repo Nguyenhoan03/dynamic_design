@@ -306,6 +306,19 @@
             <li onclick="flipSelected()"><i class="bi bi-arrow-left-right"></i> Lật</li>
             <li onclick="bringToFront()"><i class="bi bi-layers"></i> Lên trên</li>
             <li onclick="sendToBack()"><i class="bi bi-layers-fill"></i> Xuống dưới</li>
+            <li class="align-submenu">
+            <span style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                <i class="bi bi-distribute-horizontal"></i>
+                <span style="flex:1;">Căn chỉnh</span>
+                <i class="bi bi-chevron-right"></i>
+            </span>       
+             <ul class="submenu">
+                <li title="Căn trái"  onclick="alignLeftSelected()"><i class="bi bi-align-start"></i> Căn trái</li>
+                <li title="Căn giữa"  onclick="alignCenterSelected()"><i class="bi bi-align-center"></i> Căn giữa</li>
+                <li title="Căn phải"  onclick="alignRightSelected()"><i class="bi bi-align-end"></i> Căn phải</li>
+            </ul>
+        </li>
+
             <li onclick="increaseSize()"><i class="bi bi-plus-square"></i> Tăng kích thước</li>
             <li onclick="decreaseSize()"><i class="bi bi-dash-square"></i> Giảm kích thước</li>
             <li onclick="rotateLeft()"><i class="bi bi-arrow-counterclockwise"></i> Xoay trái</li>

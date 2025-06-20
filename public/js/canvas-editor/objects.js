@@ -36,7 +36,8 @@ function addText() {
         fontSize: 22,
         fill: '#222',
         width: 200,
-        fontFamily: 'Arial'
+        fontFamily: 'Arial',
+        textAlign: 'center'
     });
     window.canvas.add(text).setActiveObject(text);
 }
@@ -80,6 +81,45 @@ function lockSelected() {
         window.canvas.requestRenderAll();
     }
 }
+
+
+function alignLeftSelected() {
+    const obj = window.canvas.getActiveObject();
+    if (!obj) return;
+    const vt = window.canvas.viewportTransform;
+    const zoom = window.canvas.getZoom();
+    const offsetX = -vt[4] / zoom;
+    obj.left = offsetX;
+    obj.setCoords();
+    window.canvas.requestRenderAll();
+}
+
+function alignCenterSelected() {
+    const obj = window.canvas.getActiveObject();
+    if (!obj) return;
+    const vt = window.canvas.viewportTransform;
+    const zoom = window.canvas.getZoom();
+    const visibleWidth = window.canvas.getWidth() / zoom;
+    const offsetX = -vt[4] / zoom;
+    obj.left = offsetX + (visibleWidth - obj.width * obj.scaleX) / 2;
+    obj.setCoords();
+    window.canvas.requestRenderAll();
+}
+
+function alignRightSelected() {
+    const obj = window.canvas.getActiveObject();
+    if (!obj) return;
+    const vt = window.canvas.viewportTransform;
+    const zoom = window.canvas.getZoom();
+    const visibleWidth = window.canvas.getWidth() / zoom;
+    const offsetX = -vt[4] / zoom;
+    obj.left = offsetX + visibleWidth - obj.width * obj.scaleX;
+    obj.setCoords();
+    window.canvas.requestRenderAll();
+}
+
+
+
 function unlockSelected() {
     window.canvas.getObjects().forEach(obj => {
         if (!obj.selectable) {
@@ -181,6 +221,7 @@ function addDynamicText(content) {
     const text = new fabric.Textbox(`#{${field}}`, {
         left: 120, top: 60, fontSize: 22, fill: '#222', width: 200, fontFamily: 'Arial',
         customType: 'dynamic',
+        textAlign: 'center',
         variable: `#{${field}}`
     });
     window.canvas.add(text).setActiveObject(text);
@@ -587,3 +628,6 @@ window.rotateLeft = rotateLeft;
 window.rotateRight = rotateRight;
 window.lockSelected = lockSelected;
 window.unlockSelected = unlockSelected;
+window.alignLeftSelected = alignLeftSelected;
+window.alignCenterSelected = alignCenterSelected;
+window.alignRightSelected = alignRightSelected;

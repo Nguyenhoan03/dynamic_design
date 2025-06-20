@@ -9,6 +9,34 @@ function showToolbar(e) {
     window.objectToolbar.style.left = (canvasRect.left + (bound.left + bound.width / 2) * zoom - 40) + 'px';
     window.objectToolbar.style.top = (canvasRect.top + (bound.top - 30) * zoom) + 'px';
 }
+//Tự động đặt vị trí menu (lên trên hoặc xuống dưới)
+function showToolbarMenu(x, y) {
+    const menu = document.getElementById('toolbarMenu');
+    menu.style.display = 'block';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+
+    setTimeout(() => {
+        const rect = menu.getBoundingClientRect();
+        const winH = window.innerHeight;
+        // Nếu menu bị tràn dưới, hiển thị lên trên
+        if (rect.bottom > winH) {
+            menu.style.top = (y - rect.height) + 'px';
+        }
+        // Nếu menu bị tràn trên, hiển thị xuống dưới
+        if (rect.top < 0) {
+            menu.style.top = '10px';
+        }
+    }, 10);
+}
+
+// Đóng menu khi click ra ngoài
+document.addEventListener('mousedown', function(e) {
+    const menu = document.getElementById('toolbarMenu');
+    if (menu && !menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
 
 function groupSelected() {
     if (!window.canvas.getActiveObject()) return;
