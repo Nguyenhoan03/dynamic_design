@@ -155,6 +155,16 @@ function setAlign(align) {
         window.canvas.requestRenderAll();
     }
 }
+function pauseVideo() {
+    if (window.lastVideoObject && window.lastVideoObject._element) {
+        window.lastVideoObject._element.pause();
+    }
+}
+function playVideo() {
+    if (window.lastVideoObject && window.lastVideoObject._element) {
+        window.lastVideoObject._element.play();
+    }
+}
 
 
 function changeColor() {
@@ -214,3 +224,5 @@ window.selectTool = selectTool;
 window.sendToBack = sendToBack;
 window.changeCanvasSize = changeCanvasSize;
 window.changeColor = changeColor;
+window.pauseVideo = pauseVideo;
+window.playVideo = playVideo;

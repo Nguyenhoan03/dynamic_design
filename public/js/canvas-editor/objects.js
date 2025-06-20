@@ -86,10 +86,8 @@ function lockSelected() {
 function alignLeftSelected() {
     const obj = window.canvas.getActiveObject();
     if (!obj) return;
-    const vt = window.canvas.viewportTransform;
-    const zoom = window.canvas.getZoom();
-    const offsetX = -vt[4] / zoom;
-    obj.left = offsetX;
+    // Căn trái theo canvas (không tính viewportTransform)
+    obj.left = 0;
     obj.setCoords();
     window.canvas.requestRenderAll();
 }
@@ -97,11 +95,9 @@ function alignLeftSelected() {
 function alignCenterSelected() {
     const obj = window.canvas.getActiveObject();
     if (!obj) return;
-    const vt = window.canvas.viewportTransform;
-    const zoom = window.canvas.getZoom();
-    const visibleWidth = window.canvas.getWidth() / zoom;
-    const offsetX = -vt[4] / zoom;
-    obj.left = offsetX + (visibleWidth - obj.width * obj.scaleX) / 2;
+    const canvasWidth = window.canvas.getWidth();
+    const objWidth = obj.getScaledWidth ? obj.getScaledWidth() : (obj.width * obj.scaleX);
+    obj.left = (canvasWidth - objWidth) / 2;
     obj.setCoords();
     window.canvas.requestRenderAll();
 }
@@ -109,11 +105,9 @@ function alignCenterSelected() {
 function alignRightSelected() {
     const obj = window.canvas.getActiveObject();
     if (!obj) return;
-    const vt = window.canvas.viewportTransform;
-    const zoom = window.canvas.getZoom();
-    const visibleWidth = window.canvas.getWidth() / zoom;
-    const offsetX = -vt[4] / zoom;
-    obj.left = offsetX + visibleWidth - obj.width * obj.scaleX;
+    const canvasWidth = window.canvas.getWidth();
+    const objWidth = obj.getScaledWidth ? obj.getScaledWidth() : (obj.width * obj.scaleX);
+    obj.left = canvasWidth - objWidth;
     obj.setCoords();
     window.canvas.requestRenderAll();
 }

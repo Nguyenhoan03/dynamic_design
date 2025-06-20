@@ -396,6 +396,23 @@
             <button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
         </div>
     </div>
+                <button id="videoControlBtn" style="
+                display:none;
+                position:absolute;
+                z-index:2000;
+                background:rgba(0,0,0,0.6);
+                color:#fff;
+                border:none;
+                border-radius:50%;
+                width:48px;
+                height:48px;
+                font-size:24px;
+                align-items:center;
+                justify-content:center;
+                cursor:pointer;
+            ">
+                ⏸️
+            </button>
 
     <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.js"></script>

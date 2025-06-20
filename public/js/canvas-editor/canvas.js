@@ -45,26 +45,24 @@ function addCircle() {
     window.canvas.add(circle).setActiveObject(circle);
 }
 
-document.getElementById('uploadImg')?.addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function (f) {
-        fabric.Image.fromURL(f.target.result, function (img) {
-            img.set({
-                left: 50,
-                top: 50,
-                scaleX: 0.5,
-                scaleY: 0.5
-            });
-            window.canvas.add(img).setActiveObject(img);
-        }, { crossOrigin: 'Anonymous' }); 
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-});
-
-// ...existing code...
+// document.getElementById('uploadImg')?.addEventListener('change', function (e) {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     const reader = new FileReader();
+//     reader.onload = function (f) {
+//         fabric.Image.fromURL(f.target.result, function (img) {
+//             img.set({
+//                 left: 50,
+//                 top: 50,
+//                 scaleX: 0.5,
+//                 scaleY: 0.5
+//             });
+//             window.canvas.add(img).setActiveObject(img);
+//         }, { crossOrigin: 'Anonymous' }); 
+//     };
+//     reader.readAsDataURL(file);
+//     e.target.value = '';
+// });
 
 document.getElementById('uploadFile')?.addEventListener('change', function (e) {
     const file = e.target.files[0];
@@ -72,11 +70,26 @@ document.getElementById('uploadFile')?.addEventListener('change', function (e) {
 
     // Ảnh
     if (file.type.startsWith('image/')) {
+        const canvas = window.canvas;
+        const vt = canvas.viewportTransform;
+        const zoom = canvas.getZoom();
         const reader = new FileReader();
         reader.onload = function (f) {
             fabric.Image.fromURL(f.target.result, function (img) {
-                img.set({ left: 50, top: 50, scaleX: 0.5, scaleY: 0.5 });
-                window.canvas.add(img).setActiveObject(img);
+                // Đặt ảnh vào giữa vùng nhìn hiện tại
+                const scale = 0.5;
+                const imgWidth = img.width * scale;
+                const imgHeight = img.height * scale;
+                const left = (canvas.getWidth() / 2 - imgWidth / 2) / zoom - vt[4] / zoom;
+                const top = (canvas.getHeight() / 2 - imgHeight / 2) / zoom - vt[5] / zoom;
+                img.set({
+                    left: left,
+                    top: top,
+                    scaleX: scale,
+                    scaleY: scale
+                });
+                canvas.add(img).setActiveObject(img);
+                canvas.requestRenderAll();
             }, { crossOrigin: 'Anonymous' });
         };
         reader.readAsDataURL(file);
@@ -113,8 +126,7 @@ document.getElementById('uploadFile')?.addEventListener('change', function (e) {
     video.src = url;
     video.autoplay = false;
     video.loop = true;
-    video.controls = true; // Cho phép điều khiển phát/tạm dừng
-    // video.muted = true; // BỎ DÒNG NÀY để có tiếng
+    video.controls = true; 
 
     video.onloadeddata = function() {
         const canvas = window.canvas;
@@ -150,7 +162,58 @@ document.getElementById('uploadFile')?.addEventListener('change', function (e) {
 
         // Lưu video element vào object để điều khiển sau này
         fabricVideo._element = video;
-        window.lastVideoObject = fabricVideo; // Lưu tham chiếu video cuối cùng
+        window.lastVideoObject = fabricVideo;
+
+        // Hiển thị nút điều khiển khi chọn video
+        const btn = document.getElementById('videoControlBtn');
+
+        // Lắng nghe sự kiện hover vào object trên canvas
+        canvas.on('mouse:over', function(opt) {
+            const obj = opt.target;
+            if (obj && obj._element && obj._element.tagName === 'VIDEO') {
+                // Lấy vị trí video trên canvas
+                const rect = canvas.getElement().getBoundingClientRect();
+                const vRect = obj.getBoundingRect();
+                btn.style.left = (rect.left + vRect.left + vRect.width/2 - 28) + 'px';
+                btn.style.top = (rect.top + vRect.top + vRect.height/2 - 28) + 'px';
+                btn.style.display = 'flex';
+                btn.innerHTML = obj._element.paused
+                    ? '<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="none"/><polygon points="12,10 24,16 12,22" fill="#fff"/></svg>'
+                    : '<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="none"/><rect x="11" y="10" width="4" height="12" rx="2" fill="#fff"/><rect x="17" y="10" width="4" height="12" rx="2" fill="#fff"/></svg>';
+                btn.onclick = function() {
+                    if (obj._element.paused) {
+                        obj._element.play();
+                        btn.innerHTML = '<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="none"/><rect x="11" y="10" width="4" height="12" rx="2" fill="#fff"/><rect x="17" y="10" width="4" height="12" rx="2" fill="#fff"/></svg>';
+                    } else {
+                        obj._element.pause();
+                        btn.innerHTML = '<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="none"/><polygon points="12,10 24,16 12,22" fill="#fff"/></svg>';
+                    }
+                };
+            }
+        });
+
+        // Ẩn nút khi rời chuột khỏi video
+        let isHoveringBtn = false;
+
+        // Khi hover vào button, không ẩn
+        btn.addEventListener('mouseenter', function() {
+            isHoveringBtn = true;
+            btn.style.display = 'flex';
+        });
+        btn.addEventListener('mouseleave', function() {
+            isHoveringBtn = false;
+            btn.style.display = 'none';
+        });
+
+        // Ẩn nút khi rời chuột khỏi video, trừ khi đang hover vào button
+        canvas.on('mouse:out', function(opt) {
+            const obj = opt.target;
+            if (obj && obj._element && obj._element.tagName === 'VIDEO') {
+                setTimeout(() => {
+                    if (!isHoveringBtn) btn.style.display = 'none';
+                }, 10);
+            }
+        });
     };
 }
     // Audio (thêm icon, click để phát)
@@ -179,9 +242,6 @@ document.getElementById('uploadFile')?.addEventListener('change', function (e) {
     }
     e.target.value = '';
 });
-
-// ...existing code...
-
 
 
 function deleteSelected() {
