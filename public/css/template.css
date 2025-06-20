@@ -921,15 +921,7 @@ textarea.form-control {
     border-radius: 14px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
-.toolbar-menu::-webkit-scrollbar {
-    width: 8px;
-    border-radius: 14px;
-    background: transparent;
-}
-.toolbar-menu::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
-    border-radius: 14px;
-}
+
 .toolbar-menu li {
     display: flex;
     align-items: center;

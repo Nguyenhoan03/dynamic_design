@@ -215,15 +215,23 @@
         </div>
         <div id="panel-upload" class="sidebar-panel">
             <div class="panel-title d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh lên</span>
+                <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh, File</span>
                 <button type="button" class="btn-close btn-sm" onclick="closePanel('upload')"></button>
             </div>
             <div class="panel-group">
-                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadImg').click()">
+                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadFile').click()">
                     <i class="bi bi-cloud-arrow-up me-2"></i> Tải ảnh lên
                 </button>
                 <input type="file" id="uploadImg" accept="image/*" style="display:none">
             </div>
+
+             <div class="panel-group">
+                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2" onclick="document.getElementById('uploadFile').click()">
+                    <i class="bi bi-cloud-arrow-up me-2"></i> Tải file lên
+                </button>
+                <input type="file" id="uploadFile" accept="image/*,.pdf,video/*,audio/*" style="display:none">
+            </div>
+
         </div>
         <div id="panel-shape" class="sidebar-panel">
             <div class="panel-title d-flex justify-content-between align-items-center">

@@ -64,6 +64,104 @@ document.getElementById('uploadImg')?.addEventListener('change', function (e) {
     e.target.value = '';
 });
 
+// ...existing code...
+
+document.getElementById('uploadFile')?.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Ảnh
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function (f) {
+            fabric.Image.fromURL(f.target.result, function (img) {
+                img.set({
+                    left: 50,
+                    top: 50,
+                    scaleX: 0.5,
+                    scaleY: 0.5
+                });
+                window.canvas.add(img).setActiveObject(img);
+            }, { crossOrigin: 'Anonymous' });
+        };
+        reader.readAsDataURL(file);
+    }
+    // PDF (hiển thị trang đầu như ảnh, cần PDF.js)
+    else if (file.type === 'application/pdf') {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            if (window.pdfjsLib) {
+                pdfjsLib.getDocument({data: evt.target.result}).promise.then(function(pdf) {
+                    pdf.getPage(1).then(function(page) {
+                        const viewport = page.getViewport({scale: 1.5});
+                        const pdfCanvas = document.createElement('canvas');
+                        pdfCanvas.width = viewport.width;
+                        pdfCanvas.height = viewport.height;
+                        page.render({canvasContext: pdfCanvas.getContext('2d'), viewport: viewport}).promise.then(function() {
+                            fabric.Image.fromURL(pdfCanvas.toDataURL(), function(img) {
+                                img.set({ left: 60, top: 60, scaleX: 0.5, scaleY: 0.5 });
+                                window.canvas.add(img).setActiveObject(img);
+                            });
+                        });
+                    });
+                });
+            } else {
+                alert('Chưa tích hợp PDF.js!');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    // Video (hiển thị video động trên canvas)
+    else if (file.type.startsWith('video/')) {
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.src = url;
+        video.autoplay = false;
+        video.loop = true;
+        video.muted = true;
+        video.width = 320;
+        video.height = 240;
+        video.onloadeddata = function() {
+            const fabricVideo = new fabric.Image(video, {
+                left: 80,
+                top: 80,
+                scaleX: 0.5,
+                scaleY: 0.5
+            });
+            window.canvas.add(fabricVideo).setActiveObject(fabricVideo);
+            window.canvas.requestRenderAll();
+            video.play();
+        };
+    }
+    // Audio (thêm icon, click để phát)
+    else if (file.type.startsWith('audio/')) {
+        const url = URL.createObjectURL(file);
+        fabric.Image.fromURL('https://cdn-icons-png.flaticon.com/512/727/727245.png', function(img) {
+            img.set({ left: 100, top: 100, scaleX: 0.15, scaleY: 0.15, selectable: true });
+            img.audioUrl = url;
+            window.canvas.add(img).setActiveObject(img);
+            window.canvas.requestRenderAll();
+        });
+        // Click icon để phát audio
+        window.canvas.off('mouse:down'); // tránh lặp nhiều lần
+        window.canvas.on('mouse:down', function(opt) {
+            const obj = opt.target;
+            if (obj && obj.audioUrl) {
+                const audio = new Audio(obj.audioUrl);
+                audio.play();
+            }
+        });
+    }
+    else {
+        alert('Định dạng file không được hỗ trợ!');
+    }
+    e.target.value = '';
+});
+
+// ...existing code...
+
+
+
 function deleteSelected() {
     const active = window.canvas.getActiveObject();
     if (active) window.canvas.remove(active);
