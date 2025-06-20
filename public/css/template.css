@@ -4,6 +4,14 @@ html {
     margin: 0;
     overflow: hidden;
 }
+.toast-progress {
+    position: absolute;
+    left: 0; bottom: 0;
+    transition: width 3s linear;
+    height: 4px;
+    width: 100%;
+    background-color: red;
+}
 /* Wrapper chiếm hết phần còn lại, căn giữa nội dung */
 .canvas-scroll-wrapper {
     flex: 1 1 0%;

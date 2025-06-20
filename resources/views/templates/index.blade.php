@@ -13,11 +13,22 @@
 </head>
 
 <body>
-    @if(session('error'))
-    <script>
-        alert(@json(session('error')));
-    </script>
-    @endif
+   @if(session('error'))
+<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 9999; min-width: 320px;">
+    <div class="toast align-items-center text-bg-danger border-0 show" id="errorToast" role="alert">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center">
+                <span class="me-2" style="font-size: 1.5rem;">
+                    <i class="bi bi-x-circle-fill text-white"></i>
+                </span>
+                {{ session('error') }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+        </div>
+        <div class="toast-progress bg-white" style="height: 4px; width: 100%;"></div>
+    </div>
+</div>
+@endif
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
@@ -42,7 +53,8 @@
         </button>
         <!-- Các nút thao tác, ẩn trên mobile -->
         <div class="tools d-none d-md-flex">
-        
+           
+
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
                 <i class="bi bi-download"></i>Lưu thiết kế
             </button>
@@ -554,3 +566,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+    @if(session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toastEl = document.getElementById('errorToast');
+        var progress = toastEl.querySelector('.toast-progress');
+        setTimeout(() => {
+            progress.style.width = '0%';
+        }, 10);
+        setTimeout(() => {
+            var toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+            toast.hide();
+        }, 5000);
+    });
+</script>
+@endif
+ </script>
+
+</body>
+</html>
