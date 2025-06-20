@@ -153,6 +153,7 @@ function createNewDesign() {
     localStorage.removeItem('canvas_design_width');
     localStorage.removeItem('canvas_design_height');
     window.location.href = `/templates?width=500&height=500&unit=px`;
+    updateCanvasInfo();
 }
 
 

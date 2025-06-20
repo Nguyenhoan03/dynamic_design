@@ -34,24 +34,34 @@ function updateCanvasInfo() {
     const zoom = (window.canvas.getZoom() * 100).toFixed(0) + '%';
     const pxWidth = window.canvas.getWidth();
     const pxHeight = window.canvas.getHeight();
-    const unit = window.originalCanvasUnit || window.defaultCanvasUnit || 'px';
+
+    // Lấy đơn vị từ localStorage là chính xác nhất
+    const unit = localStorage.getItem('canvas_design_unit') || window.defaultCanvasUnit || 'px';
 
     let width = pxWidth, height = pxHeight;
 
-    // Chuyển đổi px về đơn vị gốc khi hiển thị
-    if (unit === 'mm') {
-        width = (pxWidth / 3.7795275591).toFixed(2);
-        height = (pxHeight / 3.7795275591).toFixed(2);
-    } else if (unit === 'cm') {
-        width = (pxWidth / 37.795275591).toFixed(2);
-        height = (pxHeight / 37.795275591).toFixed(2);
-    } else if (unit === 'inch') {
-        width = (pxWidth / 96).toFixed(2);
-        height = (pxHeight / 96).toFixed(2);
+    function formatNumber(val) {
+        return Number.isInteger(val) ? val : parseFloat(val.toFixed(2)).toString();
     }
+
+    if (unit === 'mm') {
+        width = formatNumber(pxWidth / 3.7795275591);
+        height = formatNumber(pxHeight / 3.7795275591);
+    } else if (unit === 'cm') {
+        width = formatNumber(pxWidth / 37.795275591);
+        height = formatNumber(pxHeight / 37.795275591);
+    } else if (unit === 'inch') {
+        width = formatNumber(pxWidth / 96);
+        height = formatNumber(pxHeight / 96);
+    } else {
+        width = formatNumber(pxWidth);
+        height = formatNumber(pxHeight);
+    }
+
 
     document.getElementById('canvasInfo').innerText = `Zoom: ${zoom} | Kích thước: ${width} x ${height} ${unit}`;
 }
+
 window.updateCanvasInfo = updateCanvasInfo;
 // Gọi khi zoom hoặc đổi kích thước
 window.canvas.on('zoom:changed', updateCanvasInfo);
@@ -68,7 +78,7 @@ document.querySelector('.canvas-box').addEventListener('wheel', function (e) {
     // Zoom tại vị trí chuột
     window.canvas.zoomToPoint({ x: e.offsetX, y: e.offsetY }, zoom);
     if (typeof updateCanvasInfo === 'function')
-         window.canvas.requestRenderAll(); updateCanvasInfo();
+        window.canvas.requestRenderAll(); updateCanvasInfo();
 }, { passive: false });
 
 // Gọi khi khởi tạo

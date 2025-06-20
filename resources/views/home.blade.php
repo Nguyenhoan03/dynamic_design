@@ -202,6 +202,7 @@
     </div>
 
     <!-- Bootstrap JS -->
+        <script type="module" src="{{ asset('./js/canvas-editor/events.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- JS -->
 
@@ -258,7 +259,6 @@
             });
         });
     </script>
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
     <script>
