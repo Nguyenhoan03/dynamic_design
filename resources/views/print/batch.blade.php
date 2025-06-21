@@ -84,13 +84,13 @@
                         $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
                     @endphp
                    <div class="element"
-                    style="
+                     style="
                         left: {{ $left }}px;
                         top: {{ $top }}px;
                         font-size: {{ $fontSize }}px;
                         color: {{ $obj['fill'] ?? '#000' }};
                         font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
-                        font-family: '{{ mapFontFamily($obj['fontFamily'] ?? '') }}';
+                        font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
                     ">
                     {{ $text }}
                 </div>
