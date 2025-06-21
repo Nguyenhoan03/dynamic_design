@@ -625,3 +625,4 @@ window.unlockSelected = unlockSelected;
 window.alignLeftSelected = alignLeftSelected;
 window.alignCenterSelected = alignCenterSelected;
 window.alignRightSelected = alignRightSelected;
+window.getDynamicFieldsFromCanvas = getDynamicFieldsFromCanvas;

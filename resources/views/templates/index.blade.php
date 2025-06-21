@@ -123,6 +123,15 @@
                     <label class="form-label fw-semibold mb-2">
                         Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
                     </label>
+                    <!-- import excel -->
+                    <div class="mb-3">
+                    <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
+                       <button type="button" class="btn btn-outline-primary mb-2" id="downloadExcelTemplate">
+                        <i class="bi bi-download"></i> Tải file Excel mẫu
+                    </button>
+                    <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control">
+                </div>
+             
 
                     <textarea class="form-control border border-1 rounded-3 shadow-sm"
                               name="csv_rows"
@@ -417,6 +426,7 @@
     <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
     window.pdfjsLib = window.pdfjsLib || pdfjsLib;

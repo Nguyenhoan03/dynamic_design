@@ -213,6 +213,57 @@ function changeColor() {
 }
 
 
+document.getElementById('downloadExcelTemplate').addEventListener('click', function() {
+    // Lấy danh sách trường động từ canvas
+    const fields = getDynamicFieldsFromCanvas();
+    if (!fields.length) {
+        alert('Chưa có trường động nào trên thiết kế!');
+        return;
+    }
+    const ws = XLSX.utils.aoa_to_sheet([fields]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "MauNhap");
+    XLSX.writeFile(wb, "mau_nhap_du_lieu.xlsx");
+});
+
+// Xử lý import Excel và validate dữ liệu excel
+document.getElementById('excelInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+        // Convert rows to CSV string
+        const csv = rows.map(r => r.join(',')).join('\n');
+        document.querySelector('textarea[name="csv_rows"]').value = csv;
+    };
+    reader.readAsArrayBuffer(file);
+});
+
+// Validate CSV data before submit
+document.getElementById('printForm').addEventListener('submit', function(e) {
+    const csv = document.querySelector('textarea[name="csv_rows"]').value.trim();
+    if (!csv) {
+        alert('Vui lòng nhập dữ liệu hoặc import file Excel!');
+        e.preventDefault();
+        return false;
+    }
+    // Simple validation: check each row has enough columns (ví dụ: 2 cột trở lên)
+    const rows = csv.split('\n');
+    for (let i = 0; i < rows.length; i++) {
+        const cols = rows[i].split(',');
+        if (cols.length < 2) {
+            alert('Dòng ' + (i+1) + ' thiếu dữ liệu. Mỗi dòng cần ít nhất 2 cột.');
+            e.preventDefault();
+            return false;
+        }
+    }
+});
+
+
 
 window.setAlign = setAlign;
 window.setFontSize = setFontSize;
