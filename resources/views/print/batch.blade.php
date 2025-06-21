@@ -76,15 +76,17 @@
                         $text = $obj['text'] ?? '';
                         $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
                         $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
+                        $fontKey = strtolower(trim($obj['fontFamily'] ?? 'helvetica'));
                     @endphp
                   <div class="element"
     style="
+        font-family: '{{ $fontKey }}', sans-serif;
+        font-size: {{ $fontSize }}px;
+        color: {{ $obj['fill'] ?? '#000' }};
+        font-weight: {{ $obj['fontWeight'] ?? 'normal' }};
+        position:absolute;
         left: {{ $left }}px;
         top: {{ $top }}px;
-        color: {{ $obj['fill'] ?? '#000' }};
-        font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
-        font-size: {{ $fontSize }}px;
-        font-family: 'DejaVu Sans', sans-serif !important;
     ">
     {{ $text }}
 </div>

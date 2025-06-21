@@ -369,12 +369,10 @@
             <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
             <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
             <select onchange="setFont(this.value)">
-            <option value="Roboto">Roboto</option>
-            <option value="Open Sans">Open Sans</option>
-            <option value="Lato">Lato</option>
-            <option value="Montserrat">Montserrat</option>
-            <option value="Source Sans Pro">Source Sans Pro</option>
-        </select>
+                <option value="helvetica">Helvetica</option>
+                <option value="times">Times</option>
+                <option value="courier">Courier</option>
+            </select>
             
             <select onchange="setFontSize(this.value)">
                 <option value="9">9</option>
