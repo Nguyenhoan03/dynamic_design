@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700|Lato:400,700|Montserrat:400,700|Source+Sans+Pro:400,700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -369,11 +369,13 @@
             <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
             <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
             <select onchange="setFont(this.value)">
-                <option value="Arial">Arial</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Tahoma">Tahoma</option>
-                <option value="Courier New">Courier New</option>
-            </select>
+            <option value="Roboto">Roboto</option>
+            <option value="Open Sans">Open Sans</option>
+            <option value="Lato">Lato</option>
+            <option value="Montserrat">Montserrat</option>
+            <option value="Source Sans Pro">Source Sans Pro</option>
+        </select>
+            
             <select onchange="setFontSize(this.value)">
                 <option value="9">9</option>
                 <option value="10">10</option>

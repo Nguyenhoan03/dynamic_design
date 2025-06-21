@@ -99,7 +99,7 @@ class TemplateController extends Controller
                 'viewport' => $viewport,
 
             ]);
-            $pdf->setOptions(['defaultFont' => 'DejaVu Sans']);
+            // $pdf->setOptions(['defaultFont' => 'DejaVu Sans']);
             //  dd($request->input('fields'),$qrVariables, $fields);
 
 

@@ -49,15 +49,9 @@
         }
 
         
-    function mapFontFamily($font) {
-        return match (strtolower($font)) {
-            'arial' => 'Helvetica',
-            'times new roman' => 'Times-Roman',
-            'courier new' => 'Courier',
-            'tahoma' => 'DejaVu Sans',
-            default => 'DejaVu Sans'
-        };
-    }
+   function mapFontFamily($font) {
+    return 'DejaVu Sans';
+}
 @endphp
 
 
@@ -83,17 +77,17 @@
                         $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
                         $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
                     @endphp
-                   <div class="element"
-                     style="
-                        left: {{ $left }}px;
-                        top: {{ $top }}px;
-                        font-size: {{ $fontSize }}px;
-                        color: {{ $obj['fill'] ?? '#000' }};
-                        font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
-                        font-family: 'DejaVu Sans', Arial, Helvetica, sans-serif;
-                    ">
-                    {{ $text }}
-                </div>
+                  <div class="element"
+    style="
+        left: {{ $left }}px;
+        top: {{ $top }}px;
+        color: {{ $obj['fill'] ?? '#000' }};
+        font-weight: {{ isset($obj['fontWeight']) && $obj['fontWeight'] === 'bold' ? 'bold' : 'normal' }};
+        font-size: {{ $fontSize }}px;
+        font-family: 'DejaVu Sans', sans-serif !important;
+    ">
+    {{ $text }}
+</div>
 
 
                 @elseif ($type === 'qr')
