@@ -92,39 +92,28 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
     // PDF
     else if (file.type === 'application/pdf') {
         const file = e.target.files[0];
-
         const reader = new FileReader();
         reader.onload = async function (ev) {
             const typedarray = new Uint8Array(ev.target.result);
             const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-            const page = await pdf.getPage(1); // hoặc loop qua từng trang
-
+            const page = await pdf.getPage(1);
             const viewport = page.getViewport({ scale: 2 });
-            const canvas = window.canvas; // fabric canvas
-            canvas.setWidth(viewport.width);
-            canvas.setHeight(viewport.height);
 
-            // Vẽ background là ảnh bitmap của trang PDF
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = viewport.width;
-            tempCanvas.height = viewport.height;
-            const context = tempCanvas.getContext('2d');
+            // KHÔNG set lại kích thước canvas, giữ nguyên canvas gốc
+            // canvas.setWidth(viewport.width);
+            // canvas.setHeight(viewport.height);
 
-            await page.render({ canvasContext: context, viewport: viewport }).promise;
-            const image = tempCanvas.toDataURL('image/png');
+            // Tính tỉ lệ scale giữa PDF và canvas hiện tại
+            const scaleX = canvas.getWidth() / viewport.width;
+            const scaleY = canvas.getHeight() / viewport.height;
 
-            fabric.Image.fromURL(image, function (img) {
-                img.set({ selectable: false });
-                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-            });
-
-            // Lấy text content từng phần
+            // Chỉ add text từ PDF, scale lại vị trí và fontSize
             const textContent = await page.getTextContent();
             textContent.items.forEach(item => {
                 const text = new fabric.Text(item.str, {
-                    left: item.transform[4] * 2,
-                    top: (viewport.height - item.transform[5]) * 2,
-                    fontSize: Math.abs(item.transform[0]) * 2,
+                    left: item.transform[4] * 2 * scaleX,
+                    top: (viewport.height - item.transform[5]) * 2 * scaleY,
+                    fontSize: Math.abs(item.transform[0]) * 2 * scaleY,
                     fill: '#000',
                     fontFamily: 'Arial',
                     selectable: true
@@ -134,7 +123,6 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
 
             canvas.requestRenderAll();
         };
-
         reader.readAsArrayBuffer(file);
     }
 
