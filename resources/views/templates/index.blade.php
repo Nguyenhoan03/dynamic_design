@@ -379,7 +379,10 @@
             <button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
             <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
             <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
-            <select onchange="setFont(this.value)">
+           <select onchange="setFont(this.value)">
+                <option value="dejavu sans">DejaVu Sans</option>
+                <option value="dejavu sans mono">DejaVu Sans Mono</option>
+                <option value="dejavu serif">DejaVu Serif</option>
                 <option value="helvetica">Helvetica</option>
                 <option value="times">Times</option>
                 <option value="courier">Courier</option>

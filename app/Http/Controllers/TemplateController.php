@@ -76,10 +76,8 @@ class TemplateController extends Controller
 
             // dd($request->input('template_unit'));
             $qrVariables = $this->saveTemplateElements($template);
-            
             $zoom = floatval($request->input('template_zoom', 1));
             $viewport = json_decode($request->input('template_viewport', '[]'), true);
-
             
             // Lấy fields động từ client
             $fields = array_filter(array_map('trim', explode(',', $request->input('fields', ''))));
@@ -98,9 +96,9 @@ class TemplateController extends Controller
                 'zoom' => $zoom,
                 'viewport' => $viewport,
 
+            ])->setOptions([
+                'defaultFont' => 'DejaVu Sans',
             ]);
-            // $pdf->setOptions(['defaultFont' => 'DejaVu Sans']);
-            //  dd($request->input('fields'),$qrVariables, $fields);
 
 
             return $pdf->download($template->name . '.pdf');

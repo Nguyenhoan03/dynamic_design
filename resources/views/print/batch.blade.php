@@ -77,19 +77,28 @@
                         $text = preg_replace_callback('/#\{(.*?)\}/', fn($m) => $data[$m[1]] ?? $m[0], $text);
                         $fontSize = ($obj['fontSize'] ?? 16) * $zoom;
                         $fontKey = strtolower(trim($obj['fontFamily'] ?? 'helvetica'));
+                        $fontMap = [
+                            'dejavu sans' => 'DejaVu Sans',
+                            'dejavu sans mono' => 'DejaVu Sans Mono',
+                            'dejavu serif' => 'DejaVu Serif',
+                            'helvetica' => 'Helvetica',
+                            'times' => 'Times',
+                            'courier' => 'Courier',
+                        ];
+                        $fontFamily = $fontMap[$fontKey] ?? 'DejaVu Sans';
                     @endphp
                   <div class="element"
-    style="
-        font-family: '{{ $fontKey }}', sans-serif;
-        font-size: {{ $fontSize }}px;
-        color: {{ $obj['fill'] ?? '#000' }};
-        font-weight: {{ $obj['fontWeight'] ?? 'normal' }};
-        position:absolute;
-        left: {{ $left }}px;
-        top: {{ $top }}px;
-    ">
-    {{ $text }}
-</div>
+                    style="
+                        font-family: '{{ $fontFamily }}', sans-serif !important;
+                        font-size: {{ $fontSize }}px;
+                        color: {{ $obj['fill'] ?? '#000' }};
+                        font-weight: {{ $obj['fontWeight'] ?? 'normal' }};
+                        position:absolute;
+                        left: {{ $left }}px;
+                        top: {{ $top }}px;
+                    ">
+                    {{ $text }}
+                </div>
 
 
                 @elseif ($type === 'qr')

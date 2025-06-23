@@ -213,7 +213,7 @@ function addDynamicText(content) {
     let field = content.replace(/[#\{\}]/g, '');
     if (!field.endsWith('_text')) field += '_text';
     const text = new fabric.Textbox(`#{${field}}`, {
-        left: 120, top: 60, fontSize: 22, fill: '#222', width: 200, fontFamily: 'Arial',
+        left: 120, top: 60, fontSize: 22, fill: '#222', width: 200, fontFamily: 'DejaVu Sans',
         customType: 'dynamic',
         textAlign: 'center',
         variable: `#{${field}}`
