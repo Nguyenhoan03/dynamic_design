@@ -236,8 +236,10 @@ document.getElementById('excelInput').addEventListener('change', function(e) {
         const workbook = XLSX.read(data, {type: 'array'});
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+        // Bỏ dòng đầu tiên (header)
+        const dataRows = rows.slice(1);
         // Convert rows to CSV string
-        const csv = rows.map(r => r.join(',')).join('\n');
+        const csv = dataRows.map(r => r.join(',')).join('\n');
         document.querySelector('textarea[name="csv_rows"]').value = csv;
     };
     reader.readAsArrayBuffer(file);

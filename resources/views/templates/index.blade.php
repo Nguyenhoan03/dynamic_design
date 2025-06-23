@@ -118,27 +118,29 @@
                     <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body p-4">
-                    <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                    <label class="form-label fw-semibold mb-2">
-                        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
-                    </label>
-                    <!-- import excel -->
-                    <div class="mb-3">
+               
+            <div class="modal-body p-4">
+                <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
+                <label class="form-label fw-semibold mb-2">
+                    Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
+                </label>
+                <!-- import excel -->
+                <div class="mb-3">
                     <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
-                       <button type="button" class="btn btn-outline-primary mb-2" id="downloadExcelTemplate">
-                        <i class="bi bi-download"></i> Tải file Excel mẫu
-                    </button>
-                    <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control">
+                    <div class="input-group">
+                        <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control" aria-label="Chọn file Excel">
+                        <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
+                            <i class="bi bi-download"></i> Tải file Excel mẫu
+                        </button>
+                    </div>
+                    <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
                 </div>
-             
-
-                    <textarea class="form-control border border-1 rounded-3 shadow-sm"
-                              name="csv_rows"
-                              rows="6"
-                              placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
-                </div>
-
+                <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
+                <textarea class="form-control border border-1 rounded-3 shadow-sm"
+                        name="csv_rows"
+                        rows="6"
+                        placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+            </div>
                 <div class="modal-footer d-flex justify-content-end px-4 pb-4">
                     <button type="submit" class="btn btn-success px-4">
                         <i class="bi bi-printer-fill me-1"></i> In
