@@ -32,18 +32,24 @@ document.addEventListener('keydown', function (e) {
 
 function updateCanvasInfo() {
     const zoom = (window.canvas.getZoom() * 100).toFixed(0) + '%';
+
+    // Nếu có window.originWidth/Height/Unit (tức là vào edit), ưu tiên dùng giá trị gốc từ DB
+    if (window.originWidth && window.originHeight && window.originUnit) {
+        document.getElementById('canvasInfo').innerText =
+            `Zoom: ${zoom} | Kích thước: ${window.originWidth} x ${window.originHeight} ${window.originUnit}`;
+        return;
+    }
+
+    // Nếu không phải edit, lấy theo px và convert như cũ
     const pxWidth = window.canvas.getWidth();
     const pxHeight = window.canvas.getHeight();
-
-    // Lấy đơn vị từ localStorage là chính xác nhất
     const unit = localStorage.getItem('canvas_design_unit') || window.defaultCanvasUnit || 'px';
-
-    let width = pxWidth, height = pxHeight;
 
     function formatNumber(val) {
         return Number.isInteger(val) ? val : parseFloat(val.toFixed(2)).toString();
     }
 
+    let width = pxWidth, height = pxHeight;
     if (unit === 'mm') {
         width = formatNumber(pxWidth / 3.7795275591);
         height = formatNumber(pxHeight / 3.7795275591);
@@ -59,7 +65,8 @@ function updateCanvasInfo() {
     }
 
 
-    document.getElementById('canvasInfo').innerText = `Zoom: ${zoom} | Kích thước: ${width} x ${height} ${unit}`;
+    document.getElementById('canvasInfo').innerText =
+        `Zoom: ${zoom} | Kích thước: ${width} x ${height} ${unit}`;
 }
 
 window.updateCanvasInfo = updateCanvasInfo;

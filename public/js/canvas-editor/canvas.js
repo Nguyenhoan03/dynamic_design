@@ -1,5 +1,23 @@
-const canvasWidth = window.defaultCanvasWidth;
-const canvasHeight = window.defaultCanvasHeight;
+function convertToPx(value, unit) {
+    const factors = {
+        mm: 3.7795275591,
+        cm: 37.795275591,
+        inch: 96,
+        px: 1
+    };
+    return value * (factors[unit] || 1);
+}
+
+// Lấy width, height, unit từ URL hoặc server
+const urlParams = new URLSearchParams(window.location.search);
+const width = parseFloat(urlParams.get('width')) || 500;
+const height = parseFloat(urlParams.get('height')) || 500;
+const unit = urlParams.get('unit') || 'px';
+
+const canvasWidth = convertToPx(width, unit);
+const canvasHeight = convertToPx(height, unit);
+
+window.defaultCanvasUnit = unit; // để updateCanvasInfo dùng đúng đơn vị
 
 window.canvas = new fabric.Canvas('templateCanvas', {
     backgroundColor: '#fff',

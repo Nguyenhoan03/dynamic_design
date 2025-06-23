@@ -490,7 +490,7 @@
         window.originWidth = {{ $width }};
         window.originHeight = {{ $height }};
         window.originUnit = "{{ $unit ?? 'px' }}";
-
+        updateCanvasInfo();   
         setTimeout(function() {
             let json = @json($config);
             if (typeof json === 'string') json = JSON.parse(json);
