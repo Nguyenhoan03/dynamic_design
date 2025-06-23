@@ -254,15 +254,15 @@ document.getElementById('printForm').addEventListener('submit', function(e) {
         return false;
     }
     // Simple validation: check each row has enough columns (ví dụ: 2 cột trở lên)
-    const rows = csv.split('\n');
-    for (let i = 0; i < rows.length; i++) {
-        const cols = rows[i].split(',');
-        if (cols.length < 2) {
-            alert('Dòng ' + (i+1) + ' thiếu dữ liệu. Mỗi dòng cần ít nhất 2 cột.');
-            e.preventDefault();
-            return false;
-        }
-    }
+    // const rows = csv.split('\n');
+    // for (let i = 0; i < rows.length; i++) {
+    //     const cols = rows[i].split(',');
+    //     if (cols.length < 2) {
+    //         alert('Dòng ' + (i+1) + ' thiếu dữ liệu. Mỗi dòng cần ít nhất 2 cột.');
+    //         e.preventDefault();
+    //         return false;
+    //     }
+    // }    
 });
 
 

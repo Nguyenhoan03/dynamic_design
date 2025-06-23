@@ -429,9 +429,18 @@
             </button>
 
     <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+<script>
+    // Khai báo workerSrc cho pdf.js (nên đặt ngay sau khi import pdf.js)
+    window.pdfjsLib = window.pdfjsLib || window.pdfjsDistBuild || {};
+    pdfjsLib.GlobalWorkerOptions = pdfjsLib.GlobalWorkerOptions || {};
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script> -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
