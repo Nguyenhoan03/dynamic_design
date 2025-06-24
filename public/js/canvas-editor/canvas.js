@@ -107,96 +107,85 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
     }
 
     // PDF
-    else if (file.type === 'application/pdf') {
-        const file = e.target.files[0];
-        const reader = new FileReader();
+else if (file.type === 'application/pdf') {
+    const file = e.target.files[0];
+    const reader = new FileReader();
 
-        reader.onload = async function (ev) {
-            try {
-                const buffer = ev.target.result;
-                const bufferCopy = buffer.slice(0); // dùng cho pdf-lib
-                const typedarray = new Uint8Array(buffer); // dùng cho pdf.js
+    reader.onload = async function (ev) {
+        try {
+            const buffer = ev.target.result;
+            const typedarray = new Uint8Array(buffer);
 
-                // Log kiểm tra
-                console.log('✅ typedarray:', typedarray);
+            const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+            const page = await pdf.getPage(1);
+            const scale = 2;
+            const viewport = page.getViewport({ scale });
 
-                // Load PDF bằng pdf.js
-                const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-                const page = await pdf.getPage(1);
-                const viewport = page.getViewport({ scale: 2 });
+            // === SVG chứa hình/QR/... nhưng sẽ loại bỏ text
+            const opList = await page.getOperatorList();
+            const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
+            const svg = await svgGfx.getSVG(opList, viewport);
 
-                const scaleX = canvas.getWidth() / viewport.width;
-                const scaleY = canvas.getHeight() / viewport.height;
+            // Loại bỏ <text> trong SVG (vì sẽ add text thủ công)
+            const svgDoc = new DOMParser().parseFromString(
+                new XMLSerializer().serializeToString(svg),
+                'image/svg+xml'
+            );
 
-                // Đổ text
-                const textContent = await page.getTextContent();
-                textContent.items.forEach(item => {
+            svgDoc.querySelectorAll('text').forEach(el => el.remove());
+            svgDoc.querySelectorAll('clipPath, mask').forEach(el => el.remove());
+
+            const cleanedSvg = new XMLSerializer().serializeToString(svgDoc);
+
+            // Reset canvas
+            canvas.clear();
+            canvas.setWidth(viewport.width);
+            canvas.setHeight(viewport.height);
+
+            // Chỉ add shape/ảnh, bỏ text SVG
+            fabric.loadSVGFromString(cleanedSvg, (objects) => {
+                objects.forEach(obj => {
+                    if (obj.type !== 'text' && obj.type !== 'i-text') {
+                        obj.selectable = true;
+                        canvas.add(obj);
+                    }
+                });
+                canvas.requestRenderAll();
+            });
+
+            // Add text thật từ PDF.js (đã chỉnh lại vị trí cho sát nhất)
+            const textContent = await page.getTextContent();
+            textContent.items.forEach(item => {
+                const fontSize = Math.abs(item.transform[0]) * scale;
+                const left = item.transform[4] * scale;
+                const top = (viewport.height - item.transform[5]) * scale - fontSize; // Trừ fontSize để căn baseline
+
+                if (item.str.trim() !== '') {
                     const text = new fabric.Text(item.str, {
-                        left: item.transform[4] * 2 * scaleX,
-                        top: (viewport.height - item.transform[5]) * 2 * scaleY,
-                        fontSize: Math.abs(item.transform[0]) * 2 * scaleY,
+                        left,
+                        top,
+                        fontSize,
                         fill: '#000',
-                        fontFamily: 'Arial',
+                        fontFamily: 'Arial', // Nếu biết font gốc, hãy truyền đúng tên font
                         selectable: true
                     });
                     canvas.add(text);
-                });
-
-                // Đọc ảnh nhúng bằng pdf-lib
-                try {
-                    const pdfDoc = await PDFLib.PDFDocument.load(bufferCopy);
-                    const pages = pdfDoc.getPages();
-                    console.log(pages);
-                    const images = [];
-
-                    for (const page of pages) {
-                        const xObjectDict = page.node?.Resources?.().get('XObject');
-                        if (!xObjectDict) continue;
-
-                        const keys = xObjectDict.keys();
-                        for (const key of keys) {
-                            const xobj = xObjectDict.get(key);
-                            if (!xobj) continue;
-
-                            const subtype = xobj.dict.get('Subtype')?.name;
-                            const filter = xobj.dict.get('Filter')?.name;
-
-                            if (subtype === 'Image' && filter === 'DCTDecode') {
-                                const imgBytes = xobj.getContents();
-                                const imgSrc = 'data:image/jpeg;base64,' + PDFLib.uint8ArrayToBase64(imgBytes);
-
-                                console.log('📷 Extracted image:', imgSrc); // ✅ Log ra ảnh
-
-                                images.push(imgSrc);
-                            }
-                        }
-                    }
-
-                    // Đưa ảnh vào canvas
-                    for (let i = 0; i < images.length; i++) {
-                        fabric.Image.fromURL(images[i], function (img) {
-                            img.set({
-                                left: 30 + i * 40,
-                                top: 30 + i * 40,
-                                scaleX: 0.5,
-                                scaleY: 0.5,
-                                selectable: true
-                            });
-                            canvas.add(img);
-                        }, { crossOrigin: 'Anonymous' });
-                    }
-                } catch (err) {
-                    console.warn('❌ Không extract được ảnh từ PDF:', err);
                 }
+            });
+            canvas.requestRenderAll();
 
-                canvas.requestRenderAll();
-            } catch (err) {
-                console.error('❌ Lỗi khi xử lý PDF:', err);
-            }
-        };
+        } catch (err) {
+            console.error('❌ Lỗi xử lý PDF:', err);
+        }
+    };
 
-        reader.readAsArrayBuffer(file);
-    }
+    reader.readAsArrayBuffer(file);
+}
+
+
+
+
+
 
 
 

@@ -253,24 +253,24 @@ document.getElementById('excelInput').addEventListener('change', function(e) {
 });
 
 // Validate CSV data before submit
-document.getElementById('printForm').addEventListener('submit', function(e) {
-    const csv = document.querySelector('textarea[name="csv_rows"]').value.trim();
-    if (!csv) {
-        alert('Vui lòng nhập dữ liệu hoặc import file Excel!');
-        e.preventDefault();
-        return false;
-    }
-    // Simple validation: check each row has enough columns (ví dụ: 2 cột trở lên)
-    // const rows = csv.split('\n');
-    // for (let i = 0; i < rows.length; i++) {
-    //     const cols = rows[i].split(',');
-    //     if (cols.length < 2) {
-    //         alert('Dòng ' + (i+1) + ' thiếu dữ liệu. Mỗi dòng cần ít nhất 2 cột.');
-    //         e.preventDefault();
-    //         return false;
-    //     }
-    // }    
-});
+// document.getElementById('printForm').addEventListener('submit', function(e) {
+//     const csv = document.querySelector('textarea[name="csv_rows"]').value.trim();
+//     if (!csv) {
+//         alert('Vui lòng nhập dữ liệu hoặc import file Excel!');
+//         e.preventDefault();
+//         return false;
+//     }
+//     // Simple validation: check each row has enough columns (ví dụ: 2 cột trở lên)
+//     // const rows = csv.split('\n');
+//     // for (let i = 0; i < rows.length; i++) {
+//     //     const cols = rows[i].split(',');
+//     //     if (cols.length < 2) {
+//     //         alert('Dòng ' + (i+1) + ' thiếu dữ liệu. Mỗi dòng cần ít nhất 2 cột.');
+//     //         e.preventDefault();
+//     //         return false;
+//     //     }
+//     // }    
+// });
 
 
 
