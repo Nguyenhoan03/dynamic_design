@@ -107,96 +107,96 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
     }
 
     // PDF
-else if (file.type === 'application/pdf') {
-    const reader = new FileReader();
-    reader.onload = async function (ev) {
-        try {
-            const buffer = ev.target.result;
-            const typedarray = new Uint8Array(buffer);
-            const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-            const page = await pdf.getPage(1);
+    else if (file.type === 'application/pdf') {
+        const reader = new FileReader();
+        reader.onload = async function (ev) {
+            try {
+                const buffer = ev.target.result;
+                const typedarray = new Uint8Array(buffer);
+                const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+                const page = await pdf.getPage(1);
 
-            const scale = 2;
-            const viewport = page.getViewport({ scale });
+                const scale = 2;
+                const viewport = page.getViewport({ scale });
 
-            // Lấy kích thước canvas gốc để scale nội dung PDF vừa khít
-            const canvasWidth = canvas.getWidth();
-            const canvasHeight = canvas.getHeight();
+                // Lấy kích thước canvas gốc để scale nội dung PDF vừa khít
+                const canvasWidth = canvas.getWidth();
+                const canvasHeight = canvas.getHeight();
 
-            // SVG gốc
-            const opList = await page.getOperatorList();
-            const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
-            const svg = await svgGfx.getSVG(opList, viewport);
+                // SVG gốc
+                const opList = await page.getOperatorList();
+                const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
+                const svg = await svgGfx.getSVG(opList, viewport);
 
-            // Làm sạch SVG
-            const svgDoc = new DOMParser().parseFromString(
-                new XMLSerializer().serializeToString(svg),
-                'image/svg+xml'
-            );
-            svgDoc.querySelectorAll('text, clipPath, mask').forEach(el => el.remove());
-            const cleanedSvg = new XMLSerializer().serializeToString(svgDoc);
+                // Làm sạch SVG
+                const svgDoc = new DOMParser().parseFromString(
+                    new XMLSerializer().serializeToString(svg),
+                    'image/svg+xml'
+                );
+                svgDoc.querySelectorAll('text, clipPath, mask').forEach(el => el.remove());
+                const cleanedSvg = new XMLSerializer().serializeToString(svgDoc);
 
-            // Clear canvas (nhưng giữ nguyên kích thước)
-            canvas.clear();
+                // Clear canvas (nhưng giữ nguyên kích thước)
+                canvas.clear();
 
-            // Tính tỷ lệ để nội dung PDF vừa khít canvas
-            const scaleRatio = Math.min(
-                canvasWidth / viewport.width,
-                canvasHeight / viewport.height
-            );
+                // Tính tỷ lệ để nội dung PDF vừa khít canvas
+                const scaleRatio = Math.min(
+                    canvasWidth / viewport.width,
+                    canvasHeight / viewport.height
+                );
 
-            // Load SVG
-            fabric.loadSVGFromString(cleanedSvg, (objects, options) => {
-                const group = fabric.util.groupSVGElements(objects, options);
-                group.set({
-                    scaleX: scaleRatio,
-                    scaleY: scaleRatio,
-                    left: (canvasWidth - viewport.width * scaleRatio) / 2,
-                    top: (canvasHeight - viewport.height * scaleRatio) / 2,
-                    selectable: false
-                });
-                canvas.add(group);
-                canvas.sendToBack(group);
-                canvas.requestRenderAll();
-            });
-
-            // Thêm text
-            const textContent = await page.getTextContent();
-            const ctx = document.createElement('canvas').getContext('2d');
-
-            for (const item of textContent.items) {
-                const fontSize = Math.abs(item.transform[0]) * scale * scaleRatio;
-                const left = item.transform[4] * scale * scaleRatio + (canvasWidth - viewport.width * scaleRatio) / 2;
-                const top = item.transform[5] * scale * scaleRatio + (canvasHeight - viewport.height * scaleRatio) / 2;
-
-                const str = item.str.trim();
-                if (str !== '') {
-                    ctx.font = `${fontSize}px sans-serif`;
-                    const width = ctx.measureText(str).width;
-
-                    const textbox = new fabric.Textbox(str, {
-                        left,
-                        top,
-                        fontSize,
-                        width,
-                        fill: '#000',
-                        fontFamily: 'sans-serif',
-                        textAlign: 'left',
-                        selectable: true,
-                        editable: true
+                // Load SVG
+                fabric.loadSVGFromString(cleanedSvg, (objects, options) => {
+                    objects.forEach(obj => {
+                        obj.set({
+                            scaleX: (obj.scaleX || 1) * scaleRatio,
+                            scaleY: (obj.scaleY || 1) * scaleRatio,
+                            left: (canvasWidth - viewport.width * scaleRatio) / 2 + (obj.left || 0) * scaleRatio,
+                            top: (canvasHeight - viewport.height * scaleRatio) / 2 + (obj.top || 0) * scaleRatio,
+                            selectable: true
+                        });
+                        canvas.add(obj);
                     });
+                    canvas.requestRenderAll();
+                });
 
-                    canvas.add(textbox);
+                // Thêm text
+                const textContent = await page.getTextContent();
+                const ctx = document.createElement('canvas').getContext('2d');
+
+                for (const item of textContent.items) {
+                    const fontSize = Math.abs(item.transform[0]) * scale * scaleRatio;
+                    const left = item.transform[4] * scale * scaleRatio + (canvasWidth - viewport.width * scaleRatio) / 2;
+                    const top = item.transform[5] * scale * scaleRatio + (canvasHeight - viewport.height * scaleRatio) / 2;
+
+                    const str = item.str.trim();
+                    if (str !== '') {
+                        ctx.font = `${fontSize}px sans-serif`;
+                        const width = ctx.measureText(str).width;
+
+                        const textbox = new fabric.Textbox(str, {
+                            left,
+                            top,
+                            fontSize,
+                            width,
+                            fill: '#000',
+                            fontFamily: 'sans-serif',
+                            textAlign: 'left',
+                            selectable: true,
+                            editable: true
+                        });
+
+                        canvas.add(textbox);
+                    }
                 }
-            }
 
-            canvas.requestRenderAll();
-        } catch (err) {
-            console.error('❌ Lỗi xử lý PDF:', err);
-        }
-    };
-    reader.readAsArrayBuffer(file);
-}
+                canvas.requestRenderAll();
+            } catch (err) {
+                console.error('❌ Lỗi xử lý PDF:', err);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
 
 
 
