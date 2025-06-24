@@ -81,23 +81,65 @@ function unlockAll() {
 
 function toggleToolbarMenu(e) {
     e.stopPropagation();
-    const menu = document.getElementById('toolbarMenu');
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    const btn = e.currentTarget;
+    const wrapper = btn.closest('.toolbar-menu-wrapper');
+    const menu = wrapper.querySelector('.toolbar-menu');
+    // Ẩn tất cả menu khác
+    document.querySelectorAll('.toolbar-menu').forEach(m => {
+        if (m !== menu) m.style.display = 'none';
+    });
 
-    // Ẩn/hiện các mục nâng cao theo loại object
-    const active = window.canvas.getActiveObject();
-    document.getElementById('changeColorMenu').style.display = (active && (
-        active.type === 'rect' || active.type === 'circle' || active.type === 'line' ||
-        active.type === 'textbox' || active.type === 'text'
-    )) ? 'flex' : 'none';
-    document.getElementById('changeImageMenu').style.display = (active && active.type === 'image' && !active.customType) ? 'flex' : 'none';
-    document.getElementById('editQRMenu').style.display = (active && active.customType === 'staticQR') ? 'flex' : 'none';
+    // Toggle menu
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+        menu.classList.remove('show-above', 'show-left');
+    } else {
+        menu.style.display = 'block';
+        menu.classList.remove('show-above', 'show-left');
+
+        // Tính toán vị trí menu chính
+        const rect = menu.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+
+        // Dưới bị tràn, hiển thị lên trên
+        if (rect.bottom > winHeight && btnRect.top > menu.offsetHeight) {
+            menu.classList.add('show-above');
+        }
+        // Phải bị tràn, hiển thị sang trái
+        if (rect.right > winWidth && btnRect.left > menu.offsetWidth) {
+            menu.classList.add('show-left');
+        }
+
+        // Xử lý submenu khi hover
+        menu.querySelectorAll('.submenu').forEach(sub => {
+            sub.classList.remove('show-left', 'show-above');
+            sub.parentElement.onmouseenter = function() {
+                // Lấy vị trí submenu
+                sub.style.display = 'block';
+                const subRect = sub.getBoundingClientRect();
+                // Nếu submenu tràn phải, hiển thị sang trái
+                if (subRect.right > winWidth && subRect.left > sub.offsetWidth) {
+                    sub.classList.add('show-left');
+                } else {
+                    sub.classList.remove('show-left');
+                }
+                // Nếu submenu tràn dưới, hiển thị lên trên
+                if (subRect.bottom > winHeight && subRect.top > sub.offsetHeight) {
+                    sub.classList.add('show-above');
+                } else {
+                    sub.classList.remove('show-above');
+                }
+                sub.style.display = '';
+            };
+        });
+    }
 }
 
-// Ẩn menu khi click ra ngoài
-document.addEventListener('mousedown', function(e) {
-    const menu = document.getElementById('toolbarMenu');
-    if (menu && !menu.contains(e.target)) menu.style.display = 'none';
+// Đóng menu khi click ra ngoài
+document.addEventListener('click', function() {
+    document.querySelectorAll('.toolbar-menu').forEach(m => m.style.display = 'none');
 });
 
 function updateEditMainBtn() {
