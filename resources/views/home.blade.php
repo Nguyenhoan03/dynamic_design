@@ -265,16 +265,53 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.card-canvas-preview').forEach(preview => {
                 const config = JSON.parse(preview.getAttribute('data-template-config'));
+
+                // Lấy kích thước thiết kế gốc từ config (nếu có)
+                let designWidth = 500, designHeight = 300;
+                if (config && config.width && config.height) {
+                    designWidth = config.width;
+                    designHeight = config.height;
+                } else if (config && config.objects && config.objects.length) {
+                    // fallback: lấy max right/bottom của các object
+                    config.objects.forEach(obj => {
+                        if (obj.left + (obj.width || 0) > designWidth) designWidth = obj.left + (obj.width || 0);
+                        if (obj.top + (obj.height || 0) > designHeight) designHeight = obj.top + (obj.height || 0);
+                    });
+                }
+
+                // Kích thước khung preview
+                const previewW = preview.offsetWidth || 300;
+                const previewH = 180; // hoặc lấy từ style
+
+                // Tính tỉ lệ scale nhỏ nhất để fit cả chiều rộng và chiều cao
+                const scale = Math.min(previewW / designWidth, previewH / designHeight);
+
+                // Tạo canvas preview với kích thước khung preview
                 const canvas = new fabric.StaticCanvas(null, {
-                    width: 500,
-                    height: 300
+                    width: previewW,
+                    height: previewH,
+                    backgroundColor: '#fff'
                 });
 
                 canvas.loadFromJSON(config, () => {
+                    // Scale tất cả object cho vừa preview
+                    canvas.getObjects().forEach(obj => {
+                        obj.scaleX = (obj.scaleX || 1) * scale;
+                        obj.scaleY = (obj.scaleY || 1) * scale;
+                        obj.left = (obj.left || 0) * scale;
+                        obj.top = (obj.top || 0) * scale;
+                        obj.setCoords();
+                    });
                     canvas.renderAll();
+
+                    // Xuất ra ảnh preview
                     const dataURL = canvas.toDataURL({
                         format: 'jpeg',
-                        quality: 0.8
+                        quality: 0.8,
+                        left: 0,
+                        top: 0,
+                        width: previewW,
+                        height: previewH
                     });
                     preview.style.backgroundImage = `url('${dataURL}')`;
                 });
@@ -286,7 +323,7 @@
         function shareTemplate(id) {
             fetch(`/templates/${id}/share`)
                 .then(res => res.json())
-                .then(data => {
+                .then data => {
                     navigator.clipboard.writeText(data.url);
                     alert('Đã copy link chia sẻ: ' + data.url);
                 });
