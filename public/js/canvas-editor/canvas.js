@@ -107,85 +107,99 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
     }
 
     // PDF
-    else if (file.type === 'application/pdf') {
-        const file = e.target.files[0];
-        const reader = new FileReader();
+else if (file.type === 'application/pdf') {
+    const reader = new FileReader();
+    reader.onload = async function (ev) {
+        try {
+            const buffer = ev.target.result;
+            const typedarray = new Uint8Array(buffer);
+            const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+            const page = await pdf.getPage(1);
 
-        reader.onload = async function (ev) {
-            try {
-                const buffer = ev.target.result;
-                const typedarray = new Uint8Array(buffer);
+            const scale = 2;
+            const viewport = page.getViewport({ scale });
 
-                // 1. Load tài liệu PDF và trang đầu tiên
-                const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-                const page = await pdf.getPage(1);
-                const scale = 2;
-                const viewport = page.getViewport({ scale });
+            // Lấy kích thước canvas gốc để scale nội dung PDF vừa khít
+            const canvasWidth = canvas.getWidth();
+            const canvasHeight = canvas.getHeight();
 
-                // 2. Tạo SVG từ PDF (có cả hình khối, ảnh, QR, nhưng loại bỏ text)
-                const opList = await page.getOperatorList();
-                const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
-                const svg = await svgGfx.getSVG(opList, viewport);
+            // SVG gốc
+            const opList = await page.getOperatorList();
+            const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
+            const svg = await svgGfx.getSVG(opList, viewport);
 
-                // 3. Xóa các thẻ <text>, <clipPath>, <mask> để tránh lỗi và chỉ giữ ảnh/hình khối
-                const svgDoc = new DOMParser().parseFromString(
-                    new XMLSerializer().serializeToString(svg),
-                    'image/svg+xml'
-                );
-                svgDoc.querySelectorAll('text, clipPath, mask').forEach(el => el.remove());
-                const cleanedSvg = new XMLSerializer().serializeToString(svgDoc);
+            // Làm sạch SVG
+            const svgDoc = new DOMParser().parseFromString(
+                new XMLSerializer().serializeToString(svg),
+                'image/svg+xml'
+            );
+            svgDoc.querySelectorAll('text, clipPath, mask').forEach(el => el.remove());
+            const cleanedSvg = new XMLSerializer().serializeToString(svgDoc);
 
-                // 4. Reset canvas (xóa cũ, set kích thước theo PDF)
-                canvas.clear();
-                canvas.setWidth(viewport.width);
-                canvas.setHeight(viewport.height);
+            // Clear canvas (nhưng giữ nguyên kích thước)
+            canvas.clear();
 
-                // 5. Render các shape/image từ SVG lên canvas
-                fabric.loadSVGFromString(cleanedSvg, (objects, options) => {
-                    objects.forEach(obj => {
-                        // Chỉ add shape, image, QR (bỏ text SVG)
-                        if (obj.type !== 'text' && obj.type !== 'i-text') {
-                            obj.selectable = true;
-                            obj.evented = true;
-                            canvas.add(obj);
-                        }
-                    });
+            // Tính tỷ lệ để nội dung PDF vừa khít canvas
+            const scaleRatio = Math.min(
+                canvasWidth / viewport.width,
+                canvasHeight / viewport.height
+            );
 
-                    // Add text thật từ PDF.js
-                    page.getTextContent().then(textContent => {
-                        textContent.items.forEach(item => {
-                            const fontSize = Math.abs(item.transform[0]) * scale;
-                            const left = item.transform[4] * scale;
-                            const top = (viewport.height - item.transform[5]) * scale;
-                            if (item.str.trim() !== '') {
-                                const text = new fabric.Textbox(item.str, {
-                                    left,
-                                    top,
-                                    fontSize,
-                                    fill: '#000',
-                                    fontFamily: 'Arial',
-                                    width: 250, // hoặc lấy width từ PDF nếu có
-                                    textAlign: 'left', // hoặc 'center', 'right' nếu muốn
-                                    selectable: true,
-                                    evented: true,
-                                    editable: true
-                                });
-                                canvas.add(text);
-                            }
-                        });
-                        canvas.requestRenderAll();
-                    });
+            // Load SVG
+            fabric.loadSVGFromString(cleanedSvg, (objects, options) => {
+                const group = fabric.util.groupSVGElements(objects, options);
+                group.set({
+                    scaleX: scaleRatio,
+                    scaleY: scaleRatio,
+                    left: (canvasWidth - viewport.width * scaleRatio) / 2,
+                    top: (canvasHeight - viewport.height * scaleRatio) / 2,
+                    selectable: false
                 });
-
+                canvas.add(group);
+                canvas.sendToBack(group);
                 canvas.requestRenderAll();
+            });
 
-            } catch (err) {
-                console.error('❌ Lỗi xử lý PDF:', err);
+            // Thêm text
+            const textContent = await page.getTextContent();
+            const ctx = document.createElement('canvas').getContext('2d');
+
+            for (const item of textContent.items) {
+                const fontSize = Math.abs(item.transform[0]) * scale * scaleRatio;
+                const left = item.transform[4] * scale * scaleRatio + (canvasWidth - viewport.width * scaleRatio) / 2;
+                const top = item.transform[5] * scale * scaleRatio + (canvasHeight - viewport.height * scaleRatio) / 2;
+
+                const str = item.str.trim();
+                if (str !== '') {
+                    ctx.font = `${fontSize}px sans-serif`;
+                    const width = ctx.measureText(str).width;
+
+                    const textbox = new fabric.Textbox(str, {
+                        left,
+                        top,
+                        fontSize,
+                        width,
+                        fill: '#000',
+                        fontFamily: 'sans-serif',
+                        textAlign: 'left',
+                        selectable: true,
+                        editable: true
+                    });
+
+                    canvas.add(textbox);
+                }
             }
-        };
 
-        reader.readAsArrayBuffer(file);
-    }
+            canvas.requestRenderAll();
+        } catch (err) {
+            console.error('❌ Lỗi xử lý PDF:', err);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+
+
 
 
 
