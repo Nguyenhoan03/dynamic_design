@@ -159,7 +159,7 @@ function addStaticQR(qrText = 'https://example.com') {
                 qrValue: qrText
             });
             window.canvas.add(img).setActiveObject(img);
-        },{ crossOrigin: 'Anonymous' });
+        }, { crossOrigin: 'Anonymous' });
     }, 100);
 }
 
@@ -172,14 +172,14 @@ function handleStaticQRInput() {
     if (obj && obj.customType === 'staticQR') {
         qrInput.style.display = 'block';
         qrInput.value = obj.qrValue || '';
-        qrInput.onchange = function() {
+        qrInput.onchange = function () {
             obj.qrValue = qrInput.value;
             QRCode.toDataURL(qrInput.value, { width: 80, margin: 1 }, function (err, url) {
                 if (err) {
                     alert('Lỗi tạo QR code');
                     return;
                 }
-                fabric.Image.fromURL(url, function(newImg) {
+                fabric.Image.fromURL(url, function (newImg) {
                     newImg.set({
                         left: obj.left,
                         top: obj.top,
@@ -369,7 +369,7 @@ function editText() {
                     });
                     window.canvas.remove(active);
                     window.canvas.add(newImg).setActiveObject(newImg);
-                },{ crossOrigin: 'Anonymous'});
+                }, { crossOrigin: 'Anonymous' });
             });
         }
     }
@@ -446,7 +446,7 @@ function changeQR() {
 
                     window.canvas.remove(active);
                     window.canvas.add(img).setActiveObject(img);
-                },{ crossOrigin: 'Anonymous' });
+                }, { crossOrigin: 'Anonymous' });
             }, 100);
         }
     }
@@ -457,9 +457,9 @@ function showToolbarForActiveObject() {
     const active = window.canvas.getActiveObject();
     const toolbar = document.getElementById('objectToolbar');
     // Các nút/textbox
-    const changeImageBtn = document.getElementById('changeImageBtn');
-    const editQRBtn = document.getElementById('editQRBtn');
-    const changeColorBtn = document.getElementById('changeColorBtn');
+    const changeColorBtn = document.getElementById('changeColorMenu');
+    const changeImageBtn = document.getElementById('changeImageMenu');
+    const editQRBtn = document.getElementById('editQRMenu');
     const editTextBtn = document.getElementById('editTextBtn');
     const fontFamilySelect = document.getElementById('fontFamilySelect');
     const fontSizeInput = document.getElementById('fontSizeInput');
@@ -467,6 +467,7 @@ function showToolbarForActiveObject() {
     const alignCenterBtn = document.getElementById('alignCenterBtn');
     const alignRightBtn = document.getElementById('alignRightBtn');
 
+    console.log(active, 'active');
     if (active && toolbar) {
         toolbar.style.display = 'flex';
 
@@ -572,7 +573,7 @@ function openPrintModal() {
         }
 
         updateDynamicFieldsLabel();
-        
+
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
     }, 200);

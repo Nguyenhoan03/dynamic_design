@@ -9,26 +9,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-<link href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700|Lato:400,700|Montserrat:400,700|Source+Sans+Pro:400,700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Roboto:400,700|Open+Sans:400,700|Lato:400,700|Montserrat:400,700|Source+Sans+Pro:400,700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
-   @if(session('error'))
-<div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 9999; min-width: 320px;">
-    <div class="toast align-items-center text-bg-danger border-0 show" id="errorToast" role="alert">
-        <div class="d-flex">
-            <div class="toast-body d-flex align-items-center">
-                <span class="me-2" style="font-size: 1.5rem;">
-                    <i class="bi bi-x-circle-fill text-white"></i>
-                </span>
-                {{ session('error') }}
+    @if(session('error'))
+    <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3"
+        style="z-index: 9999; min-width: 320px;">
+        <div class="toast align-items-center text-bg-danger border-0 show" id="errorToast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <span class="me-2" style="font-size: 1.5rem;">
+                        <i class="bi bi-x-circle-fill text-white"></i>
+                    </span>
+                    {{ session('error') }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Đóng"></button>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+            <div class="toast-progress bg-white" style="height: 4px; width: 100%;"></div>
         </div>
-        <div class="toast-progress bg-white" style="height: 4px; width: 100%;"></div>
     </div>
-</div>
-@endif
+    @endif
     <!-- Topbar -->
     <div class="topbar">
         <div class="d-flex align-items-center gap-3">
@@ -37,10 +41,12 @@
             <input type="hidden" id="template_id" value="{{ $template->id ?? '' }}">
             <span class="size_design"></span>
 
-            <button class="d-none d-sm-block btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="changeCanvasSize()">
+            <button class="d-none d-sm-block btn btn-sm btn-outline-light d-flex align-items-center gap-1"
+                onclick="changeCanvasSize()">
                 <i class="bi bi-arrows-angle-expand"></i> Đổi cỡ
             </button>
-            <button class="d-none d-sm-block btn btn-sm btn-outline-light d-flex align-items-center gap-1" onclick="createNewDesign()">
+            <button class="d-none d-sm-block btn btn-sm btn-outline-light d-flex align-items-center gap-1"
+                onclick="createNewDesign()">
                 <i class="bi bi-plus-circle"></i> Tạo thiết kế mới
             </button>
 
@@ -53,7 +59,7 @@
         </button>
         <!-- Các nút thao tác, ẩn trên mobile -->
         <div class="tools d-none d-md-flex">
-           
+
 
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
                 <i class="bi bi-download"></i>Lưu thiết kế
@@ -79,7 +85,7 @@
             </button>
 
 
-           
+
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
                 <i class="bi bi-download"></i>Lưu thiết kế
             </button>
@@ -94,62 +100,63 @@
 
 
     <div class="modal fade" id="printModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <form id="printForm" method="POST" action="/print-batch" class="w-100">
-            @csrf
-            <!-- Hidden fields -->
-            <input type="hidden" name="template_name" id="template_name">
-            <input type="hidden" name="template_width" id="template_width">
-            <input type="hidden" name="template_height" id="template_height">
-            <input type="hidden" name="template_config" id="template_config">
-            <input type="hidden" name="template_id" id="template_id">
-            <input type="hidden" name="template_unit" id="template_unit">
-            <input type="hidden" name="fields" id="fields">
-            <input type="hidden" name="template_zoom" id="template_zoom">
-            <input type="hidden" name="template_viewport" id="template_viewport">
-            <input type="hidden" name="template_image" id="template_image">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <form id="printForm" method="POST" action="/print-batch" class="w-100">
+                @csrf
+                <!-- Hidden fields -->
+                <input type="hidden" name="template_name" id="template_name">
+                <input type="hidden" name="template_width" id="template_width">
+                <input type="hidden" name="template_height" id="template_height">
+                <input type="hidden" name="template_config" id="template_config">
+                <input type="hidden" name="template_id" id="template_id">
+                <input type="hidden" name="template_unit" id="template_unit">
+                <input type="hidden" name="fields" id="fields">
+                <input type="hidden" name="template_zoom" id="template_zoom">
+                <input type="hidden" name="template_viewport" id="template_viewport">
+                <input type="hidden" name="template_image" id="template_image">
 
-            <!-- Preview Image (optional, can be shown if needed) -->
-            <img id="canvasPreview" style="display: none; max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
+                <!-- Preview Image (optional, can be shown if needed) -->
+                <img id="canvasPreview"
+                    style="display: none; max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
 
-            <div class="modal-content shadow-sm border-0">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold">📄 In hàng loạt</h5>
-                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-content shadow-sm border-0">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title fw-bold">📄 In hàng loạt</h5>
+                        <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>
+                    </div>
 
-               
-            <div class="modal-body p-4">
-                <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                <label class="form-label fw-semibold mb-2">
-                    Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
-                </label>
-                <!-- import excel -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
-                    <div class="input-group">
-                        <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control" aria-label="Chọn file Excel">
-                        <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
-                            <i class="bi bi-download"></i> Tải file Excel mẫu
+
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
+                        <label class="form-label fw-semibold mb-2">
+                            Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr,
+                                ten_text</span>
+                        </label>
+                        <!-- import excel -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
+                            <div class="input-group">
+                                <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control"
+                                    aria-label="Chọn file Excel">
+                                <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
+                                    <i class="bi bi-download"></i> Tải file Excel mẫu
+                                </button>
+                            </div>
+                            <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
+                        </div>
+                        <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
+                        <textarea class="form-control border border-1 rounded-3 shadow-sm" name="csv_rows" rows="6"
+                            placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-end px-4 pb-4">
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-printer-fill me-1"></i> In
                         </button>
                     </div>
-                    <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
                 </div>
-                <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
-                <textarea class="form-control border border-1 rounded-3 shadow-sm"
-                        name="csv_rows"
-                        rows="6"
-                        placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
-            </div>
-                <div class="modal-footer d-flex justify-content-end px-4 pb-4">
-                    <button type="submit" class="btn btn-success px-4">
-                        <i class="bi bi-printer-fill me-1"></i> In
-                    </button>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
 
 
@@ -199,13 +206,14 @@
             </div>
             <div class="panel-group">
 
-                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="promptDynamicField()">
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2"
+                    onclick="promptDynamicField()">
                     <i class="bi bi-plus-circle me-2"></i> Thêm trường động
                 </button>
                 <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2" onclick="addDynamicQR()">
                     <i class="bi bi-qr-code me-2"></i> Thêm QR động
                 </button>
-                
+
             </div>
         </div>
         <div id="panel-text" class="sidebar-panel">
@@ -221,28 +229,29 @@
                     <i class="bi bi-qr-code"></i> Tạo QR tĩnh
                 </button>
                 <div id="qr-temp" style="display:none"></div>
-                 <input id="staticQRInput" type="text" class="form-control mt-2" placeholder="Nhập link hoặc text QR" style="display:none;">
+                <input id="staticQRInput" type="text" class="form-control mt-2" placeholder="Nhập link hoặc text QR"
+                    style="display:none;">
             </div>
         </div>
-      <div id="panel-upload" class="sidebar-panel">
-    <div class="panel-title d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh, File</span>
-        <button type="button" class="btn-close btn-sm" onclick="closePanel('upload')"></button>
-    </div>
-    <div class="panel-group">
-        <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2"
-            onclick="document.getElementById('uploadFile').click()">
-            <i class="bi bi-cloud-arrow-up me-2"></i> Import file (img,pdf,video,...)
-        </button>
-        <input type="file" id="uploadFile" accept="image/*,.pdf,video/*,audio/*" style="display:none">
-    </div>
-    <div class="panel-group">
-        <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2"
-            onclick="showExportOptions()">
-            <i class="bi bi-download me-2"></i> Export file
-        </button>
-    </div>
-</div>
+        <div id="panel-upload" class="sidebar-panel">
+            <div class="panel-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-cloud-arrow-up"></i> Tải ảnh, File</span>
+                <button type="button" class="btn-close btn-sm" onclick="closePanel('upload')"></button>
+            </div>
+            <div class="panel-group">
+                <button class="btn btn-outline-success w-100 d-flex align-items-center mb-2"
+                    onclick="document.getElementById('uploadFile').click()">
+                    <i class="bi bi-cloud-arrow-up me-2"></i> Import file (img,pdf,video,...)
+                </button>
+                <input type="file" id="uploadFile" accept="image/*,.pdf,video/*,audio/*" style="display:none">
+            </div>
+            <div class="panel-group">
+                <button class="btn btn-outline-primary w-100 d-flex align-items-center mb-2"
+                    onclick="showExportOptions()">
+                    <i class="bi bi-download me-2"></i> Export file
+                </button>
+            </div>
+        </div>
         <div id="panel-shape" class="sidebar-panel">
             <div class="panel-title d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-square"></i> Hình khối</span>
@@ -281,8 +290,10 @@
                 </div>
                 <div class="mt-2">
                     <div class="fw-bold mb-1">Đồ họa</div>
-                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addIcon('trophy')"><i class="bi bi-trophy"></i> Cúp</button>
-                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addIcon('globe')"><i class="bi bi-globe"></i> Địa cầu</button>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addIcon('trophy')"><i
+                            class="bi bi-trophy"></i> Cúp</button>
+                    <button class="btn btn-outline-dark btn-sm mb-1" onclick="addIcon('globe')"><i
+                            class="bi bi-globe"></i> Địa cầu</button>
                 </div>
             </div>
         </div>
@@ -305,112 +316,124 @@
             </div>
         </div>
         <!-- Canvas area -->
-      <div class="canvas-scroll-wrapper">
-        <div class="canvas-container">
-            <div class="canvas-box" id="canvasBox">
-                <canvas id="templateCanvas"></canvas>
+        <div class="canvas-scroll-wrapper">
+            <div class="canvas-container">
+                <div class="canvas-box" id="canvasBox">
+                    <canvas id="templateCanvas"></canvas>
                     <div id="objectToolbar" class="object-toolbar">
-    <!-- Nút cơ bản -->
-    <button id="editMainBtn" onclick="editMain()" title="Sửa" class="toolbar-btn">
-        <i id="editMainIcon" class="bi"></i>
-    </button>    <!-- <button onclick="addComment()" title="Bình luận" class="toolbar-btn"><i class="bi bi-chat-left-dots"></i></button> -->
-    <button onclick="lockSelected()" title="Khóa" class="toolbar-btn"><i class="bi bi-lock"></i></button>
-    <button onclick="duplicateSelected()" title="Paste" class="toolbar-btn"><i class="bi bi-files"></i></button>
-    <button onclick="deleteSelected()" title="Xóa" class="toolbar-btn"><i class="bi bi-trash"></i></button>
-    <!-- Nút ba chấm -->
-    <div class="toolbar-menu-wrapper" style="display:inline-block;position:relative;">
-        <button onclick="toggleToolbarMenu(event)" title="Thêm" class="toolbar-btn"><i class="bi bi-three-dots"></i></button>
-        <ul id="toolbarMenu" class="toolbar-menu" style="display:none;">
-            <li onclick="flipSelected()"><i class="bi bi-arrow-left-right"></i> Lật</li>
-            <li onclick="bringToFront()"><i class="bi bi-layers"></i> Lên trên</li>
-            <li onclick="sendToBack()"><i class="bi bi-layers-fill"></i> Xuống dưới</li>
-            <li class="align-submenu">
-            <span style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                <i class="bi bi-distribute-horizontal"></i>
-                <span style="flex:1;">Căn chỉnh</span>
-                <i class="bi bi-chevron-right"></i>
-            </span>       
-             <ul class="submenu">
-                <li title="Căn trái"  onclick="alignLeftSelected()"><i class="bi bi-align-start"></i> Căn trái</li>
-                <li title="Căn giữa"  onclick="alignCenterSelected()"><i class="bi bi-align-center"></i> Căn giữa</li>
-                <li title="Căn phải"  onclick="alignRightSelected()"><i class="bi bi-align-end"></i> Căn phải</li>
-            </ul>
-        </li>
+                        <!-- Nút cơ bản -->
+                        <button id="editMainBtn" onclick="editMain()" title="Sửa" class="toolbar-btn">
+                            <i id="editMainIcon" class="bi"></i>
+                        </button>
+                        <!-- <button onclick="addComment()" title="Bình luận" class="toolbar-btn"><i class="bi bi-chat-left-dots"></i></button> -->
+                        <button onclick="lockSelected()" title="Khóa" class="toolbar-btn"><i
+                                class="bi bi-lock"></i></button>
+                        <button onclick="duplicateSelected()" title="Paste" class="toolbar-btn"><i
+                                class="bi bi-files"></i></button>
+                        <button onclick="deleteSelected()" title="Xóa" class="toolbar-btn"><i
+                                class="bi bi-trash"></i></button>
+                        <!-- Nút ba chấm -->
+                        <div class="toolbar-menu-wrapper" style="display:inline-block;position:relative;">
+                            <button onclick="toggleToolbarMenu(event)" title="Thêm" class="toolbar-btn"><i
+                                    class="bi bi-three-dots"></i></button>
+                            <ul id="toolbarMenu" class="toolbar-menu" style="display:none;">
+                                <li onclick="flipSelected()"><i class="bi bi-arrow-left-right"></i> Lật</li>
+                                <li onclick="bringToFront()"><i class="bi bi-layers"></i> Lên trên</li>
+                                <li onclick="sendToBack()"><i class="bi bi-layers-fill"></i> Xuống dưới</li>
+                                <li class="align-submenu">
+                                    <span style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                                        <i class="bi bi-distribute-horizontal"></i>
+                                        <span style="flex:1;">Căn chỉnh</span>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </span>
+                                    <ul class="submenu">
+                                        <li title="Căn trái" onclick="alignLeftSelected()"><i
+                                                class="bi bi-align-start"></i> Căn trái</li>
+                                        <li title="Căn giữa" onclick="alignCenterSelected()"><i
+                                                class="bi bi-align-center"></i> Căn giữa</li>
+                                        <li title="Căn phải" onclick="alignRightSelected()"><i
+                                                class="bi bi-align-end"></i> Căn phải</li>
+                                    </ul>
+                                </li>
 
-            <li onclick="increaseSize()"><i class="bi bi-plus-square"></i> Tăng kích thước</li>
-            <li onclick="decreaseSize()"><i class="bi bi-dash-square"></i> Giảm kích thước</li>
-            <li onclick="rotateLeft()"><i class="bi bi-arrow-counterclockwise"></i> Xoay trái</li>
-            <li onclick="rotateRight()"><i class="bi bi-arrow-clockwise"></i> Xoay phải</li>
-            <li onclick="changeColor()" id="changeColorMenu" style="display:none;"><i class="bi bi-palette"></i> Đổi màu</li>
-            <li onclick="changeImage()" id="changeImageMenu" style="display:none;"><i class="bi bi-image"></i> Đổi ảnh</li>
-            <li onclick="changeQR()" id="editQRMenu" style="display:none;"><i class="bi bi-qr-code"></i> Sửa QR</li>
-        </ul>
-    </div>
-</div>
+                                <li onclick="increaseSize()"><i class="bi bi-plus-square"></i> Tăng kích thước</li>
+                                <li onclick="decreaseSize()"><i class="bi bi-dash-square"></i> Giảm kích thước</li>
+                                <li onclick="rotateLeft()"><i class="bi bi-arrow-counterclockwise"></i> Xoay trái</li>
+                                <li onclick="rotateRight()"><i class="bi bi-arrow-clockwise"></i> Xoay phải</li>
+                                <li onclick="changeColor()" id="changeColorMenu" style="display:none;"><i
+                                        class="bi bi-palette"></i> Đổi màu</li>
+                                <li onclick="changeImage()" id="changeImageMenu" style="display:none;"><i
+                                        class="bi bi-image"></i> Đổi ảnh</li>
+                                <li onclick="changeQR()" id="editQRMenu" style="display:none;"><i
+                                        class="bi bi-qr-code"></i> Sửa QR</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div id="canvasInfo" class="canvas-info canvas-info-bottom-center"></div>
             </div>
         </div>
- 
 
 
-   <div class="zoom-control">
-    <label for="zoomRange">Zoom:</label>
-    <input type="range" id="zoomRange" min="0.2" max="2" step="0.01" value="1">
-</div>
 
-    <!-- Nút mở sidebar cho mobile/tablet (hiện cả tablet) -->
-    <button id="toggleRightSidebar" class="btn btn-primary">
-        <i class="bi bi-list"></i> Menu
-    </button>
-
-    <!-- Sidebar chức năng bên phải -->
-    <div id="rightSidebar" class="right-sidebar">
-        <button class="btn-close" id="closeRightSidebar" style="position:absolute;top:10px;right:10px;display:none;"></button>
-        <div class="sidebar-content">
-            <!-- <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
-<button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button> -->
-            <button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
-            <button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
-            <button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
-            <button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
-            <button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
-            <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
-            <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
-           <select onchange="setFont(this.value)">
-                <option value="dejavu sans">DejaVu Sans</option>
-                <option value="dejavu sans mono">DejaVu Sans Mono</option>
-                <option value="dejavu serif">DejaVu Serif</option>
-                <option value="helvetica">Helvetica</option>
-                <option value="times">Times</option>
-                <option value="courier">Courier</option>
-            </select>
-            
-            <select onchange="setFontSize(this.value)">
-                <option value="9">9</option>
-                <option value="10">10</option>
-                <option value="12">12</option>
-                <option value="14">14</option>
-                <option value="16">16</option>
-                <option value="18">18</option>
-                <option value="20">20</option>
-                <option value="22" selected>22</option>
-                <option value="26">26</option>
-                <option value="28">28</option>
-                <option value="36">36</option>
-            </select>
-            <select onchange="setAlign(this.value)">
-                <option value="left">Trái</option>
-                <option value="center">Giữa</option>
-                <option value="right">Phải</option>
-            </select>
-            <button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
+        <div class="zoom-control">
+            <label for="zoomRange">Zoom:</label>
+            <input type="range" id="zoomRange" min="0.2" max="2" step="0.01" value="1">
         </div>
-    </div>
-                <button id="videoControlBtn" style="
+
+        <!-- Nút mở sidebar cho mobile/tablet (hiện cả tablet) -->
+        <button id="toggleRightSidebar" class="btn btn-primary">
+            <i class="bi bi-list"></i> Menu
+        </button>
+
+        <!-- Sidebar chức năng bên phải -->
+        <div id="rightSidebar" class="right-sidebar">
+            <button class="btn-close" id="closeRightSidebar"
+                style="position:absolute;top:10px;right:10px;display:none;"></button>
+            <div class="sidebar-content">
+                <!-- <button class="btn btn-sm btn-outline-primary" onclick="addRect()">Hình chữ nhật</button>
+<button class="btn btn-sm btn-outline-primary" onclick="addCircle()">Hình tròn</button> -->
+                <button class="btn btn-sm btn-outline-secondary" onclick="groupSelected()">Group</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="ungroupSelected()">Ungroup</button>
+                <button class="btn btn-sm btn-outline-warning" onclick="lockSelected()">Khóa</button>
+                <button class="btn btn-sm btn-outline-success" onclick="unlockAll()">Mở khóa</button>
+                <button class="btn btn-sm btn-outline-info" onclick="bringToFront()">Nổi lên</button>
+                <button class="btn btn-sm btn-outline-info" onclick="sendToBack()">Ẩn dưới</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearCanvas()">Xóa tất cả</button>
+                <button class="btn btn-sm btn-outline-dark" onclick="zoomIn()">Zoom +</button>
+                <button class="btn btn-sm btn-outline-dark" onclick="zoomOut()">Zoom -</button>
+                <select onchange="setFont(this.value)">
+                    <option value="dejavu sans">DejaVu Sans</option>
+                    <option value="dejavu sans mono">DejaVu Sans Mono</option>
+                    <option value="dejavu serif">DejaVu Serif</option>
+                    <option value="helvetica">Helvetica</option>
+                    <option value="times">Times</option>
+                    <option value="courier">Courier</option>
+                </select>
+
+                <select onchange="setFontSize(this.value)">
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="14">14</option>
+                    <option value="16">16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="22" selected>22</option>
+                    <option value="26">26</option>
+                    <option value="28">28</option>
+                    <option value="36">36</option>
+                </select>
+                <select onchange="setAlign(this.value)">
+                    <option value="left">Trái</option>
+                    <option value="center">Giữa</option>
+                    <option value="right">Phải</option>
+                </select>
+                <button class="btn btn-sm btn-outline-secondary" onclick="undo()">Undo</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="redo()">Redo</button>
+            </div>
+        </div>
+        <button id="videoControlBtn" style="
                 display:none;
                 position:absolute;
                 z-index:2000;
@@ -425,8 +448,8 @@
                 justify-content:center;
                 cursor:pointer;
             ">
-                ⏸️
-            </button>
+            ⏸️
+        </button>
 
     <!-- Bootstrap JS -->
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
