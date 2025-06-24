@@ -31,7 +31,6 @@ window.canvas.getObjects().forEach(obj => {
     }
 });
 
-
 function addLine() {
     const line = new fabric.Line([50, 100, 200, 100], {
         left: 170,
@@ -111,38 +110,95 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
     else if (file.type === 'application/pdf') {
         const file = e.target.files[0];
         const reader = new FileReader();
+
         reader.onload = async function (ev) {
-            const typedarray = new Uint8Array(ev.target.result);
-            const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({ scale: 2 });
+            try {
+                const buffer = ev.target.result;
+                const bufferCopy = buffer.slice(0); // dùng cho pdf-lib
+                const typedarray = new Uint8Array(buffer); // dùng cho pdf.js
 
-            // KHÔNG set lại kích thước canvas, giữ nguyên canvas gốc
-            // canvas.setWidth(viewport.width);
-            // canvas.setHeight(viewport.height);
+                // Log kiểm tra
+                console.log('✅ typedarray:', typedarray);
 
-            // Tính tỉ lệ scale giữa PDF và canvas hiện tại
-            const scaleX = canvas.getWidth() / viewport.width;
-            const scaleY = canvas.getHeight() / viewport.height;
+                // Load PDF bằng pdf.js
+                const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 2 });
 
-            // Chỉ add text từ PDF, scale lại vị trí và fontSize
-            const textContent = await page.getTextContent();
-            textContent.items.forEach(item => {
-                const text = new fabric.Text(item.str, {
-                    left: item.transform[4] * 2 * scaleX,
-                    top: (viewport.height - item.transform[5]) * 2 * scaleY,
-                    fontSize: Math.abs(item.transform[0]) * 2 * scaleY,
-                    fill: '#000',
-                    fontFamily: 'Arial',
-                    selectable: true
+                const scaleX = canvas.getWidth() / viewport.width;
+                const scaleY = canvas.getHeight() / viewport.height;
+
+                // Đổ text
+                const textContent = await page.getTextContent();
+                textContent.items.forEach(item => {
+                    const text = new fabric.Text(item.str, {
+                        left: item.transform[4] * 2 * scaleX,
+                        top: (viewport.height - item.transform[5]) * 2 * scaleY,
+                        fontSize: Math.abs(item.transform[0]) * 2 * scaleY,
+                        fill: '#000',
+                        fontFamily: 'Arial',
+                        selectable: true
+                    });
+                    canvas.add(text);
                 });
-                canvas.add(text);
-            });
 
-            canvas.requestRenderAll();
+                // Đọc ảnh nhúng bằng pdf-lib
+                try {
+                    const pdfDoc = await PDFLib.PDFDocument.load(bufferCopy);
+                    const pages = pdfDoc.getPages();
+                    console.log(pages);
+                    const images = [];
+
+                    for (const page of pages) {
+                        const xObjectDict = page.node?.Resources?.().get('XObject');
+                        if (!xObjectDict) continue;
+
+                        const keys = xObjectDict.keys();
+                        for (const key of keys) {
+                            const xobj = xObjectDict.get(key);
+                            if (!xobj) continue;
+
+                            const subtype = xobj.dict.get('Subtype')?.name;
+                            const filter = xobj.dict.get('Filter')?.name;
+
+                            if (subtype === 'Image' && filter === 'DCTDecode') {
+                                const imgBytes = xobj.getContents();
+                                const imgSrc = 'data:image/jpeg;base64,' + PDFLib.uint8ArrayToBase64(imgBytes);
+
+                                console.log('📷 Extracted image:', imgSrc); // ✅ Log ra ảnh
+
+                                images.push(imgSrc);
+                            }
+                        }
+                    }
+
+                    // Đưa ảnh vào canvas
+                    for (let i = 0; i < images.length; i++) {
+                        fabric.Image.fromURL(images[i], function (img) {
+                            img.set({
+                                left: 30 + i * 40,
+                                top: 30 + i * 40,
+                                scaleX: 0.5,
+                                scaleY: 0.5,
+                                selectable: true
+                            });
+                            canvas.add(img);
+                        }, { crossOrigin: 'Anonymous' });
+                    }
+                } catch (err) {
+                    console.warn('❌ Không extract được ảnh từ PDF:', err);
+                }
+
+                canvas.requestRenderAll();
+            } catch (err) {
+                console.error('❌ Lỗi khi xử lý PDF:', err);
+            }
         };
+
         reader.readAsArrayBuffer(file);
     }
+
+
 
     // Video
     else if (file.type.startsWith('video/')) {
@@ -256,7 +312,6 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
     e.target.value = '';
 });
 
-
 function deleteSelected() {
     const active = window.canvas.getActiveObject();
     if (active) window.canvas.remove(active);
@@ -266,7 +321,6 @@ function clearCanvas() {
     window.canvas.clear();
     window.canvas.setBackgroundColor('#fff', window.canvas.renderAll.bind(window.canvas));
 }
-
 
 
 async function SaveCanvas(isSilent = false) {
@@ -323,7 +377,6 @@ async function SaveCanvas(isSilent = false) {
     }
 }
 
-
 function downloadCanvas() {
     const name_design = document.querySelector('.name_design').value;
     if (!name_design || name_design.trim() === "") {
@@ -349,7 +402,6 @@ function createNewDesign() {
     updateCanvasInfo();
 }
 
-
 window.clearCanvas = clearCanvas;
 window.downloadCanvas = downloadCanvas;
 window.SaveCanvas = SaveCanvas;
@@ -358,4 +410,5 @@ window.addCircle = addCircle;
 window.addRect = addRect;
 window.addLine = addLine;
 window.createNewDesign = createNewDesign;
+
 
