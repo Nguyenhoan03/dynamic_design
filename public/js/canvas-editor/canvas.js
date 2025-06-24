@@ -158,12 +158,14 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
                             const left = item.transform[4] * scale;
                             const top = (viewport.height - item.transform[5]) * scale;
                             if (item.str.trim() !== '') {
-                                const text = new fabric.IText(item.str, {
+                                const text = new fabric.Textbox(item.str, {
                                     left,
                                     top,
                                     fontSize,
                                     fill: '#000',
                                     fontFamily: 'Arial',
+                                    width: 250, // hoặc lấy width từ PDF nếu có
+                                    textAlign: 'left', // hoặc 'center', 'right' nếu muốn
                                     selectable: true,
                                     evented: true,
                                     editable: true
