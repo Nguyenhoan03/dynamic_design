@@ -911,9 +911,11 @@ textarea.form-control {
 
 .toolbar-menu {
     position: absolute;
-    left: 0;
-    top: 100%;
     min-width: 180px;
+    width: 220px;
+    height: 300px;         /* Chiều cao cố định */
+    overflow-y: auto;      /* Thanh cuộn luôn nằm trong menu */
+    overflow-x: hidden;
     z-index: 9999;
     background: #fff;
     border: 1px solid #ddd;
@@ -922,10 +924,17 @@ textarea.form-control {
     padding: 8px 0;
     margin: 0;
     list-style: none;
-    transition: top 0.15s, left 0.15s;
+}
+.toolbar-menu::-webkit-scrollbar {
+    width: 6px;
+    background: #f9fafb;
+}
+.toolbar-menu::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 6px;
 }
 .toolbar-menu.show-above { top: auto; bottom: 100%; }
-.toolbar-menu.show-left { left: auto; right: 0; }
+.toolbar-menu.show-left { left: auto, right: 0; }
 .toolbar-menu li {
     padding: 8px 16px;
     cursor: pointer;
@@ -933,11 +942,17 @@ textarea.form-control {
     position: relative;
 }
 .toolbar-menu li:hover { background: #f2f2f2; }
+
+/* Submenu */
 .toolbar-menu .submenu {
     position: absolute;
     left: 100%;
     top: 0;
     min-width: 140px;
+    max-width: 60vw;
+    max-height: 50vh;           /* Giới hạn chiều cao submenu */
+    overflow-y: auto;
+    overflow-x: auto;
     z-index: 10000;
     background: #fff;
     border: 1px solid #ddd;
@@ -945,6 +960,16 @@ textarea.form-control {
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     display: none;
     padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #bdbdbd #f9fafb;
+}
+.toolbar-menu .submenu::-webkit-scrollbar {
+    width: 6px;
+    background: #f9fafb;
+}
+.toolbar-menu .submenu::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 6px;
 }
 .toolbar-menu li.align-submenu:hover .submenu,
 .toolbar-menu li.align-submenu:focus-within .submenu {

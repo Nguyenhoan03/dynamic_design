@@ -98,27 +98,47 @@ function toggleToolbarMenu(e) {
         menu.classList.remove('show-above', 'show-left');
 
         // Tính toán vị trí menu chính
-        const rect = menu.getBoundingClientRect();
-        const btnRect = btn.getBoundingClientRect();
-        const winWidth = window.innerWidth;
-        const winHeight = window.innerHeight;
+        setTimeout(() => {
+            const rect = menu.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+            const winWidth = window.innerWidth;
+            const winHeight = window.innerHeight;
 
-        // Dưới bị tràn, hiển thị lên trên
-        if (rect.bottom > winHeight && btnRect.top > menu.offsetHeight) {
-            menu.classList.add('show-above');
-        }
-        // Phải bị tràn, hiển thị sang trái
-        if (rect.right > winWidth && btnRect.left > menu.offsetWidth) {
-            menu.classList.add('show-left');
-        }
+            // Nếu menu bị tràn phải, hiển thị sang trái
+            if (rect.right > winWidth && btnRect.left > menu.offsetWidth) {
+                menu.classList.add('show-left');
+                menu.style.left = 'auto';
+                menu.style.right = '0';
+            } else {
+                menu.classList.remove('show-left');
+                menu.style.left = '';
+                menu.style.right = '';
+            }
+            // Nếu menu bị tràn trái
+            if (rect.left < 0) {
+                menu.style.left = '0';
+                menu.style.right = 'auto';
+            }
+            // Nếu menu bị tràn dưới, hiển thị lên trên
+            if (rect.bottom > winHeight && btnRect.top > menu.offsetHeight) {
+                menu.classList.add('show-above');
+                menu.style.top = 'auto';
+                menu.style.bottom = '100%';
+            } else {
+                menu.classList.remove('show-above');
+                menu.style.top = '';
+                menu.style.bottom = '';
+            }
+        }, 10);
 
         // Xử lý submenu khi hover
         menu.querySelectorAll('.submenu').forEach(sub => {
             sub.classList.remove('show-left', 'show-above');
             sub.parentElement.onmouseenter = function() {
-                // Lấy vị trí submenu
                 sub.style.display = 'block';
                 const subRect = sub.getBoundingClientRect();
+                const winWidth = window.innerWidth;
+                const winHeight = window.innerHeight;
                 // Nếu submenu tràn phải, hiển thị sang trái
                 if (subRect.right > winWidth && subRect.left > sub.offsetWidth) {
                     sub.classList.add('show-left');

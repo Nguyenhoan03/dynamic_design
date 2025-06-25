@@ -93,6 +93,18 @@ document.getElementById('addStaticQRBtn')?.addEventListener('click', function ()
     addStaticQR();
 });
 
+document.addEventListener('wheel', function(e) {
+    // Nếu chuột đang nằm trên toolbar-menu thì không cho canvas xử lý wheel
+    if (e.target.closest('.toolbar-menu')) {
+        e.stopPropagation();
+    }
+}, { capture: true });
+document.querySelectorAll('.toolbar-menu').forEach(menu => {
+    menu.addEventListener('wheel', function(e) {
+        e.stopPropagation();
+    });
+});
+
 window.canvas.on('object:added', () => window.canvas.requestRenderAll());
 window.canvas.on('object:removed', () => window.canvas.requestRenderAll());
 window.canvas.on('object:modified', () => window.canvas.requestRenderAll());
