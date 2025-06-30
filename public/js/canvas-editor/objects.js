@@ -572,6 +572,9 @@ function openPrintModal() {
         document.getElementById('labelaryPreviewPrint').src = '';
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
+
+        // Tự động xem trước ZPL khi mở modal
+        previewZPL();
     }, 200);
 }
 
@@ -593,28 +596,45 @@ function downloadZPL() {
     link.click();
 }
 
+
+function redrawZPL() {
+    // Lấy lại ZPL mới nhất từ canvas (nếu có chỉnh sửa)
+    const zpl = convertCanvasToZPL(window.canvas);
+    document.getElementById('zplPrintOutput').value = zpl;
+    previewZPL();
+}
+
 function previewZPL() {
     const zpl = document.getElementById('zplPrintOutput').value;
     const dpi = document.getElementById('dpiSelectPrint').value;
     const w = document.getElementById('labelWidthPrint').value;
     const h = document.getElementById('labelHeightPrint').value;
 
+    if (!zpl.trim().startsWith('^XA') || !zpl.trim().endsWith('^XZ')) {
+        alert("ZPL phải bắt đầu bằng ^XA và kết thúc bằng ^XZ!");
+        return;
+    }
+
     fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${w}x${h}/0/`, {
         method: "POST",
-        headers: { "Accept": "image/png" },
+        headers: {
+            "Accept": "image/png",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
         body: zpl
     })
-    .then(response => {
-        if (!response.ok) throw new Error("Không thể render ZPL!");
-        return response.blob();
-    })
-    .then(blob => {
-        const url = URL.createObjectURL(blob);
-        document.getElementById('labelaryPreviewPrint').src = url;
-    })
-    .catch(err => {
-        alert("Không thể xem trước ZPL: " + err.message);
-    });
+        .then(response => {
+            if (!response.ok) throw new Error("Không thể render ZPL!");
+            return response.blob();
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            document.getElementById('labelaryPreviewPrint').src = url;
+        })
+        .catch(err => {
+            alert("Không thể xem trước ZPL: " + err.message);
+            document.getElementById('labelaryPreviewPrint').src = "";
+        });
 }
 
 
@@ -670,7 +690,7 @@ window.alignCenterSelected = alignCenterSelected;
 window.alignRightSelected = alignRightSelected;
 window.getDynamicFieldsFromCanvas = getDynamicFieldsFromCanvas;
 window.convertCanvasToZPL = convertCanvasToZPL;
-
+window.redrawZPL = redrawZPL;
 function convertCanvasToZPL(canvas) {
     let zpl = '^XA\n';
     if (!canvas) return zpl + '^XZ';

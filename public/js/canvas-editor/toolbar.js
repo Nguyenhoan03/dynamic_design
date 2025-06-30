@@ -31,7 +31,7 @@ function showToolbarMenu(x, y) {
 }
 
 // Đóng menu khi click ra ngoài
-document.addEventListener('mousedown', function(e) {
+document.addEventListener('mousedown', function (e) {
     const menu = document.getElementById('toolbarMenu');
     if (menu && !menu.contains(e.target)) {
         menu.style.display = 'none';
@@ -134,8 +134,8 @@ function toggleToolbarMenu(e) {
         // Xử lý submenu khi hover
         menu.querySelectorAll('.submenu').forEach(sub => {
             sub.classList.remove('show-left', 'show-above');
-            sub.parentElement.onmouseenter = function() {
-                sub.style.display = 'block';
+            sub.parentElement.onmouseenter = function () {
+                // Không động vào sub.style.display!
                 const subRect = sub.getBoundingClientRect();
                 const winWidth = window.innerWidth;
                 const winHeight = window.innerHeight;
@@ -151,14 +151,13 @@ function toggleToolbarMenu(e) {
                 } else {
                     sub.classList.remove('show-above');
                 }
-                sub.style.display = '';
             };
         });
     }
 }
 
 // Đóng menu khi click ra ngoài
-document.addEventListener('click', function() {
+document.addEventListener('click', function () {
     document.querySelectorAll('.toolbar-menu').forEach(m => m.style.display = 'none');
 });
 

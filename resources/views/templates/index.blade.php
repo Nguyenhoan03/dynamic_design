@@ -148,26 +148,94 @@
                         </div>
                         <!-- ZPL Tab -->
                         <div class="tab-pane fade" id="zplTabPane" role="tabpanel">
-                            <label class="form-label fw-semibold">Mã ZPL sinh ra từ thiết kế:</label>
-                            <textarea id="zplPrintOutput" class="form-control mb-2" rows="7" readonly></textarea>
-                            <div class="d-flex gap-2 mb-3">
-                                <button type="button" class="btn btn-success" onclick="downloadZPL()">
-                                    <i class="bi bi-download"></i> Tải ZPL
-                                </button>
-                                <button type="button" class="btn btn-info" onclick="previewZPL()">
-                                    <i class="bi bi-eye"></i> Xem trước ZPL
-                                </button>
-                                <select id="dpiSelectPrint" class="form-select w-auto">
-                                    <option value="203">203 DPI</option>
-                                    <option value="300">300 DPI</option>
-                                    <option value="600">600 DPI</option>
-                                </select>
-                                <input type="number" id="labelWidthPrint" value="4" min="1" step="0.1" class="form-control w-auto" style="width:70px;">
-                                x
-                                <input type="number" id="labelHeightPrint" value="6" min="1" step="0.1" class="form-control w-auto" style="width:70px;">
-                                <span>inch</span>
+                            <div class="row g-3">
+                                <!-- ZPL textarea bên trái -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold mb-2">Mã ZPL sinh ra từ thiết kế (có thể sửa trực tiếp):</label>
+                                    <textarea id="zplPrintOutput" class="form-control shadow-sm" rows="18"
+                                        style="font-family: 'Fira Mono', 'Consolas', monospace; font-size: 1.05rem; min-height: 420px; resize:vertical;"></textarea>
+                                    <div class="d-flex flex-wrap gap-2 mt-3">
+                                        <button type="button" class="btn btn-success d-flex align-items-center gap-2 px-3" onclick="downloadZPL()">
+                                            <i class="bi bi-download"></i> <span>Tải ZPL</span>
+                                        </button>
+                                        <button type="button" class="btn btn-info d-flex align-items-center gap-2 px-3" onclick="previewZPL()">
+                                            <i class="bi bi-eye"></i> <span>Xem trước ZPL</span>
+                                        </button>
+                                        <button type="button" class="btn btn-primary d-flex align-items-center gap-2 px-3" onclick="redrawZPL()">
+                                            <i class="bi bi-arrow-clockwise"></i> <span>Redraw</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Preview bên phải -->
+                                <div class="col-md-6">
+                                    <div class="card shadow-sm mb-3" style="min-height: 420px;">
+                                        <div class="card-header py-2 px-3 bg-light border-bottom">
+                                            <span class="fw-semibold"><i class="bi bi-image"></i> Xem trước ZPL</span>
+                                        </div>
+                                        <div class="card-body d-flex justify-content-center align-items-center p-2" style="min-height:360px;">
+                                            <div style="background:#fff; border:1px solid #ddd; border-radius:10px; box-shadow:0 2px 8px #0001; display:flex; align-items:center; justify-content:center; width:95%; height:340px;">
+                                                <img id="labelaryPreviewPrint"
+                                                    style="max-width:95%; max-height:320px; object-fit:contain; background:#fff; border-radius:8px; border:0;"
+                                                    alt="ZPL Preview"
+                                                    onerror="this.style.display='none';document.getElementById('zplPreviewError').style.display='block';"
+                                                    onload="this.style.display='block';document.getElementById('zplPreviewError').style.display='none';">
+                                                <div id="zplPreviewError" style="display:none; color:#c00; text-align:center; font-size:1.1rem;">
+                                                    Không thể hiển thị ZPL Preview.<br>Kiểm tra lại mã ZPL hoặc thông số nhãn.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-white border-top py-2">
+                                            <div class="row row-cols-auto g-2 align-items-center justify-content-center mb-2">
+                                                <div class="col">
+                                                    <label class="form-label mb-0 me-1">Độ phân giải:</label>
+                                                    <select id="dpiSelectPrint" class="form-select form-select-sm w-auto">
+                                                        <option value="8">203 DPI</option>
+                                                        <option value="12">300 DPI</option>
+                                                        <option value="24">600 DPI</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label mb-0 me-1">Kích thước (inch):</label>
+                                                    <input type="number" id="labelWidthPrint" value="4" min="1" step="0.1" class="form-control form-control-sm d-inline-block w-auto" style="width:70px;">
+                                                    <span class="mx-1">x</span>
+                                                    <input type="number" id="labelHeightPrint" value="6" min="1" step="0.1" class="form-control form-control-sm d-inline-block w-auto" style="width:70px;">
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label mb-0 me-1">Chất lượng in:</label>
+                                                    <select id="printQuality" class="form-select form-select-sm w-auto">
+                                                        <option value="grayscale">Grayscale</option>
+                                                        <option value="mono">Mono</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col">
+                                                    <label class="form-label mb-0 me-1">Số nhãn:</label>
+                                                    <input type="number" id="labelCount" value="1" min="1" class="form-control form-control-sm w-auto" style="width:60px;">
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2 justify-content-center mb-2">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="rotatePreview()">
+                                                    <i class="bi bi-arrow-repeat"></i> Rotate
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyPermalink()">
+                                                    <i class="bi bi-link-45deg"></i> Permalink
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openZPLFile()">
+                                                    <i class="bi bi-folder2-open"></i> Open file
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadPNG()">
+                                                    <i class="bi bi-file-earmark-image"></i> Add image
+                                                </button>
+                                                <!-- <button type="button" class="btn btn-outline-secondary btn-sm" onclick="downloadPDF()">
+                                                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                                                </button> -->
+                                            </div>
+                                            <div class="alert alert-warning py-1 px-2 mb-0" id="zplLinterWarning" style="display:none;font-size:0.95em;">
+                                                <i class="bi bi-exclamation-triangle"></i> <span id="zplLinterWarningText"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <iframe id="labelaryPreviewPrint" style="width:100%;min-height:300px;border:1px solid #ccc;"></iframe>
                         </div>
                     </div>
                     <!-- Dữ liệu động (CSV/Excel) -->
@@ -191,7 +259,7 @@
                 </div>
                 <div class="modal-footer d-flex justify-content-end px-4 pb-4">
                     <button type="submit" class="btn btn-success px-4">
-                        <i class="bi bi-printer-fill me-1"></i> In hàng loạt
+                        <i class="bi bi-printer-fill me-1"></i> In PDF
                     </button>
                 </div>
             </div>
