@@ -137,14 +137,7 @@
                                 <label class="form-label fw-semibold">Xem trước PDF:</label>
                                 <img id="canvasPreview" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
                             </div>
-                            <div class="d-flex gap-2 mb-3">
-                                <button type="button" class="btn btn-danger" onclick="downloadPDF()">
-                                    <i class="bi bi-file-earmark-pdf"></i> Tải PDF
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="window.print()">
-                                    <i class="bi bi-printer"></i> In PDF
-                                </button>
-                            </div>
+                           
                         </div>
                         <!-- ZPL Tab -->
                         <div class="tab-pane fade" id="zplTabPane" role="tabpanel">

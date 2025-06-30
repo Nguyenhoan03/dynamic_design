@@ -498,9 +498,9 @@ canvas#templateCanvas {
 
 /* Ẩn submenu mặc định */
 .submenu {
-    display: none;
+    display: none; 
     position: absolute;
-    left: 100%;
+    left: 50%;
     top: 0;
     min-width: 140px;
     background: #fff;
@@ -907,15 +907,24 @@ textarea.form-control {
 
 .toolbar-menu-wrapper {
     position: relative;
+    
+}
+.canvas-scroll-wrapper,
+.canvas-container {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE, Edge */
+}
+.canvas-scroll-wrapper::-webkit-scrollbar,
+.canvas-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
 }
 
 .toolbar-menu {
     position: absolute;
     min-width: 180px;
     width: 220px;
-    height: 300px;         /* Chiều cao cố định */
-    overflow-y: auto;      /* Thanh cuộn luôn nằm trong menu */
-    overflow-x: hidden;
+    height: auto;        
+    overflow-x: visible !important; 
     z-index: 9999;
     background: #fff;
     border: 1px solid #ddd;
@@ -950,8 +959,7 @@ textarea.form-control {
     top: 0;
     min-width: 140px;
     max-width: 60vw;
-    max-height: 50vh;           /* Giới hạn chiều cao submenu */
-    overflow-y: auto;
+    max-height: 50vh;          
     overflow-x: auto;
     z-index: 10000;
     background: #fff;
@@ -983,3 +991,4 @@ textarea.form-control {
     top: auto;
     bottom: 0;
 }
+
