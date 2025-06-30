@@ -519,18 +519,15 @@ window.canvas.on('selection:cleared', () => {
 function openPrintModal() {
     const nameInput = document.querySelector('.name_design');
     if (!nameInput || !nameInput.value.trim()) {
-        alert("Vui lòng nhập tên bản thiết kế trước khi in hàng loạt!");
+        alert("Vui lòng nhập tên bản thiết kế trước khi in!");
         return;
     }
-
     const name = nameInput.value.trim();
     const canvas = window.canvas;
-
     if (!canvas) {
         alert("Canvas chưa được khởi tạo!");
         return;
     }
-
     document.getElementById('template_name').value = name;
     document.getElementById('template_width').value = canvas.getWidth();
     document.getElementById('template_height').value = canvas.getHeight();
@@ -540,12 +537,12 @@ function openPrintModal() {
     const config = canvas.toJSON(['customType', 'variable']);
     document.getElementById('template_config').value = JSON.stringify(config);
 
+    // PDF preview
     const cloneCanvas = new fabric.StaticCanvas(null, {
         width: canvas.getWidth(),
         height: canvas.getHeight(),
         backgroundColor: canvas.backgroundColor
     });
-
     canvas.getObjects().forEach(original => {
         if (typeof original.clone === 'function') {
             original.clone(clone => {
@@ -554,30 +551,72 @@ function openPrintModal() {
             });
         }
     });
-
     cloneCanvas.setViewportTransform([...canvas.viewportTransform]);
-
     setTimeout(() => {
         const dataUrl = cloneCanvas.toDataURL({
             format: 'png',
             quality: 1,
             multiplier: 2
         });
-
         document.getElementById('template_image').value = dataUrl;
-
         const preview = document.getElementById('canvasPreview');
         if (preview) {
             preview.src = dataUrl;
             preview.style.display = 'block';
         }
-
         updateDynamicFieldsLabel();
 
+        // ZPL preview
+        const zpl = convertCanvasToZPL(window.canvas);
+        document.getElementById('zplPrintOutput').value = zpl;
+        document.getElementById('labelaryPreviewPrint').src = '';
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
     }, 200);
 }
+
+function downloadPDF() {
+    // Tải ảnh PNG về, hoặc có thể dùng thư viện html2pdf/pdf-lib để xuất PDF thực sự nếu cần
+    const dataUrl = document.getElementById('canvasPreview').src;
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = 'label.pdf.png';
+    link.click();
+}
+
+function downloadZPL() {
+    const zpl = document.getElementById('zplPrintOutput').value;
+    const blob = new Blob([zpl], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'label.zpl';
+    link.click();
+}
+
+function previewZPL() {
+    const zpl = document.getElementById('zplPrintOutput').value;
+    const dpi = document.getElementById('dpiSelectPrint').value;
+    const w = document.getElementById('labelWidthPrint').value;
+    const h = document.getElementById('labelHeightPrint').value;
+
+    fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${w}x${h}/0/`, {
+        method: "POST",
+        headers: { "Accept": "image/png" },
+        body: zpl
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Không thể render ZPL!");
+        return response.blob();
+    })
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        document.getElementById('labelaryPreviewPrint').src = url;
+    })
+    .catch(err => {
+        alert("Không thể xem trước ZPL: " + err.message);
+    });
+}
+
 
 
 
@@ -614,6 +653,9 @@ window.changeQR = changeQR;
 window.addDynamicText = addDynamicText;
 window.addDynamicQR = addDynamicQR;
 window.openPrintModal = openPrintModal;
+window.downloadPDF = downloadPDF;
+window.downloadZPL = downloadZPL;
+window.previewZPL = previewZPL;
 window.changeImage = changeImage;
 window.showToolbarForActiveObject = showToolbarForActiveObject;
 window.addStaticQR = addStaticQR;
@@ -627,3 +669,53 @@ window.alignLeftSelected = alignLeftSelected;
 window.alignCenterSelected = alignCenterSelected;
 window.alignRightSelected = alignRightSelected;
 window.getDynamicFieldsFromCanvas = getDynamicFieldsFromCanvas;
+window.convertCanvasToZPL = convertCanvasToZPL;
+
+function convertCanvasToZPL(canvas) {
+    let zpl = '^XA\n';
+    if (!canvas) return zpl + '^XZ';
+
+    canvas.getObjects().forEach(obj => {
+        // Text/Textbox
+        if (obj.type === 'text' || obj.type === 'textbox') {
+            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^A0N,${Math.round(obj.fontSize)},${Math.round(obj.fontSize)}^FD${obj.text}^FS\n`;
+        }
+        // Hình chữ nhật
+        else if (obj.type === 'rect') {
+            const width = Math.round(obj.width * (obj.scaleX || 1));
+            const height = Math.round(obj.height * (obj.scaleY || 1));
+            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^GB${width},${height},${obj.strokeWidth || 1},B,0^FS\n`;
+        }
+        // Hình tròn (dùng ^GC, chỉ hỗ trợ ZPL mới)
+        else if (obj.type === 'circle') {
+            const r = Math.round(obj.radius * (obj.scaleX || 1));
+            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^GC${r},B^FS\n`;
+        }
+        // Đường thẳng (line)
+        else if (obj.type === 'line') {
+            const x1 = Math.round(obj.x1 * (obj.scaleX || 1));
+            const y1 = Math.round(obj.y1 * (obj.scaleY || 1));
+            const x2 = Math.round(obj.x2 * (obj.scaleX || 1));
+            const y2 = Math.round(obj.y2 * (obj.scaleY || 1));
+            // ZPL không có lệnh line riêng, dùng ^GB với width/height nhỏ
+            const width = Math.abs(x2 - x1) || 1;
+            const height = Math.abs(y2 - y1) || 1;
+            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^GB${width},${height},${obj.strokeWidth || 1},B,0^FS\n`;
+        }
+        // QR động/tĩnh (group hoặc image có customType)
+        else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
+            // QR động: lấy vị trí group, nội dung từ obj.variable
+            const qrValue = obj.variable ? obj.variable.replace(/[#\{\}]/g, '') : 'QR';
+            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
+        }
+        else if (obj.type === 'image' && obj.customType === 'staticQR') {
+            // QR tĩnh: lấy vị trí, nội dung từ obj.qrValue
+            const qrValue = obj.qrValue || '';
+            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
+        }
+        // Có thể bổ sung thêm các loại khác nếu cần
+    });
+
+    zpl += '^XZ';
+    return zpl;
+}

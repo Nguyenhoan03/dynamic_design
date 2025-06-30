@@ -68,7 +68,7 @@
                 <i class="bi bi-download"></i>Tải xuống PNG
             </button>
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="openPrintModal()">
-                <i class="bi bi-printer"></i> In hàng loạt
+                <i class="bi bi-printer"></i> Print
             </button>
         </div>
     </div>
@@ -93,70 +93,111 @@
                 <i class="bi bi-download"></i>Tải xuống PNG
             </button>
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="openPrintModal()">
-                <i class="bi bi-printer"></i> In hàng loạt
+                <i class="bi bi-printer"></i> Print
             </button>
         </div>
     </div>
 
 
     <div class="modal fade" id="printModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <form id="printForm" method="POST" action="/print-batch" class="w-100">
-                @csrf
-                <!-- Hidden fields -->
-                <input type="hidden" name="template_name" id="template_name">
-                <input type="hidden" name="template_width" id="template_width">
-                <input type="hidden" name="template_height" id="template_height">
-                <input type="hidden" name="template_config" id="template_config">
-                <input type="hidden" name="template_id" id="template_id">
-                <input type="hidden" name="template_unit" id="template_unit">
-                <input type="hidden" name="fields" id="fields">
-                <input type="hidden" name="template_zoom" id="template_zoom">
-                <input type="hidden" name="template_viewport" id="template_viewport">
-                <input type="hidden" name="template_image" id="template_image">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form id="printForm" method="POST" action="/print-batch" class="w-100">
+            @csrf
+            <!-- Hidden fields -->
+            <input type="hidden" name="template_name" id="template_name">
+            <input type="hidden" name="template_width" id="template_width">
+            <input type="hidden" name="template_height" id="template_height">
+            <input type="hidden" name="template_config" id="template_config">
+            <input type="hidden" name="template_id" id="template_id">
+            <input type="hidden" name="template_unit" id="template_unit">
+            <input type="hidden" name="fields" id="fields">
+            <input type="hidden" name="template_zoom" id="template_zoom">
+            <input type="hidden" name="template_viewport" id="template_viewport">
+            <input type="hidden" name="template_image" id="template_image">
 
-                <!-- Preview Image (optional, can be shown if needed) -->
-                <img id="canvasPreview"
-                    style="display: none; max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
-
-                <div class="modal-content shadow-sm border-0">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold">📄 In hàng loạt</h5>
-                        <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>
-                    </div>
-
-
-                    <div class="modal-body p-4">
-                        <input type="hidden" name="template_id" value="{{ $template->id ?? '' }}">
-                        <label class="form-label fw-semibold mb-2">
-                            Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr,
-                                ten_text</span>
-                        </label>
-                        <!-- import excel -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
-                            <div class="input-group">
-                                <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control"
-                                    aria-label="Chọn file Excel">
-                                <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
-                                    <i class="bi bi-download"></i> Tải file Excel mẫu
+            <div class="modal-content shadow-sm border-0">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">📄 In/Export</h5>
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Tab chọn loại in -->
+                    <ul class="nav nav-tabs mb-3" id="printTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pdf-tab" data-bs-toggle="tab" data-bs-target="#pdfTabPane" type="button" role="tab">In PDF</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="zpl-tab" data-bs-toggle="tab" data-bs-target="#zplTabPane" type="button" role="tab">In ZPL</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="printTabContent">
+                        <!-- PDF Tab -->
+                        <div class="tab-pane fade show active" id="pdfTabPane" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Xem trước PDF:</label>
+                                <img id="canvasPreview" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
+                            </div>
+                            <div class="d-flex gap-2 mb-3">
+                                <button type="button" class="btn btn-danger" onclick="downloadPDF()">
+                                    <i class="bi bi-file-earmark-pdf"></i> Tải PDF
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="window.print()">
+                                    <i class="bi bi-printer"></i> In PDF
                                 </button>
                             </div>
-                            <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
                         </div>
-                        <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
-                        <textarea class="form-control border border-1 rounded-3 shadow-sm" name="csv_rows" rows="6"
-                            placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+                        <!-- ZPL Tab -->
+                        <div class="tab-pane fade" id="zplTabPane" role="tabpanel">
+                            <label class="form-label fw-semibold">Mã ZPL sinh ra từ thiết kế:</label>
+                            <textarea id="zplPrintOutput" class="form-control mb-2" rows="7" readonly></textarea>
+                            <div class="d-flex gap-2 mb-3">
+                                <button type="button" class="btn btn-success" onclick="downloadZPL()">
+                                    <i class="bi bi-download"></i> Tải ZPL
+                                </button>
+                                <button type="button" class="btn btn-info" onclick="previewZPL()">
+                                    <i class="bi bi-eye"></i> Xem trước ZPL
+                                </button>
+                                <select id="dpiSelectPrint" class="form-select w-auto">
+                                    <option value="203">203 DPI</option>
+                                    <option value="300">300 DPI</option>
+                                    <option value="600">600 DPI</option>
+                                </select>
+                                <input type="number" id="labelWidthPrint" value="4" min="1" step="0.1" class="form-control w-auto" style="width:70px;">
+                                x
+                                <input type="number" id="labelHeightPrint" value="6" min="1" step="0.1" class="form-control w-auto" style="width:70px;">
+                                <span>inch</span>
+                            </div>
+                            <iframe id="labelaryPreviewPrint" style="width:100%;min-height:300px;border:1px solid #ccc;"></iframe>
+                        </div>
                     </div>
-                    <div class="modal-footer d-flex justify-content-end px-4 pb-4">
-                        <button type="submit" class="btn btn-success px-4">
-                            <i class="bi bi-printer-fill me-1"></i> In
-                        </button>
+                    <!-- Dữ liệu động (CSV/Excel) -->
+                    <hr>
+                    <label class="form-label fw-semibold mb-2">
+                        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
+                    </label>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
+                        <div class="input-group">
+                            <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control" aria-label="Chọn file Excel">
+                            <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
+                                <i class="bi bi-download"></i> Tải file Excel mẫu
+                            </button>
+                        </div>
+                        <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
                     </div>
+                    <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
+                    <textarea class="form-control border border-1 rounded-3 shadow-sm" name="csv_rows" rows="6"
+                        placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
                 </div>
-            </form>
-        </div>
+                <div class="modal-footer d-flex justify-content-end px-4 pb-4">
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-printer-fill me-1"></i> In hàng loạt
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
+</div>
 
 
 
