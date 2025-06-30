@@ -598,7 +598,13 @@ function downloadZPL() {
 
 
 function redrawZPL() {
-    // Lấy lại ZPL mới nhất từ canvas (nếu có chỉnh sửa)
+    // Nếu đã sửa textarea thủ công (cảnh báo đang hiện), chỉ preview lại từ textarea
+    const zplWarning = document.getElementById('zplWarning');
+    if (zplWarning && zplWarning.style.display !== 'none') {
+        previewZPL();
+        return;
+    }
+    // Nếu chưa sửa textarea, lấy lại từ canvas
     const zpl = convertCanvasToZPL(window.canvas);
     document.getElementById('zplPrintOutput').value = zpl;
     previewZPL();

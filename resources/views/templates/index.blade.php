@@ -147,6 +147,9 @@
                                     <label class="form-label fw-semibold mb-2">Mã ZPL sinh ra từ thiết kế (có thể sửa trực tiếp):</label>
                                     <textarea id="zplPrintOutput" class="form-control shadow-sm" rows="18"
                                         style="font-family: 'Fira Mono', 'Consolas', monospace; font-size: 1.05rem; min-height: 420px; resize:vertical;"></textarea>
+                                        <div id="zplWarning" class="alert alert-warning py-1 px-2 mt-2" style="display:none;font-size:0.95em;">
+                                        <i class="bi bi-exclamation-triangle"></i> Bạn đã sửa mã ZPL thủ công. Canvas sẽ không còn đồng bộ với ZPL này!
+                                    </div>
                                     <div class="d-flex flex-wrap gap-2 mt-3">
                                         <button type="button" class="btn btn-success d-flex align-items-center gap-2 px-3" onclick="downloadZPL()">
                                             <i class="bi bi-download"></i> <span>Tải ZPL</span>
@@ -156,6 +159,9 @@
                                         </button>
                                         <button type="button" class="btn btn-primary d-flex align-items-center gap-2 px-3" onclick="redrawZPL()">
                                             <i class="bi bi-arrow-clockwise"></i> <span>Redraw</span>
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm mt-2" id="refreshZPLBtn">
+                                            <i class="bi bi-arrow-clockwise"></i> Làm mới từ canvas
                                         </button>
                                     </div>
                                 </div>

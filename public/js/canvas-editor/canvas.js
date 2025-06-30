@@ -424,6 +424,46 @@ function convertCanvasToZPL(canvas) {
     return zpl;
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    const zplTextarea = document.getElementById('zplPrintOutput');
+    const zplWarning = document.getElementById('zplWarning');
+    let isZPLDirty = false;
+
+    // Hàm cập nhật ZPL từ canvas
+    function updateZPLFromCanvas() {
+        if (!isZPLDirty && window.canvas && zplTextarea) {
+            zplTextarea.value = window.convertCanvasToZPL(window.canvas);
+        }
+    }
+
+    // Khi canvas thay đổi, cập nhật ZPL (nếu chưa sửa tay)
+    if (window.canvas) {
+        window.canvas.on('object:added', updateZPLFromCanvas);
+        window.canvas.on('object:modified', updateZPLFromCanvas);
+        window.canvas.on('object:removed', updateZPLFromCanvas);
+        // Lần đầu load
+        updateZPLFromCanvas();
+    }
+
+    // Khi textarea bị sửa tay, cảnh báo và không tự động cập nhật nữa
+    if (zplTextarea) {
+        zplTextarea.addEventListener('input', function () {
+            isZPLDirty = true;
+            if (zplWarning) zplWarning.style.display = 'block';
+        });
+    }
+
+    // Nếu muốn cho phép "Làm mới từ canvas", thêm nút:
+    // <button id="refreshZPLBtn" ...>Làm mới từ canvas</button>
+    const refreshBtn = document.getElementById('refreshZPLBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+            isZPLDirty = false;
+            if (zplWarning) zplWarning.style.display = 'none';
+            updateZPLFromCanvas();
+        });
+    }
+});
 
 window.convertCanvasToZPL = convertCanvasToZPL;
 window.clearCanvas = clearCanvas;
