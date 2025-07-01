@@ -514,7 +514,6 @@ window.canvas.on('selection:cleared', () => {
     document.getElementById('objectToolbar').style.display = 'none';
 });
 
-
 // Gọi lại khi mở modal in
 function openPrintModal() {
     const nameInput = document.querySelector('.name_design');
@@ -609,6 +608,17 @@ function redrawZPL() {
     document.getElementById('zplPrintOutput').value = zpl;
     previewZPL();
 }
+function restoreZPLFromCanvas() {
+    // Lấy lại ZPL từ canvas và cập nhật textarea
+    if (window.canvas) {
+        const zpl = convertCanvasToZPL(window.canvas);
+        document.getElementById('zplPrintOutput').value = zpl;
+        // Ẩn cảnh báo sửa thủ công nếu có
+        const zplWarning = document.getElementById('zplWarning');
+        if (zplWarning) zplWarning.style.display = 'none';
+        previewZPL();
+    }
+}
 
 function previewZPL() {
     const zpl = document.getElementById('zplPrintOutput').value;
@@ -643,6 +653,94 @@ function previewZPL() {
         });
 }
 
+function AddImageZPL() {
+    document.getElementById('zplImageInput').click();
+}
+
+// Xử lý khi chọn file
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('zplImageInput');
+  if (input) {
+    input.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const base64 = evt.target.result;
+        ConvertImgToZPL(base64);
+        console.log(base64, 'base64');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+});
+
+// function ConvertImgToZPL(base64Image) {
+//   const img = new Image();
+//   img.src = base64Image;
+
+//   img.onload = function () {
+//     const width = img.width;
+//     const height = img.height;
+
+//     const canvas = document.createElement('canvas');
+//     canvas.width = width;
+//     canvas.height = height;
+
+//     const ctx = canvas.getContext('2d');
+//     ctx.drawImage(img, 0, 0, width, height);
+
+//     const imageData = ctx.getImageData(0, 0, width, height);
+//     const pixels = imageData.data;
+
+//     const bytesPerRow = Math.ceil(width / 8);
+//     let hexData = '';
+
+//     for (let y = 0; y < height; y++) {
+//       let rowBinary = '';
+//       for (let x = 0; x < width; x++) {
+//         const idx = (y * width + x) * 4;
+//         const r = pixels[idx];
+//         const g = pixels[idx + 1];
+//         const b = pixels[idx + 2];
+
+//         const grayscale = 0.299 * r + 0.587 * g + 0.114 * b;
+//         rowBinary += grayscale > 128 ? '0' : '1'; // 1 là đen (in), 0 là trắng
+//       }
+
+//       // Chuyển binary sang hex từng byte (8 bit)
+//       for (let i = 0; i < rowBinary.length; i += 8) {
+//         const byte = rowBinary.substring(i, i + 8).padEnd(8, '0');
+//         const hex = parseInt(byte, 2).toString(16).padStart(2, '0').toUpperCase();
+//         hexData += hex;
+//       }
+//     }
+
+//     const totalBytes = hexData.length;
+//     const totalBytesDecimal = totalBytes;
+//     const bytesPerRowDecimal = bytesPerRow;
+
+//     // Đoạn ZPL cho ảnh, bạn có thể chỉnh ^FOx,y nếu muốn đặt vị trí
+//     const zplImage = `^FO0,0
+// ^GFA,${totalBytesDecimal},${totalBytesDecimal},${bytesPerRowDecimal},${hexData}
+// `;
+
+//     // Thêm vào textarea ZPL chính (zplPrintOutput)
+//     const textarea = document.getElementById('zplPrintOutput');
+//     if (textarea) {
+//       // Chèn trước ^XZ nếu có, hoặc nối vào cuối
+//       let current = textarea.value.trim();
+//       if (current.endsWith('^XZ')) {
+//         current = current.slice(0, -3) + zplImage + '^XZ';
+//       } else {
+//         current += '\n' + zplImage + '^XZ';
+//       }
+//       textarea.value = current;
+//       // Tự động preview lại
+//       previewZPL();
+//     }
+//   };
+// }
 
 
 
@@ -697,9 +795,59 @@ window.alignRightSelected = alignRightSelected;
 window.getDynamicFieldsFromCanvas = getDynamicFieldsFromCanvas;
 window.convertCanvasToZPL = convertCanvasToZPL;
 window.redrawZPL = redrawZPL;
+window.AddImageZPL = AddImageZPL;
+window.restoreZPLFromCanvas = restoreZPLFromCanvas; 
+
 function convertCanvasToZPL(canvas) {
     let zpl = '^XA\n';
     if (!canvas) return zpl + '^XZ';
+
+    const processImageToZPL = (obj) => {
+        // Chuyển ảnh trên canvas thành ^GFA
+        // Lưu ý: Chỉ nên dùng cho ảnh nhỏ, ảnh lớn sẽ ra mã ZPL rất dài!
+        const width = Math.round(obj.width * (obj.scaleX || 1));
+        const height = Math.round(obj.height * (obj.scaleY || 1));
+        const left = Math.round(obj.left);
+        const top = Math.round(obj.top);
+
+        // Tạo canvas tạm để lấy pixel ảnh
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const ctx = tempCanvas.getContext('2d');
+
+        // Vẽ ảnh lên canvas tạm
+        // Nếu obj._element là HTMLImageElement
+        ctx.drawImage(obj._element, 0, 0, width, height);
+
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const pixels = imageData.data;
+
+        const bytesPerRow = Math.ceil(width / 8);
+        let hexData = '';
+
+        for (let y = 0; y < height; y++) {
+            let rowBinary = '';
+            for (let x = 0; x < width; x++) {
+                const idx = (y * width + x) * 4;
+                const r = pixels[idx];
+                const g = pixels[idx + 1];
+                const b = pixels[idx + 2];
+                const grayscale = 0.299 * r + 0.587 * g + 0.114 * b;
+                rowBinary += grayscale > 128 ? '0' : '1'; // 1 là đen (in), 0 là trắng
+            }
+            for (let i = 0; i < rowBinary.length; i += 8) {
+                const byte = rowBinary.substring(i, i + 8).padEnd(8, '0');
+                const hex = parseInt(byte, 2).toString(16).padStart(2, '0').toUpperCase();
+                hexData += hex;
+            }
+        }
+
+        const totalBytes = hexData.length;
+        const bytesPerRowDecimal = bytesPerRow;
+
+        return `^FO${left},${top}\n^GFA,${totalBytes},${totalBytes},${bytesPerRowDecimal},${hexData}\n`;
+    };
 
     canvas.getObjects().forEach(obj => {
         // Text/Textbox
@@ -723,23 +871,23 @@ function convertCanvasToZPL(canvas) {
             const y1 = Math.round(obj.y1 * (obj.scaleY || 1));
             const x2 = Math.round(obj.x2 * (obj.scaleX || 1));
             const y2 = Math.round(obj.y2 * (obj.scaleY || 1));
-            // ZPL không có lệnh line riêng, dùng ^GB với width/height nhỏ
             const width = Math.abs(x2 - x1) || 1;
             const height = Math.abs(y2 - y1) || 1;
             zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^GB${width},${height},${obj.strokeWidth || 1},B,0^FS\n`;
         }
         // QR động/tĩnh (group hoặc image có customType)
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
-            // QR động: lấy vị trí group, nội dung từ obj.variable
             const qrValue = obj.variable ? obj.variable.replace(/[#\{\}]/g, '') : 'QR';
             zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         }
         else if (obj.type === 'image' && obj.customType === 'staticQR') {
-            // QR tĩnh: lấy vị trí, nội dung từ obj.qrValue
             const qrValue = obj.qrValue || '';
             zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         }
-        // Có thể bổ sung thêm các loại khác nếu cần
+        // Ảnh thường (không phải QR)
+        else if (obj.type === 'image' && !obj.customType) {
+            zpl += processImageToZPL(obj);
+        }
     });
 
     zpl += '^XZ';
