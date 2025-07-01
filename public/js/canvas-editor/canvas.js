@@ -342,23 +342,29 @@ async function SaveCanvas(isSilent = false) {
     }
 
     const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable', 'qrValue']));
-    const width = window.canvas.getWidth();  // px
-    const height = window.canvas.getHeight(); // px
+    const width = window.canvas.getWidth();
+    const height = window.canvas.getHeight();
 
-    // Lấy thông tin gốc người dùng đã nhập
-    const unit = localStorage.getItem('canvas_design_unit');
+    // Đảm bảo luôn có unit hợp lệ
+    const unit =
+        localStorage.getItem('canvas_design_unit') ||
+        window.defaultCanvasUnit ||
+        'px';
     const user_width = localStorage.getItem('canvas_design_width') || width;
     const user_height = localStorage.getItem('canvas_design_height') || height;
+
+    // Nếu unit vẫn null, ép về 'px'
+    if (!unit) {
+        console.warn('Unit is null, fallback to px');
+    }
 
     try {
         const fd = new FormData();
         fd.append('name', name_design);
-        fd.append('width', user_width); // px
-        fd.append('height', user_height); // px
+        fd.append('width', user_width);
+        fd.append('height', user_height);
         fd.append('config', config);
-        fd.append('unit', unit);
-        // fd.append('user_width', user_width);
-        // fd.append('user_height', user_height);
+        fd.append('unit', unit || 'px');
         if (template_id) fd.append('template_id', template_id);
 
         const resp = await fetch('/templates', {

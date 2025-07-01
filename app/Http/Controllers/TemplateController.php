@@ -32,7 +32,6 @@ class TemplateController extends Controller
             'width' => $template->width,
             'height' => $template->height,
             'unit' => $template->unit ?? 'px',
-
         ]);
 
     }
