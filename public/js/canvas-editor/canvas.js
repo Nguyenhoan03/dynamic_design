@@ -14,10 +14,15 @@ const width = parseFloat(urlParams.get('width')) || 500;
 const height = parseFloat(urlParams.get('height')) || 500;
 const unit = urlParams.get('unit') || 'px';
 
+// Lưu giá trị gốc vào localStorage (chỉ lưu giá trị gốc, không convert)
+localStorage.setItem('canvas_design_unit', unit);
+localStorage.setItem('canvas_design_width', width);
+localStorage.setItem('canvas_design_height', height);
+
 const canvasWidth = convertToPx(width, unit);
 const canvasHeight = convertToPx(height, unit);
 
-window.defaultCanvasUnit = unit; // để updateCanvasInfo dùng đúng đơn vị
+window.defaultCanvasUnit = unit;
 
 window.canvas = new fabric.Canvas('templateCanvas', {
     backgroundColor: '#fff',
@@ -198,17 +203,6 @@ document.getElementById('uploadFile')?.addEventListener('change', async function
         reader.readAsArrayBuffer(file);
     }
 
-
-
-
-
-
-
-
-
-
-
-
     // Video
     else if (file.type.startsWith('video/')) {
         const url = URL.createObjectURL(file);
@@ -342,29 +336,23 @@ async function SaveCanvas(isSilent = false) {
     }
 
     const config = JSON.stringify(window.canvas.toJSON(['customType', 'variable', 'qrValue']));
-    const width = window.canvas.getWidth();
-    const height = window.canvas.getHeight();
 
-    // Đảm bảo luôn có unit hợp lệ
-    const unit =
-        localStorage.getItem('canvas_design_unit') ||
-        window.defaultCanvasUnit ||
-        'px';
-    const user_width = localStorage.getItem('canvas_design_width') || width;
-    const user_height = localStorage.getItem('canvas_design_height') || height;
+    // Lấy giá trị gốc từ localStorage
+    const unit = localStorage.getItem('canvas_design_unit') || window.defaultCanvasUnit || 'px';
+    const user_width = localStorage.getItem('canvas_design_width');
+    const user_height = localStorage.getItem('canvas_design_height');
 
-    // Nếu unit vẫn null, ép về 'px'
-    if (!unit) {
-        console.warn('Unit is null, fallback to px');
-    }
+    // Nếu thiếu giá trị gốc, fallback về px
+    const width = user_width || window.canvas.getWidth();
+    const height = user_height || window.canvas.getHeight();
 
     try {
         const fd = new FormData();
         fd.append('name', name_design);
-        fd.append('width', user_width);
-        fd.append('height', user_height);
+        fd.append('width', width);
+        fd.append('height', height);
         fd.append('config', config);
-        fd.append('unit', unit || 'px');
+        fd.append('unit', unit);
         if (template_id) fd.append('template_id', template_id);
 
         const resp = await fetch('/templates', {
