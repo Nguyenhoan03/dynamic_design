@@ -578,11 +578,72 @@ function openPrintModal() {
 }
 
 function downloadPDF() {
-    // Tải ảnh PNG về, hoặc có thể dùng thư viện html2pdf/pdf-lib để xuất PDF thực sự nếu cần
-    const dataUrl = document.getElementById('canvasPreview').src;
+    const img = document.getElementById('labelaryPreviewPrint');
+    if (!img || !img.src) {
+        alert('Chưa có preview ZPL!');
+        return;
+    }
+    // Sử dụng pdf-lib để tạo PDF từ ảnh
+    fetch(img.src)
+        .then(res => res.blob())
+        .then(blob => {
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const { PDFDocument } = window['pdf-lib'];
+                const pdfDoc = await PDFDocument.create();
+                const pngImage = await pdfDoc.embedPng(e.target.result);
+                const page = pdfDoc.addPage([pngImage.width, pngImage.height]);
+                page.drawImage(pngImage, { x: 0, y: 0, width: pngImage.width, height: pngImage.height });
+                const pdfBytes = await pdfDoc.save();
+                const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blobPDF);
+                link.download = 'label.pdf';
+                link.click();
+            };
+            reader.readAsArrayBuffer(blob);
+        });
+}
+
+function downloadMultiLabelPDF() {
+    const img = document.getElementById('labelaryPreviewPrint');
+    const count = parseInt(document.getElementById('labelCount').value) || 1;
+    if (!img || !img.src) {
+        alert('Chưa có preview ZPL!');
+        return;
+    }
+    fetch(img.src)
+        .then(res => res.blob())
+        .then(blob => {
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                const { PDFDocument } = window['pdf-lib'];
+                const pdfDoc = await PDFDocument.create();
+                const pngImage = await pdfDoc.embedPng(e.target.result);
+                for (let i = 0; i < count; i++) {
+                    const page = pdfDoc.addPage([pngImage.width, pngImage.height]);
+                    page.drawImage(pngImage, { x: 0, y: 0, width: pngImage.width, height: pngImage.height });
+                }
+                const pdfBytes = await pdfDoc.save();
+                const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blobPDF);
+                link.download = 'labels-multi.pdf';
+                link.click();
+            };
+            reader.readAsArrayBuffer(blob);
+        });
+}
+
+function downloadEPL() {
+    const zpl = document.getElementById('zplPrintOutput').value;
+    // Nếu bạn có hàm chuyển đổi ZPL -> EPL thì gọi ở đây
+    // Ví dụ: const epl = convertZPLtoEPL(zpl);
+    const epl = `! 0 200 200 210 1\nTEXT 4 0 30 40 "EPL chưa hỗ trợ chuyển từ ZPL"\nFORM\nPRINT\n`;
+    const blob = new Blob([epl], { type: 'text/plain' });
     const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = 'label.pdf.png';
+    link.href = URL.createObjectURL(blob);
+    link.download = 'label.epl';
     link.click();
 }
 
@@ -592,6 +653,18 @@ function downloadZPL() {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'label.zpl';
+    link.click();
+}
+
+function downloadPNG() {
+    const img = document.getElementById('labelaryPreviewPrint');
+    if (!img || !img.src) {
+        alert('Chưa có preview ZPL!');
+        return;
+    }
+    const link = document.createElement('a');
+    link.href = img.src;
+    link.download = 'label.png';
     link.click();
 }
 
@@ -845,3 +918,6 @@ window.redrawZPL = redrawZPL;
 window.AddImageZPL = AddImageZPL;
 window.restoreZPLFromCanvas = restoreZPLFromCanvas;
 window.rotatePreview =rotatePreview;
+window.downloadPNG = downloadPNG;
+window.downloadEPL = downloadEPL;
+window.downloadMultiLabelPDF = downloadMultiLabelPDF;
