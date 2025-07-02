@@ -419,6 +419,23 @@ function convertCanvasToZPL(canvas) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const csvSection = document.getElementById('csvSection');
+    const printPdfBtn = document.getElementById('printPdfBtn');
+    const pdfTab = document.getElementById('pdf-tab');
+    const zplTab = document.getElementById('zpl-tab');
+
+    if (csvSection && printPdfBtn && pdfTab && zplTab) {
+        pdfTab.addEventListener('shown.bs.tab', function () {
+            csvSection.style.display = '';
+            printPdfBtn.style.display = '';
+        });
+        zplTab.addEventListener('shown.bs.tab', function () {
+            csvSection.style.display = 'none';
+            printPdfBtn.style.display = 'none';
+        });
+    }
+
+
     const zplTextarea = document.getElementById('zplPrintOutput');
     const zplWarning = document.getElementById('zplWarning');
     let isZPLDirty = false;

@@ -145,3 +145,4 @@ document.addEventListener('mouseup', function () {
         window.canvas.setCursor('default');
     }
 });
+

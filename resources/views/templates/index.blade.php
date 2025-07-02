@@ -252,25 +252,27 @@
                     </div>
                     <!-- Dữ liệu động (CSV/Excel) -->
                     <hr>
-                    <label class="form-label fw-semibold mb-2">
-                        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
-                    </label>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
-                        <div class="input-group">
-                            <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control" aria-label="Chọn file Excel">
-                            <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
-                                <i class="bi bi-download"></i> Tải file Excel mẫu
-                            </button>
-                        </div>
-                        <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
-                    </div>
-                    <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
-                    <textarea class="form-control border border-1 rounded-3 shadow-sm" name="csv_rows" rows="6"
-                        placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+                    <div id="csvSection">
+    <label class="form-label fw-semibold mb-2">
+        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
+    </label>
+    <div class="mb-3">
+        <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>
+        <div class="input-group">
+            <input type="file" id="excelInput" accept=".xlsx,.xls" class="form-control" aria-label="Chọn file Excel">
+            <button type="button" class="btn btn-outline-primary" id="downloadExcelTemplate">
+                <i class="bi bi-download"></i> Tải file Excel mẫu
+            </button>
+        </div>
+        <div class="form-text text-muted mt-1">Chỉ chấp nhận file .xlsx, .xls</div>
+    </div>
+    <label class="form-label fw-semibold mb-2 mt-3">Hoặc dán dữ liệu CSV:</label>
+    <textarea class="form-control border border-1 rounded-3 shadow-sm" name="csv_rows" rows="6"
+        placeholder="Ví dụ:&#10;Nguyễn Văn A,123456,https://example.com&#10;Trần Thị B,654321,Thông tin bất kỳ"></textarea>
+</div>
                 </div>
                 <div class="modal-footer d-flex justify-content-end px-4 pb-4">
-                    <button type="submit" class="btn btn-success px-4">
+                    <button type="submit" class="btn btn-success px-4" id="printPdfBtn">
                         <i class="bi bi-printer-fill me-1"></i> In PDF
                     </button>
                 </div>

@@ -566,7 +566,11 @@ function openPrintModal() {
         updateDynamicFieldsLabel();
 
         // ZPL preview
-        const zpl = convertCanvasToZPL(window.canvas);
+        // Lấy thông số label size từ input
+        const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+        const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+        const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+        const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi);
         document.getElementById('zplPrintOutput').value = zpl;
         document.getElementById('labelaryPreviewPrint').src = '';
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
@@ -677,14 +681,22 @@ function redrawZPL() {
         return;
     }
     // Nếu chưa sửa textarea, lấy lại từ canvas
-    const zpl = convertCanvasToZPL(window.canvas);
+    // Lấy thông số label size từ input
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi);
     document.getElementById('zplPrintOutput').value = zpl;
     previewZPL();
 }
 function restoreZPLFromCanvas() {
     // Lấy lại ZPL từ canvas và cập nhật textarea
     if (window.canvas) {
-        const zpl = convertCanvasToZPL(window.canvas);
+        // Lấy thông số label size từ input
+        const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+        const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+        const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+        const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi);
         document.getElementById('zplPrintOutput').value = zpl;
         // Ẩn cảnh báo sửa thủ công nếu có
         const zplWarning = document.getElementById('zplWarning');
@@ -705,20 +717,11 @@ function rotatePreview() {
 
 function previewZPL() {
     const zpl = document.getElementById('zplPrintOutput').value;
-    const dpi = document.getElementById('dpiSelectPrint').value;
-    const w = document.getElementById('labelWidthPrint').value;
-    const h = document.getElementById('labelHeightPrint').value;
-
-     console.log('Preview ZPL with:', { dpi, w, h });
-    console.log('ZPL:', zpl);
-
-    
-    if (!zpl.trim().startsWith('^XA') || !zpl.trim().endsWith('^XZ')) {
-        alert("ZPL phải bắt đầu bằng ^XA và kết thúc bằng ^XZ!");
-        return;
-    }
-
-    fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${w}x${h}/0/`, {
+    const dpi = document.getElementById('dpiSelectPrint').value || 8;
+    // Lấy label size từ input (inch)
+    const wInch = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
+    const hInch = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
+    fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${wInch}x${hInch}/0/`, {
         method: "POST",
         headers: {
             "Accept": "image/png",
@@ -748,28 +751,27 @@ function AddImageZPL() {
 
 // Xử lý khi chọn file
 document.addEventListener('DOMContentLoaded', function () {
-  const input = document.getElementById('zplImageInput');
-  if (input) {
-    input.addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        const base64 = evt.target.result;
-        ConvertImgToZPL(base64);
-        console.log(base64, 'base64');
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+    const input = document.getElementById('zplImageInput');
+    if (input) {
+        input.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                const base64 = evt.target.result;
+                ConvertImgToZPL(base64);
+                console.log(base64, 'base64');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 });
 
 // Hàm chuyển ảnh (HTMLImageElement) sang ZPL ^GFA
-function imageToZPL(img, left = 0, top = 0, maxSize = 100) {
-    // Resize nhỏ lại nếu quá lớn
-    let width = img.width, height = img.height;
-    let scale = Math.min(maxSize / width, maxSize / height, 1);
-    let w = Math.max(1, Math.round(width * scale)), h = Math.max(1, Math.round(height * scale));
+function imageToZPL(img, left = 0, top = 0, w, h) {
+    // Nếu không truyền w, h thì lấy kích thước gốc
+    w = w || img.width;
+    h = h || img.height;
 
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
@@ -785,17 +787,14 @@ function imageToZPL(img, left = 0, top = 0, maxSize = 100) {
         for (let x = 0; x < w; x++) {
             const idx = (y * w + x) * 4;
             const r = pixels[idx], g = pixels[idx + 1], b = pixels[idx + 2];
-            // Chuyển sang grayscale và threshold
             const grayscale = 0.299 * r + 0.587 * g + 0.114 * b;
-            rowBinary += grayscale > 128 ? '0' : '1'; // 1: đen, 0: trắng
+            rowBinary += grayscale > 128 ? '0' : '1';
         }
-        // Chuyển từng 8 bit sang hex
         for (let i = 0; i < rowBinary.length; i += 8) {
             const byte = rowBinary.substring(i, i + 8).padEnd(8, '0');
             hexData += parseInt(byte, 2).toString(16).padStart(2, '0').toUpperCase();
         }
     }
-    // Số byte thực sự là số ký tự hex chia 2
     const totalBytes = hexData.length / 2;
     return `^FO${left},${top}\n^GFA,${totalBytes},${totalBytes},${bytesPerRow},${hexData}\n`;
 }
@@ -822,29 +821,36 @@ function ConvertImgToZPL(base64Image) {
 }
 
 // Sử dụng cho convertCanvasToZPL
-function convertCanvasToZPL(canvas) {
+function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi) {
     let zpl = '^XA\n';
     if (!canvas) return zpl + '^XZ';
 
-    // Lấy thông số label
-    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
-    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
-    const dpi = parseInt(document.getElementById('dpiSelectPrint').value) * 25.4; // dpmm -> dpi
+    // Lấy thông số label thực tế
+    dpi = dpi || 8; // dpmm (8dpmm = 203dpi)
+    labelWidthInch = labelWidthInch || 4;
+    labelHeightInch = labelHeightInch || 6;
+    const dpiPx = dpi * 25.4;
 
-    const widthDot = labelWidthInch * dpi;
-    const heightDot = labelHeightInch * dpi;
-
+    // Lấy viewportTransform (zoom, pan)
     const vt = canvas.viewportTransform || [1, 0, 0, 1, 0, 0];
     const zoom = canvas.getZoom ? canvas.getZoom() : 1;
     const panX = vt[4] || 0;
     const panY = vt[5] || 0;
 
-    // scaleX/scaleY: từ px (gốc) sang dot
-    const scaleX = widthDot / (canvas.getWidth() / zoom);
-    const scaleY = heightDot / (canvas.getHeight() / zoom);
+    // Kích thước vùng nhìn thấy trên canvas (viewport)
+    const viewWidth = canvas.getWidth();
+    const viewHeight = canvas.getHeight();
+
+    // Kích thước label thực tế (px)
+    const labelW = labelWidthInch * dpiPx;
+    const labelH = labelHeightInch * dpiPx;
+
+    // scaleX/scaleY: từ px (viewport) sang dot
+    const scaleX = labelW / viewWidth;
+    const scaleY = labelH / viewHeight;
 
     canvas.getObjects().forEach(obj => {
-        // Lấy vị trí thật trên canvas (không bị zoom/pan)
+        // Tính lại vị trí thực tế trên viewport (đã loại bỏ zoom/pan)
         const real = {
             left: (obj.left - panX) / zoom,
             top: (obj.top - panY) / zoom,
@@ -875,7 +881,10 @@ function convertCanvasToZPL(canvas) {
             const qrValue = obj.qrValue || '';
             zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         } else if (obj.type === 'image' && !obj.customType && obj._element) {
-            zpl += imageToZPL(obj._element, Math.round(real.left * scaleX), Math.round(real.top * scaleY), 100);
+            // Lấy đúng width/height thực tế
+            const width = Math.round((obj.width || obj._element.width) * (obj.scaleX || 1) * scaleX);
+            const height = Math.round((obj.height || obj._element.height) * (obj.scaleY || 1) * scaleY);
+            zpl += imageToZPL(obj._element, Math.round(real.left * scaleX), Math.round(real.top * scaleY), width, height);
         }
     });
 
@@ -935,7 +944,7 @@ window.convertCanvasToZPL = convertCanvasToZPL;
 window.redrawZPL = redrawZPL;
 window.AddImageZPL = AddImageZPL;
 window.restoreZPLFromCanvas = restoreZPLFromCanvas;
-window.rotatePreview =rotatePreview;
+window.rotatePreview = rotatePreview;
 window.downloadPNG = downloadPNG;
 window.downloadEPL = downloadEPL;
 window.downloadMultiLabelPDF = downloadMultiLabelPDF;
