@@ -133,8 +133,8 @@ function addStaticQR(qrText = 'https://example.com') {
 
     const qr = new QRCode(tempDiv, {
         text: qrText,
-        width: 80,
-        height: 80,
+        width: 300,
+        height: 300,
         correctLevel: QRCode.CorrectLevel.H
     });
 
@@ -150,11 +150,13 @@ function addStaticQR(qrText = 'https://example.com') {
         document.body.removeChild(tempDiv);
 
         fabric.Image.fromURL(dataUrl, function (img) {
+
+            const targetSize = 80;
+            img.scaleToWidth(targetSize);
+            img.scaleToHeight(targetSize);
             img.set({
                 left: 200,
                 top: 150,
-                scaleX: 1,
-                scaleY: 1,
                 customType: 'staticQR',
                 qrValue: qrText
             });
@@ -162,7 +164,6 @@ function addStaticQR(qrText = 'https://example.com') {
         }, { crossOrigin: 'Anonymous' });
     }, 100);
 }
-
 
 
 // Sự kiện click vào QR tĩnh để hiện input đổi nội dung
@@ -400,7 +401,7 @@ function editText() {
         input.click();
     }
 }
-window.editText = editText;
+
 
 // Hàm sửa QR
 function changeQR() {
@@ -411,6 +412,12 @@ function changeQR() {
             const cleanedValue = newValue.trim();
             active.qrValue = cleanedValue;
 
+            // Lưu lại kích thước thực tế trước khi thay QR
+            const prevWidth = active.getScaledWidth ? active.getScaledWidth() : (active.width * (active.scaleX || 1));
+            const prevHeight = active.getScaledHeight ? active.getScaledHeight() : (active.height * (active.scaleY || 1));
+            const prevLeft = active.left;
+            const prevTop = active.top;
+
             // Tạo QR mới bằng QRCode.js
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
@@ -419,8 +426,8 @@ function changeQR() {
 
             new QRCode(tempDiv, {
                 text: cleanedValue,
-                width: 80,
-                height: 80,
+                width: 300,
+                height: 300,
                 correctLevel: QRCode.CorrectLevel.H
             });
 
@@ -435,11 +442,12 @@ function changeQR() {
                 document.body.removeChild(tempDiv);
 
                 fabric.Image.fromURL(dataUrl, function (img) {
+                    // Scale lại đúng kích thước cũ
+                    img.scaleToWidth(prevWidth);
+                    img.scaleToHeight(prevHeight);
                     img.set({
-                        left: active.left,
-                        top: active.top,
-                        scaleX: active.scaleX,
-                        scaleY: active.scaleY,
+                        left: prevLeft,
+                        top: prevTop,
                         customType: 'staticQR',
                         qrValue: cleanedValue
                     });
@@ -686,7 +694,7 @@ function redrawZPL() {
     }
     // Nếu chưa sửa textarea, lấy lại từ canvas
     // Lấy thông số label size từ input
-     const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
     const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
     // const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
     const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, 8, true);
@@ -831,7 +839,7 @@ function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi, forceD
     if (!canvas) return zpl + '^XZ';
 
     // Lấy thông số label thực tế
-     if (forceDpi8) dpi = 8;
+    if (forceDpi8) dpi = 8;
     dpi = dpi || 8; // dpmm (8dpmm = 203dpi)
     labelWidthInch = labelWidthInch || 4;
     labelHeightInch = labelHeightInch || 6;
@@ -968,3 +976,4 @@ window.rotatePreview = rotatePreview;
 window.downloadPNG = downloadPNG;
 window.downloadEPL = downloadEPL;
 window.downloadMultiLabelPDF = downloadMultiLabelPDF;
+window.editText = editText;
