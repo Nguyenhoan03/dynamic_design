@@ -648,23 +648,55 @@ function downloadMultiLabelPDF() {
 }
 
 function downloadEPL() {
-    const zpl = document.getElementById('zplPrintOutput').value;
-    // Nếu bạn có hàm chuyển đổi ZPL -> EPL thì gọi ở đây
-    // Ví dụ: const epl = convertZPLtoEPL(zpl);
-    const epl = `! 0 200 200 210 1\nTEXT 4 0 30 40 "EPL chưa hỗ trợ chuyển từ ZPL"\nFORM\nPRINT\n`;
+    const wInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const hInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    const widthDot = Math.round(wInch * dpi * 25.4);
+    const heightDot = Math.round(hInch * dpi * 25.4);
+
+    const epl = convertCanvasToEPL(window.canvas, widthDot, heightDot);
+
     const blob = new Blob([epl], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'label.epl';
     link.click();
 }
-
+function convertCanvasToEPL(canvas, widthDot, heightDot) {
+    let epl = `! 0 200 200 ${heightDot} 1\nN\n`;
+    canvas.getObjects().forEach(obj => {
+        if (obj.type === 'text' || obj.type === 'textbox') {
+            // EPL chỉ hỗ trợ font đơn giản, ví dụ font 4
+            epl += `A${Math.round(obj.left)},${Math.round(obj.top)},0,4,1,1,N,"${obj.text}"\n`;
+        } else if (obj.type === 'rect') {
+            // EPL: BOX x, y, width, height, thickness
+            const x = Math.round(obj.left);
+            const y = Math.round(obj.top);
+            const w = Math.round(obj.width * (obj.scaleX || 1));
+            const h = Math.round(obj.height * (obj.scaleY || 1));
+            const thickness = obj.strokeWidth || 1;
+            epl += `BOX ${x},${y},${w},${h},${thickness}\n`;
+        } else if (obj.type === 'line') {
+            // EPL: L x1, y1, x2, y2, thickness
+            const x1 = Math.round(obj.x1 * (obj.scaleX || 1) + (obj.left || 0));
+            const y1 = Math.round(obj.y1 * (obj.scaleY || 1) + (obj.top || 0));
+            const x2 = Math.round(obj.x2 * (obj.scaleX || 1) + (obj.left || 0));
+            const y2 = Math.round(obj.y2 * (obj.scaleY || 1) + (obj.top || 0));
+            const thickness = obj.strokeWidth || 1;
+            epl += `L ${x1},${y1},${x2},${y2},${thickness}\n`;
+        } else if (obj.type === 'image' || obj.type === 'circle' || obj.customType === 'staticQR' || obj.customType === 'dynamicQR') {
+            // EPL không hỗ trợ image, circle, QR code
+            // Bạn có thể thêm dòng chú thích hoặc bỏ qua
+            // epl += `; [${obj.type}] không hỗ trợ trong EPL\n`;
+        }
+    });
+    epl += 'P1\n';
+    return epl;
+}
 function downloadZPL() {
-    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
-    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
-    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-    // Không forceDpi8 khi xuất file
-    const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi, false);
+    // Lấy nội dung ZPL hiện tại từ textarea (bao gồm cả ảnh đã thêm)
+    const textarea = document.getElementById('zplPrintOutput');
+    const zpl = textarea ? textarea.value : '';
     const blob = new Blob([zpl], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -816,17 +848,26 @@ function imageToZPL(img, left = 0, top = 0, w, h) {
 function ConvertImgToZPL(base64Image) {
     const img = new Image();
     img.onload = function () {
-        const zpl = imageToZPL(img, 0, 0, 100);
+        // Lấy thông số label size từ input
+        const wInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+        const hInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+        const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+        const wPx = Math.round(wInch * dpi * 25.4);
+        const hPx = Math.round(hInch * dpi * 25.4);
+
+        // Lấy ZPL hiện tại
         const textarea = document.getElementById('zplPrintOutput');
+        let zpl = textarea ? textarea.value.trim() : '';
+        // Nếu chưa có ^XA thì thêm mới, nếu có thì chèn vào trước ^XZ
+        const imageZPL = imageToZPL(img, 0, 0, wPx, hPx);
+        if (!zpl.startsWith('^XA')) {
+            zpl = `^XA\n${imageZPL}^XZ`;
+        } else {
+            // Chèn imageZPL trước ^XZ
+            zpl = zpl.replace(/\^XZ\s*$/, `${imageZPL}^XZ`);
+        }
         if (textarea) {
-            let current = textarea.value.trim();
-            if (!current.startsWith('^XA')) current = '^XA\n' + current;
-            if (current.endsWith('^XZ')) {
-                current = current.slice(0, -3) + zpl + '^XZ';
-            } else {
-                current += '\n' + zpl + '^XZ';
-            }
-            textarea.value = current;
+            textarea.value = zpl;
             previewZPL();
         }
     };
