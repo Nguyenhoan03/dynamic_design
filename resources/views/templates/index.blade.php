@@ -211,9 +211,10 @@
                     <span class="fw-semibold"><i class="bi bi-image"></i> Xem trước ZPL</span>
                 </div>
                 <div class="card-body d-flex justify-content-center align-items-center p-2" style="min-height:340px;">
-                    <div style="background:#fff; border:1px solid #ddd; border-radius:10px; box-shadow:0 2px 8px #0001; display:flex; align-items:center; justify-content:center; width:95%; height:320px;">
+                    <div id="zplPreviewBox"
+                        style="background:#fff; border:1px solid #ddd; border-radius:10px; box-shadow:0 2px 8px #0001; display:flex; align-items:center; justify-content:center; width:100%; padding:0; margin:0; overflow:hidden;">
                         <img id="labelaryPreviewPrint"
-                            style="max-width:95%; max-height:300px; object-fit:contain; background:#fff; border-radius:8px; border:0;"
+                            style="width:100%; height:100%; object-fit:contain; display:block; background:#fff; border-radius:8px; border:0; margin:0; padding:0;"
                             alt="ZPL Preview"
                             onerror="this.style.display='none';document.getElementById('zplPreviewError').style.display='block';"
                             onload="this.style.display='block';document.getElementById('zplPreviewError').style.display='none';">
@@ -798,6 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endif
  </script>
+ 
 
 </body>
 </html>

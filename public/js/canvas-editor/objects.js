@@ -652,7 +652,11 @@ function downloadEPL() {
 }
 
 function downloadZPL() {
-    const zpl = document.getElementById('zplPrintOutput').value;
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    // Không forceDpi8 khi xuất file
+    const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi, false);
     const blob = new Blob([zpl], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -682,10 +686,10 @@ function redrawZPL() {
     }
     // Nếu chưa sửa textarea, lấy lại từ canvas
     // Lấy thông số label size từ input
-    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+     const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
     const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
-    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-    const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi);
+    // const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, 8, true);
     document.getElementById('zplPrintOutput').value = zpl;
     previewZPL();
 }
@@ -717,7 +721,7 @@ function rotatePreview() {
 
 function previewZPL() {
     const zpl = document.getElementById('zplPrintOutput').value;
-    const dpi = document.getElementById('dpiSelectPrint').value || 8;
+    const dpi = 8;
     // Lấy label size từ input (inch)
     const wInch = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
     const hInch = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
@@ -821,11 +825,12 @@ function ConvertImgToZPL(base64Image) {
 }
 
 // Sử dụng cho convertCanvasToZPL
-function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi) {
+function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi, forceDpi8 = false) {
     let zpl = '^XA\n';
     if (!canvas) return zpl + '^XZ';
 
     // Lấy thông số label thực tế
+     if (forceDpi8) dpi = 8;
     dpi = dpi || 8; // dpmm (8dpmm = 203dpi)
     labelWidthInch = labelWidthInch || 4;
     labelHeightInch = labelHeightInch || 6;
@@ -850,41 +855,54 @@ function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi) {
     const scaleY = labelH / viewHeight;
 
     canvas.getObjects().forEach(obj => {
-        // Tính lại vị trí thực tế trên viewport (đã loại bỏ zoom/pan)
+        // Tính lại vị trí thực tế trên canvas gốc
         const real = {
             left: (obj.left - panX) / zoom,
             top: (obj.top - panY) / zoom,
             width: (obj.width * (obj.scaleX || 1)) / zoom,
             height: (obj.height * (obj.scaleY || 1)) / zoom
         };
+        // Vị trí so với viewport (phần nhìn thấy)
+        const viewLeft = -panX / zoom;
+        const viewTop = -panY / zoom;
+        const leftInView = real.left - viewLeft;
+        const topInView = real.top - viewTop;
+
+        // Nếu object nằm ngoài viewport thì bỏ qua
+        if (
+            leftInView + real.width < 0 ||
+            topInView + real.height < 0 ||
+            leftInView > viewWidth ||
+            topInView > viewHeight
+        ) return;
 
         if (obj.type === 'text' || obj.type === 'textbox') {
-            zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^A0N,${Math.round(obj.fontSize * scaleY)},${Math.round(obj.fontSize * scaleY)}^FD${obj.text}^FS\n`;
+            zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^A0N,${Math.round(obj.fontSize * scaleY)},${Math.round(obj.fontSize * scaleY)}^FD${obj.text}^FS\n`;
         } else if (obj.type === 'rect') {
-            zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^GB${Math.round(real.width * scaleX)},${Math.round(real.height * scaleY)},${obj.strokeWidth || 1},B,0^FS\n`;
+            zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^GB${Math.round(real.width * scaleX)},${Math.round(real.height * scaleY)},${obj.strokeWidth || 1},B,0^FS\n`;
         } else if (obj.type === 'circle') {
-            const r = Math.round(obj.radius * (obj.scaleX || 1) * scaleX / zoom);
-            zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^GC${r},B^FS\n`;
+            const r = Math.round(obj.radius * (obj.scaleX || 1) * ((scaleX + scaleY) / 2));
+            zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^GC${r},B^FS\n`;
         } else if (obj.type === 'line') {
-            // Tính lại x1, y1, x2, y2 theo zoom/pan
-            const x1 = (obj.x1 * (obj.scaleX || 1) - panX) / zoom;
-            const y1 = (obj.y1 * (obj.scaleY || 1) - panY) / zoom;
-            const x2 = (obj.x2 * (obj.scaleX || 1) - panX) / zoom;
-            const y2 = (obj.y2 * (obj.scaleY || 1) - panY) / zoom;
-            const width = Math.abs(x2 - x1) || 1;
-            const height = Math.abs(y2 - y1) || 1;
-            zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^GB${Math.round(width * scaleX)},${Math.round(height * scaleY)},${obj.strokeWidth || 1},B,0^FS\n`;
+            // Tính lại x1, y1, x2, y2 theo zoom/pan và scale
+            const x1 = ((obj.x1 || 0) * (obj.scaleX || 1) - panX) / zoom - viewLeft;
+            const y1 = ((obj.y1 || 0) * (obj.scaleY || 1) - panY) / zoom - viewTop;
+            const x2 = ((obj.x2 || 0) * (obj.scaleX || 1) - panX) / zoom - viewLeft;
+            const y2 = ((obj.y2 || 0) * (obj.scaleY || 1) - panY) / zoom - viewTop;
+            const width = Math.abs(x2 - x1) * scaleX || 1;
+            const height = Math.abs(y2 - y1) * scaleY || 1;
+            zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^GB${Math.round(width)},${Math.round(height)},${obj.strokeWidth || 1},B,0^FS\n`;
         } else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrValue = obj.variable ? obj.variable.replace(/[#\{\}]/g, '') : 'QR';
-            zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
+            zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         } else if (obj.type === 'image' && obj.customType === 'staticQR') {
             const qrValue = obj.qrValue || '';
-            zpl += `^FO${Math.round(real.left * scaleX)},${Math.round(real.top * scaleY)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
+            zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         } else if (obj.type === 'image' && !obj.customType && obj._element) {
             // Lấy đúng width/height thực tế
-            const width = Math.round((obj.width || obj._element.width) * (obj.scaleX || 1) * scaleX);
-            const height = Math.round((obj.height || obj._element.height) * (obj.scaleY || 1) * scaleY);
-            zpl += imageToZPL(obj._element, Math.round(real.left * scaleX), Math.round(real.top * scaleY), width, height);
+            const width = Math.round(real.width * scaleX);
+            const height = Math.round(real.height * scaleY);
+            zpl += imageToZPL(obj._element, Math.round(leftInView * scaleX), Math.round(topInView * scaleY), width, height);
         }
     });
 
