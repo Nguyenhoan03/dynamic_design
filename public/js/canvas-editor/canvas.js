@@ -412,8 +412,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const redrawInputs = [
         'printQuality',
         'dpiSelectPrint',
-            // 'labelWidthPrint',
-            // 'labelHeightPrint'
+        'labelWidthPrint',
+        'labelHeightPrint'
     ];
     redrawInputs.forEach(id => {
         const el = document.getElementById(id);
