@@ -721,7 +721,8 @@ function rotatePreview() {
 
 function previewZPL() {
     const zpl = document.getElementById('zplPrintOutput').value;
-    const dpi = 8;
+    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+
     // Lấy label size từ input (inch)
     const wInch = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
     const hInch = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
