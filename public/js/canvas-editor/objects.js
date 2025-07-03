@@ -961,6 +961,37 @@ function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi, forceD
     return zpl;
 }
 
+function openZPLFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zpl,.txt';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            document.getElementById('zplPrintOutput').value = evt.target.result;
+            // Nếu có cảnh báo sửa tay thì ẩn đi để preview lại từ file mới
+            const zplWarning = document.getElementById('zplWarning');
+            if (zplWarning) zplWarning.style.display = 'none';
+            previewZPL(); // Luôn cập nhật preview
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function copyPermalink() {
+    const zpl = encodeURIComponent(document.getElementById('zplPrintOutput').value);
+    const dpi = document.getElementById('dpiSelectPrint').value;
+    const w = document.getElementById('labelWidthPrint').value;
+    const h = document.getElementById('labelHeightPrint').value;
+    const url = `https://labelary.com/viewer.html?zpl=${zpl}&dpi=${dpi}&width=${w}&height=${h}`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Đã sao chép permalink ZPL!');
+    });
+}
+
 // Luôn cập nhật label khi canvas thay đổi
 window.canvas.on('object:added', updateDynamicFieldsLabel);
 window.canvas.on('object:removed', updateDynamicFieldsLabel);
@@ -1018,3 +1049,5 @@ window.downloadPNG = downloadPNG;
 window.downloadEPL = downloadEPL;
 window.downloadMultiLabelPDF = downloadMultiLabelPDF;
 window.editText = editText;
+window.copyPermalink = copyPermalink;
+window.openZPLFile = openZPLFile;

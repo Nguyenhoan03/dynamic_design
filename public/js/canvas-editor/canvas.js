@@ -407,6 +407,23 @@ function createNewDesign() {
 
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Các input trong ZPL cần theo dõi
+    const redrawInputs = [
+        'printQuality',
+        'dpiSelectPrint',
+            // 'labelWidthPrint',
+            // 'labelHeightPrint'
+    ];
+    redrawInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', redrawZPL);
+            el.addEventListener('input', redrawZPL);
+        }
+    });
+
+
     const csvSection = document.getElementById('csvSection');
     const printPdfBtn = document.getElementById('printPdfBtn');
     const pdfTab = document.getElementById('pdf-tab');
