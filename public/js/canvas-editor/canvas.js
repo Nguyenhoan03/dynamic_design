@@ -405,18 +405,6 @@ function createNewDesign() {
     updateCanvasInfo();
 }
 
-function convertCanvasToZPL(canvas) {
-    let zpl = '^XA\n';
-    if (!canvas) return zpl + '^XZ';
-    canvas.getObjects().forEach(obj => {
-        if (obj.type === 'text' || obj.type === 'textbox') {
-            zpl += `^FO${Math.round(obj.left)},${Math.round(obj.top)}^A0N,${Math.round(obj.fontSize)},${Math.round(obj.fontSize)}^FD${obj.text}^FS\n`;
-        }
-        // Thêm các loại object khác nếu cần (rect, QR, v.v.)
-    });
-    zpl += '^XZ';
-    return zpl;
-}
 
 document.addEventListener('DOMContentLoaded', function () {
     const csvSection = document.getElementById('csvSection');
@@ -476,7 +464,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-window.convertCanvasToZPL = convertCanvasToZPL;
 window.clearCanvas = clearCanvas;
 window.downloadCanvas = downloadCanvas;
 window.SaveCanvas = SaveCanvas;
