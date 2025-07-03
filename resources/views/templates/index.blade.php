@@ -214,7 +214,7 @@
                     <div id="zplPreviewBox"
                         style="background:#fff; border:1px solid #ddd; border-radius:10px; box-shadow:0 2px 8px #0001; display:flex; align-items:center; justify-content:center; width:100%; padding:0; margin:0; overflow:hidden;">
                         <img id="labelaryPreviewPrint"
-                            style="width:100%; height:100%; object-fit:contain; display:block; background:#fff; border-radius:8px; border:0; margin:0; padding:0;"
+                            style="width:100%; object-fit:contain; display:block; background:#fff; border-radius:8px; border:0; margin:0; padding:0;"
                             alt="ZPL Preview"
                             onerror="this.style.display='none';document.getElementById('zplPreviewError').style.display='block';"
                             onload="this.style.display='block';document.getElementById('zplPreviewError').style.display='none';">

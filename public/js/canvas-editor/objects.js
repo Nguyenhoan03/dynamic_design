@@ -877,7 +877,10 @@ function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi, forceD
             topInView > viewHeight
         ) return;
 
+        // CHỈ dùng lệnh ZPL cho text, không hỗ trợ Unicode/font ngoài/màu
         if (obj.type === 'text' || obj.type === 'textbox') {
+            // Font Zebra mặc định là A0N, chỉ in được tiếng Anh, không dấu
+            // Font size chỉ là tham số, không giống hoàn toàn canvas
             zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^A0N,${Math.round(obj.fontSize * scaleY)},${Math.round(obj.fontSize * scaleY)}^FD${obj.text}^FS\n`;
         } else if (obj.type === 'rect') {
             zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^GB${Math.round(real.width * scaleX)},${Math.round(real.height * scaleY)},${obj.strokeWidth || 1},B,0^FS\n`;
@@ -885,7 +888,6 @@ function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi, forceD
             const r = Math.round(obj.radius * (obj.scaleX || 1) * ((scaleX + scaleY) / 2));
             zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^GC${r},B^FS\n`;
         } else if (obj.type === 'line') {
-            // Tính lại x1, y1, x2, y2 theo zoom/pan và scale
             const x1 = ((obj.x1 || 0) * (obj.scaleX || 1) - panX) / zoom - viewLeft;
             const y1 = ((obj.y1 || 0) * (obj.scaleY || 1) - panY) / zoom - viewTop;
             const x2 = ((obj.x2 || 0) * (obj.scaleX || 1) - panX) / zoom - viewLeft;
@@ -900,7 +902,6 @@ function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi, forceD
             const qrValue = obj.qrValue || '';
             zpl += `^FO${Math.round(leftInView * scaleX)},${Math.round(topInView * scaleY)}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         } else if (obj.type === 'image' && !obj.customType && obj._element) {
-            // Lấy đúng width/height thực tế
             const width = Math.round(real.width * scaleX);
             const height = Math.round(real.height * scaleY);
             zpl += imageToZPL(obj._element, Math.round(leftInView * scaleX), Math.round(topInView * scaleY), width, height);
