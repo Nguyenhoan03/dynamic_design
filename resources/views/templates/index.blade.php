@@ -199,7 +199,7 @@
                                             </div>
                                             <div class="col-5 col-sm-5">
                                                 <label class="form-label mb-0 small">Show Label</label>
-                                                <input type="number" id="labelCount" value="1" min="1" class="form-control form-control-sm rounded-2" style="max-width:70px;">
+                                                <input type="number" id="labelCount" value="1" min="1" class="form-control form-control-sm rounded-2" style="max-width:70px;" disabled>
                                             </div>
                                         </div>
                                     </div>

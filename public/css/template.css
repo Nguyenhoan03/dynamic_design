@@ -1055,3 +1055,8 @@ textarea.form-control {
 .zpl-warning span {
     vertical-align: middle;
 }
+
+.zpl-error-msg:hover {
+    text-decoration: underline;
+    color: #c00;
+}

@@ -421,20 +421,51 @@ document.addEventListener('DOMContentLoaded', function () {
     const printPdfBtn = document.getElementById('printPdfBtn');
     const pdfTab = document.getElementById('pdf-tab');
     const zplTab = document.getElementById('zpl-tab');
+    const zplTextarea = document.getElementById('zplPrintOutput');
 
+    // Hàm kiểm tra trường động trong ZPL hoặc canvas
+    function checkDynamicFieldsInDesign() {
+        if (!csvSection) return;
+        // Kiểm tra trong ZPL textarea
+        let hasDynamic = false;
+        if (zplTextarea && /#\{[a-zA-Z0-9_]+\}/.test(zplTextarea.value)) {
+            hasDynamic = true;
+        } else if (window.canvas) {
+            // Kiểm tra trong tất cả text/textbox trên canvas
+            hasDynamic = window.canvas.getObjects().some(obj =>
+                (obj.type === 'text' || obj.type === 'textbox') &&
+                /#\{[a-zA-Z0-9_]+\}/.test(obj.text || '')
+            );
+        }
+        csvSection.style.display = hasDynamic ? '' : 'none';
+    }
+
+    // Khi chuyển tab PDF hoặc ZPL thì kiểm tra
     if (csvSection && printPdfBtn && pdfTab && zplTab) {
         pdfTab.addEventListener('shown.bs.tab', function () {
-            csvSection.style.display = '';
+            checkDynamicFieldsInDesign();
             printPdfBtn.style.display = '';
         });
         zplTab.addEventListener('shown.bs.tab', function () {
-            csvSection.style.display = 'none';
+            checkDynamicFieldsInDesign();
             printPdfBtn.style.display = 'none';
         });
     }
 
+    // Khi sửa ZPL thì kiểm tra lại
+    if (zplTextarea) {
+        zplTextarea.addEventListener('input', checkDynamicFieldsInDesign);
+        checkDynamicFieldsInDesign();
+    }
 
-    const zplTextarea = document.getElementById('zplPrintOutput');
+    // Khi canvas thay đổi thì kiểm tra lại
+    if (window.canvas) {
+        window.canvas.on('object:added', checkDynamicFieldsInDesign);
+        window.canvas.on('object:modified', checkDynamicFieldsInDesign);
+        window.canvas.on('object:removed', checkDynamicFieldsInDesign);
+    }
+
+
     const zplWarning = document.getElementById('zplWarning');
     let isZPLDirty = false;
 

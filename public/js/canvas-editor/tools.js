@@ -224,25 +224,26 @@ function checkZPLTextareaWarning() {
     const textarea = document.getElementById('zplPrintOutput');
     const warnDiv = document.getElementById('zplLinterWarning');
     const warnText = document.getElementById('zplLinterWarningText');
-
     if (!textarea || !warnDiv || !warnText) return;
 
-    // Reset cảnh báo
     warnDiv.style.display = 'none';
     warnText.innerHTML = '';
 
-    const zpl = textarea.value.trim();
+    const zpl = textarea.value;
     const errorMsgs = [];
+    const errorLines = [];
 
     if (!zpl) {
         errorMsgs.push('Vui lòng nhập mã ZPL!');
+        errorLines.push(1);
     } else {
-        if (!zpl.startsWith('^XA') || !zpl.endsWith('^XZ')) {
+        if (!zpl.startsWith('^XA') || !zpl.trim().endsWith('^XZ')) {
             errorMsgs.push('Mã ZPL phải bắt đầu bằng ^XA và kết thúc bằng ^XZ.');
+            errorLines.push(1);
         }
-
         if (zpl.includes('^GB') && /,0,/.test(zpl)) {
             errorMsgs.push('Một số lệnh Line (^GB) có độ dày bằng 0, có thể không in được.');
+            errorLines.push(1);
         }
 
         const validZPLCmds = new Set([
@@ -255,38 +256,66 @@ function checkZPLTextareaWarning() {
 
         const lines = zpl.split('\n');
         let inFD = false;
-
         lines.forEach((line, idx) => {
-            const cmdRegex = /\^([A-Z]{1,3})([^ \n^]*)/g;
-            let match;
-            const reported = new Set();
-
-            while ((match = cmdRegex.exec(line)) !== null) {
-                const cmd = match[1];
-
+            let i = 0;
+            while (i < line.length) {
                 if (inFD) {
-                    if (cmd === 'FS') inFD = false;
+                    const fsIdx = line.indexOf('^FS', i);
+                    if (fsIdx === -1) break;
+                    inFD = false;
+                    i = fsIdx + 3;
                     continue;
                 }
-
-                if (cmd === 'FD') {
-                    inFD = true;
-                    continue;
-                }
-
-                if (!validZPLCmds.has(cmd) && !reported.has(cmd)) {
-                    errorMsgs.push(`Dòng ${idx + 1}: ^${cmd} không phải lệnh ZPL hợp lệ.`);
-                    reported.add(cmd);
+                const match = /\^([A-Z]{1,3})/.exec(line.slice(i));
+                if (match) {
+                    const cmd = match[1];
+                    if (cmd === 'FD') {
+                        inFD = true;
+                        i += match.index + match[0].length;
+                        continue;
+                    }
+                    if (!validZPLCmds.has(cmd)) {
+                        errorMsgs.push(`Dòng ${idx + 1}: ^${cmd} không phải lệnh ZPL hợp lệ.`);
+                        errorLines.push(idx + 1);
+                    }
+                    i += match.index + match[0].length;
+                } else {
+                    break;
                 }
             }
         });
     }
 
-    // Hiển thị cảnh báo
     if (errorMsgs.length > 0) {
         warnDiv.style.display = 'block';
-        warnText.innerHTML = errorMsgs.map(msg => `<div>${msg}</div>`).join('');
+        warnText.innerHTML = errorMsgs.map((msg, i) =>
+            `<div class="zpl-error-msg" data-line="${errorLines[i] || 1}" style="cursor:pointer">${msg}</div>`
+        ).join('');
+        // Gắn sự kiện click cho từng dòng lỗi
+        Array.from(warnText.querySelectorAll('.zpl-error-msg')).forEach(el => {
+            el.onclick = function () {
+                const line = parseInt(this.getAttribute('data-line'), 10) || 1;
+                goToLineInTextarea(textarea, line);
+            };
+        });
+    } else {
+        warnDiv.style.display = 'none';
+        warnText.innerHTML = '';
     }
+}
+
+// Đặt con trỏ đến đầu dòng (chuẩn ZPL, không bị lệch do dòng dài)
+function goToLineInTextarea(textarea, lineNumber) {
+    const lines = textarea.value.split('\n');
+    let position = 0;
+    for (let i = 0; i < lineNumber - 1 && i < lines.length; i++) {
+        position += lines[i].length + 1; // +1 for the newline character
+    }
+    textarea.focus();
+    textarea.setSelectionRange(position, position);
+    // Scroll đến dòng
+    const scrollHeightPerLine = textarea.scrollHeight / lines.length;
+    textarea.scrollTop = scrollHeightPerLine * (lineNumber - 1);
 }
 
 

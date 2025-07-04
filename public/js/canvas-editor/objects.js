@@ -958,10 +958,22 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
 
         // Text
         if (obj.type === 'text' || obj.type === 'textbox') {
-            let size = Math.round((obj.fontSize) * (obj.scaleY || 1) * pxToDotY * 0.85);
+            // Hàm loại bỏ dấu tiếng Việt
+            const removeVietnameseTones = (str) => {
+                return str
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/đ/g, "d")
+                    .replace(/Đ/g, "D");
+            };
+
+            let size = Math.round((obj.fontSize || 20) * (obj.scaleY || 1) * pxToDotY * 0.85);
             if (size < 10) size = 10;
-            zpl += `^FO${x},${y}^A0N,${size},${size}^FD${obj.text}^FS\n`;
+
+            const textNoAccent = removeVietnameseTones(obj.text || '');
+            zpl += `^FO${x},${y}^A0N,${size},${size}^FD${textNoAccent}^FS\n`;
         }
+
         // Rect
         else if (obj.type === 'rect') {
             const sw = obj.strokeWidth || 1;
@@ -975,7 +987,7 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         // Circle
         else if (obj.type === 'circle') {
             // Đường kính thực tế = getScaledWidth(), bán kính = /2
-            const r = Math.round((obj.getScaledWidth ? obj.getScaledWidth() : (obj.radius * 2 * (obj.scaleX || 1))) * ((pxToDotX + pxToDotY) / 4));
+            const r = Math.round((obj.getScaledWidth ? obj.getScaledWidth() : (obj.radius * 2 * (obj.scaleX || 1))) * ((pxToDotX + pxToDotY) / 2.5));
             zpl += `^FO${x},${y}^GC${r},B^FS\n`;
         }
         // Line
