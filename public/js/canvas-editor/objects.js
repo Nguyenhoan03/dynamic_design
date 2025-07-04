@@ -905,11 +905,13 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         const w = Math.round(width * pxToDotX);
         const h = Math.round(height * pxToDotY);
 
+        // Text
         if (obj.type === 'text' || obj.type === 'textbox') {
             let size = Math.round((obj.fontSize || 20) * (obj.scaleY || 1) * pxToDotY * 0.85);
             if (size < 10) size = 10;
             zpl += `^FO${x},${y}^A0N,${size},${size}^FD${obj.text}^FS\n`;
         }
+        // Rect
         else if (obj.type === 'rect') {
             const sw = obj.strokeWidth || 1;
             const isFill = obj.fill && obj.fill !== 'transparent' && obj.fill !== 'rgba(0,0,0,0)';
@@ -919,28 +921,33 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
                 zpl += `^FO${x},${y}^GB${w},${h},${sw},B^FS\n`;
             }
         }
+        // Circle
         else if (obj.type === 'circle') {
             const r = Math.round((obj.radius || 10) * (obj.scaleX || 1) * ((pxToDotX + pxToDotY) / 2));
             zpl += `^FO${x},${y}^GC${r},B^FS\n`;
         }
+        // Line
         else if (obj.type === 'line') {
-            const x1 = (obj.x1 || 0) * pxToDotX;
-            const y1 = (obj.y1 || 0) * pxToDotY;
-            const x2 = (obj.x2 || 0) * pxToDotX;
-            const y2 = (obj.y2 || 0) * pxToDotY;
+            // Lưu ý: fabric.Line dùng x1,y1,x2,y2 là tọa độ tương đối
+            const x1 = (obj.x1 || 0) * pxToDotX + x;
+            const y1 = (obj.y1 || 0) * pxToDotY + y;
+            const x2 = (obj.x2 || 0) * pxToDotX + x;
+            const y2 = (obj.y2 || 0) * pxToDotY + y;
             const lw = Math.max(1, Math.round(Math.abs(x2 - x1)));
             const lh = Math.max(1, Math.round(Math.abs(y2 - y1)));
             zpl += `^FO${Math.round(x1)},${Math.round(y1)}^GB${lw},${lh},${obj.strokeWidth || 1},B^FS\n`;
         }
+        // QR động (group)
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrValue = obj.variable?.replace(/[#{}]/g, '') || 'QR';
             zpl += `^FO${x},${y}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         }
+        // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
         else if (obj.type === 'image' && obj.customType === 'staticQR') {
             zpl += `^FO${x},${y}^BQN,2,6^FDLA,${obj.qrValue || ''}^FS\n`;
         }
+        // Ảnh thường
         else if (obj.type === 'image' && !obj.customType && obj._element) {
-            // Chỉ áp dụng printQuality cho ảnh
             const printQuality = document.getElementById('printQuality')?.value || 'mono';
             zpl += imageToZPL(obj._element, x, y, w, h, printQuality);
         }
