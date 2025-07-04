@@ -885,21 +885,32 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
     if (!canvas) return '^XA\n^XZ';
 
     let zpl = '^XA\n';
-    // Tính số dot vật lý của label
     const labelW = labelWidthInch * dpi * 25.4;
     const labelH = labelHeightInch * dpi * 25.4;
-    // Tỉ lệ chuyển đổi px canvas -> dot label
-    const pxToDotX = labelW / canvas.getWidth();
-    const pxToDotY = labelH / canvas.getHeight();
+
+    // Lấy viewportTransform
+    const vt = canvas.viewportTransform || [1, 0, 0, 1, 0, 0];
+    const zoom = vt[0] || 1;
+    const panX = vt[4] || 0;
+    const panY = vt[5] || 0;
+
+    // Vùng nhìn thấy trên canvas (theo px gốc)
+    const viewLeft = -panX / zoom;
+    const viewTop = -panY / zoom;
+    const viewWidth = canvas.getWidth() / zoom;
+    const viewHeight = canvas.getHeight() / zoom;
+
+    // Tỉ lệ chuyển đổi px viewport -> dot label
+    const pxToDotX = labelW / viewWidth;
+    const pxToDotY = labelH / viewHeight;
 
     canvas.getObjects().forEach(obj => {
-        // Lấy vị trí/kích thước gốc trên canvas
-        const left = (obj.left || 0);
-        const top = (obj.top || 0);
+        // Vị trí object so với viewport
+        const left = ((obj.left || 0) - viewLeft);
+        const top = ((obj.top || 0) - viewTop);
         const width = (obj.width || 0) * (obj.scaleX || 1);
         const height = (obj.height || 0) * (obj.scaleY || 1);
 
-        // Scale sang dot label
         const x = Math.round(left * pxToDotX);
         const y = Math.round(top * pxToDotY);
         const w = Math.round(width * pxToDotX);
@@ -928,7 +939,6 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         }
         // Line
         else if (obj.type === 'line') {
-            // Lưu ý: fabric.Line dùng x1,y1,x2,y2 là tọa độ tương đối
             const x1 = (obj.x1 || 0) * pxToDotX + x;
             const y1 = (obj.y1 || 0) * pxToDotY + y;
             const x2 = (obj.x2 || 0) * pxToDotX + x;
@@ -956,7 +966,6 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
     zpl += '^XZ';
     return zpl;
 }
-
 
 
 function openZPLFile() {
