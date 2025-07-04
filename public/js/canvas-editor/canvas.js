@@ -388,6 +388,16 @@ function createNewDesign() {
     updateCanvasInfo();
 }
 
+function updateLabelCountFromTextarea() {
+    const textarea = document.getElementById('zplPrintOutput');
+    const labelCountInput = document.getElementById('labelCount');
+    if (!textarea || !labelCountInput) return;
+    const zpl = textarea.value;
+    // Đếm số block ^XA ... ^XZ (không phân biệt hoa thường)
+    const matches = zpl.match(/\^XA[\s\S]*?\^XZ/gi);
+    const count = matches ? matches.length : 1;
+    labelCountInput.value = count;
+}
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -472,5 +482,5 @@ window.addCircle = addCircle;
 window.addRect = addRect;
 window.addLine = addLine;
 window.createNewDesign = createNewDesign;
-
+window.updateLabelCountFromTextarea = updateLabelCountFromTextarea;
 

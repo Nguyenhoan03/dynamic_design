@@ -631,34 +631,48 @@ async function downloadPDF() {
 }
 
 
-function downloadMultiLabelPDF() {
+async function downloadMultiLabelPDF() {
     const img = document.getElementById('labelaryPreviewPrint');
     const count = parseInt(document.getElementById('labelCount').value) || 1;
     if (!img || !img.src) {
         alert('Chưa có preview ZPL!');
         return;
     }
-    fetch(img.src)
-        .then(res => res.blob())
-        .then(blob => {
-            const reader = new FileReader();
-            reader.onload = async function (e) {
-                const { PDFDocument } = window['pdf-lib'];
-                const pdfDoc = await PDFDocument.create();
-                const pngImage = await pdfDoc.embedPng(e.target.result);
-                for (let i = 0; i < count; i++) {
-                    const page = pdfDoc.addPage([pngImage.width, pngImage.height]);
-                    page.drawImage(pngImage, { x: 0, y: 0, width: pngImage.width, height: pngImage.height });
-                }
-                const pdfBytes = await pdfDoc.save();
-                const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blobPDF);
-                link.download = 'labels-multi.pdf';
-                link.click();
-            };
-            reader.readAsArrayBuffer(blob);
+
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    // Đúng chuẩn PDF: 1 inch = 72 point
+    const pageWidth = labelWidthInch * 72;
+    const pageHeight = labelHeightInch * 72;
+
+    // Đảm bảo lấy đúng PNG base64 từ canvas (giống downloadPDF)
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const pngDataUrl = canvas.toDataURL('image/png');
+
+    const { PDFDocument } = window['pdf-lib'];
+    const pdfDoc = await PDFDocument.create();
+    const pngImage = await pdfDoc.embedPng(pngDataUrl);
+
+    for (let i = 0; i < count; i++) {
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        page.drawImage(pngImage, {
+            x: 0,
+            y: 0,
+            width: pageWidth,
+            height: pageHeight,
         });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blobPDF);
+    link.download = 'labels-multi.pdf';
+    link.click();
 }
 
 function downloadEPL() {
@@ -742,7 +756,8 @@ function redrawZPL() {
     const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
     const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, 8, true);
     document.getElementById('zplPrintOutput').value = zpl;
-    checkZPLTextareaWarning(); // Gọi ngay sau khi cập nhật textarea
+    checkZPLTextareaWarning();
+    updateLabelCountFromTextarea();
     previewZPL();
 }
 
@@ -1010,6 +1025,7 @@ function openZPLFile() {
             // Nếu có cảnh báo sửa tay thì ẩn đi để preview lại từ file mới
             const zplWarning = document.getElementById('zplWarning');
             if (zplWarning) zplWarning.style.display = 'none';
+            updateLabelCountFromTextarea();
             previewZPL(); // Luôn cập nhật preview
         };
         reader.readAsText(file);

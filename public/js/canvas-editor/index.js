@@ -108,3 +108,5 @@ document.querySelectorAll('.toolbar-menu').forEach(menu => {
 window.canvas.on('object:added', () => window.canvas.requestRenderAll());
 window.canvas.on('object:removed', () => window.canvas.requestRenderAll());
 window.canvas.on('object:modified', () => window.canvas.requestRenderAll());
+
+document.getElementById('zplPrintOutput').addEventListener('input', updateLabelCountFromTextarea);

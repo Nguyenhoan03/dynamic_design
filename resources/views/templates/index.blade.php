@@ -175,7 +175,7 @@
                                             <div class="col-6 col-sm-6">
                                                 <label class="form-label mb-0 small">Print Density</label>
                                                 <select id="dpiSelectPrint" class="form-select form-select-sm w-100 rounded-2">
-                                                    <option value="8" >6 dpmm (152 dpi)</option>
+                                                    <option value="6" >6 dpmm (152 dpi)</option>
                                                     <option value="8" selected>8 dpmm (203 dpi)</option>
                                                     <option value="12">12 dpmm (300 dpi)</option>
                                                     <option value="24">24 dpmm (600 dpi)</option>
