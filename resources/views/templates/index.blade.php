@@ -190,9 +190,9 @@
                         <div class="col-7 col-sm-7">
                             <label class="form-label mb-0 small">Label Size</label>
                             <div class="input-group input-group-sm">
-                                <input type="number" id="labelWidthPrint" value="4" min="1" step="0.1" class="form-control rounded-2" style="max-width:70px;">
+                                <input type="number" id="labelWidthPrint" value="4" min="1" step="1" class="form-control rounded-2" style="max-width:70px;">
                                 <span class="input-group-text px-2">x</span>
-                                <input type="number" id="labelHeightPrint" value="6" min="1" step="0.1" class="form-control rounded-2" style="max-width:70px;">
+                                <input type="number" id="labelHeightPrint" value="6" min="1" step="1" class="form-control rounded-2" style="max-width:70px;">
                                 <span class="input-group-text px-2">inches</span>
                             </div>
                         </div>
