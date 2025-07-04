@@ -585,33 +585,51 @@ function openPrintModal() {
 }
 
 
-function downloadPDF() {
+async function downloadPDF() {
     const img = document.getElementById('labelaryPreviewPrint');
     if (!img || !img.src) {
         alert('Chưa có preview ZPL!');
         return;
     }
-    // Sử dụng pdf-lib để tạo PDF từ ảnh
-    fetch(img.src)
-        .then(res => res.blob())
-        .then(blob => {
-            const reader = new FileReader();
-            reader.onload = async function (e) {
-                const { PDFDocument } = window['pdf-lib'];
-                const pdfDoc = await PDFDocument.create();
-                const pngImage = await pdfDoc.embedPng(e.target.result);
-                const page = pdfDoc.addPage([pngImage.width, pngImage.height]);
-                page.drawImage(pngImage, { x: 0, y: 0, width: pngImage.width, height: pngImage.height });
-                const pdfBytes = await pdfDoc.save();
-                const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blobPDF);
-                link.download = 'label.pdf';
-                link.click();
-            };
-            reader.readAsArrayBuffer(blob);
-        });
+
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    const dotsPerInch = dpi * 25.4;
+
+    // Tạo ảnh vẽ ra canvas để đảm bảo đúng PNG
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const pngDataUrl = canvas.toDataURL('image/png');
+
+    const { PDFDocument } = window['pdf-lib'];
+    const pdfDoc = await PDFDocument.create();
+
+    const pngImage = await pdfDoc.embedPng(pngDataUrl);
+
+    // Chuyển inch sang point (1 inch = 72 point trong PDF)
+    const pageWidth = labelWidthInch * 72;
+    const pageHeight = labelHeightInch * 72;
+
+    const page = pdfDoc.addPage([pageWidth, pageHeight]);
+    page.drawImage(pngImage, {
+        x: 0,
+        y: 0,
+        width: pageWidth,
+        height: pageHeight,
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blobPDF);
+    link.download = 'label.pdf';
+    link.click();
 }
+
 
 function downloadMultiLabelPDF() {
     const img = document.getElementById('labelaryPreviewPrint');
