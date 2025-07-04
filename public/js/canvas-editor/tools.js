@@ -9,13 +9,13 @@ function sendToBack() {
 
 function zoomIn() {
     window.canvas.setZoom(window.canvas.getZoom() * 1.1);
-     window.canvas.requestRenderAll();
+    window.canvas.requestRenderAll();
     if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
 }
 
 function zoomOut() {
     window.canvas.setZoom(window.canvas.getZoom() / 1.1);
-     window.canvas.requestRenderAll();
+    window.canvas.requestRenderAll();
     if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
 }
 
@@ -220,7 +220,78 @@ function changeColor() {
 }
 
 
-document.getElementById('downloadExcelTemplate').addEventListener('click', function() {
+function checkZPLTextareaWarning() {
+    const textarea = document.getElementById('zplPrintOutput');
+    const warnDiv = document.getElementById('zplLinterWarning');
+    const warnText = document.getElementById('zplLinterWarningText');
+
+    if (!textarea || !warnDiv || !warnText) return;
+
+    // Reset cảnh báo
+    warnDiv.style.display = 'none';
+    warnText.innerHTML = '';
+
+    const zpl = textarea.value.trim();
+    const errorMsgs = [];
+
+    if (!zpl) {
+        errorMsgs.push('Vui lòng nhập mã ZPL!');
+    } else {
+        if (!zpl.startsWith('^XA') || !zpl.endsWith('^XZ')) {
+            errorMsgs.push('Mã ZPL phải bắt đầu bằng ^XA và kết thúc bằng ^XZ.');
+        }
+
+        if (zpl.includes('^GB') && /,0,/.test(zpl)) {
+            errorMsgs.push('Một số lệnh Line (^GB) có độ dày bằng 0, có thể không in được.');
+        }
+
+        const validZPLCmds = new Set([
+            'XA', 'XZ', 'FO', 'GB', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9',
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'FD', 'FS', 'FB', 'BY', 'BC', 'BQ', 'B3', 'B7', 'B8', 'B1', 'B2', 'B4', 'B5', 'B6', 'B9',
+            'GFA', 'CI', 'LH', 'LL', 'LS', 'PW', 'PH', 'PM', 'PR', 'PO', 'PA', 'PF', 'FW', 'FR', 'FT', 'FV',
+            'CF', 'FR', 'FX'
+        ]);
+
+        const lines = zpl.split('\n');
+        let inFD = false;
+
+        lines.forEach((line, idx) => {
+            const cmdRegex = /\^([A-Z]{1,3})([^ \n^]*)/g;
+            let match;
+            const reported = new Set();
+
+            while ((match = cmdRegex.exec(line)) !== null) {
+                const cmd = match[1];
+
+                if (inFD) {
+                    if (cmd === 'FS') inFD = false;
+                    continue;
+                }
+
+                if (cmd === 'FD') {
+                    inFD = true;
+                    continue;
+                }
+
+                if (!validZPLCmds.has(cmd) && !reported.has(cmd)) {
+                    errorMsgs.push(`Dòng ${idx + 1}: ^${cmd} không phải lệnh ZPL hợp lệ.`);
+                    reported.add(cmd);
+                }
+            }
+        });
+    }
+
+    // Hiển thị cảnh báo
+    if (errorMsgs.length > 0) {
+        warnDiv.style.display = 'block';
+        warnText.innerHTML = errorMsgs.map(msg => `<div>${msg}</div>`).join('');
+    }
+}
+
+
+
+document.getElementById('downloadExcelTemplate').addEventListener('click', function () {
     // Lấy danh sách trường động từ canvas
     const fields = getDynamicFieldsFromCanvas();
     if (!fields.length) {
@@ -234,15 +305,15 @@ document.getElementById('downloadExcelTemplate').addEventListener('click', funct
 });
 
 // Xử lý import Excel và validate dữ liệu excel
-document.getElementById('excelInput').addEventListener('change', function(e) {
+document.getElementById('excelInput').addEventListener('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(evt) {
+    reader.onload = function (evt) {
         const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
+        const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         // Bỏ dòng đầu tiên (header)
         const dataRows = rows.slice(1);
         // Convert rows to CSV string
@@ -286,3 +357,4 @@ window.changeCanvasSize = changeCanvasSize;
 window.changeColor = changeColor;
 window.pauseVideo = pauseVideo;
 window.playVideo = playVideo;
+window.checkZPLTextareaWarning = checkZPLTextareaWarning;

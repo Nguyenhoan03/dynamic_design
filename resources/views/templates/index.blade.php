@@ -224,7 +224,16 @@
                                             </div>
                                         </div>
                                     </div>
+                                  <div class="alert alert-warning zpl-warning mb-2" id="zplLinearWarning" style="display:none;">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <span> Một số đối tượng Line có thể không hiển thị đúng độ dày hoặc kiểu nét trên máy in thực tế. Vui lòng kiểm tra lại!</span>
+                                </div>
+                                <div class="alert alert-warning zpl-warning mb-0" id="zplLinterWarning" style="display:none;">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <span id="zplLinterWarningText"></span>
+                                </div>
                                     <div class="card-footer bg-white border-top py-2 rounded-bottom-3">
+                                        
                                         <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
                                         <button type="button" class="btn btn-light border px-3 py-1 d-flex align-items-center gap-1 shadow-sm" onclick="downloadZPL()" title="Tải file ZPL">
                                             <i class="bi bi-download"></i> ZPL

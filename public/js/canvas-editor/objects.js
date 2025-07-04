@@ -714,21 +714,20 @@ function downloadPNG() {
 
 
 function redrawZPL() {
-    // Nếu đã sửa textarea thủ công (cảnh báo đang hiện), chỉ preview lại từ textarea
     const zplWarning = document.getElementById('zplWarning');
     if (zplWarning && zplWarning.style.display !== 'none') {
         previewZPL();
+        checkZPLTextareaWarning(); // Đảm bảo gọi ở đây nếu chỉ preview từ textarea
         return;
     }
-    // Nếu chưa sửa textarea, lấy lại từ canvas
-    // Lấy thông số label size từ input
     const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
     const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
-    // const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
     const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, 8, true);
     document.getElementById('zplPrintOutput').value = zpl;
+    checkZPLTextareaWarning(); // Gọi ngay sau khi cập nhật textarea
     previewZPL();
 }
+
 function restoreZPLFromCanvas() {
     // Lấy lại ZPL từ canvas và cập nhật textarea
     if (window.canvas) {
@@ -908,8 +907,16 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         // Vị trí object so với viewport
         const left = ((obj.left || 0) - viewLeft);
         const top = ((obj.top || 0) - viewTop);
-        const width = (obj.width || 0) * (obj.scaleX || 1);
-        const height = (obj.height || 0) * (obj.scaleY || 1);
+
+        // --- Sửa width/height cho từng loại ---
+        let width = 0, height = 0;
+        if (typeof obj.getScaledWidth === 'function') {
+            width = obj.getScaledWidth();
+            height = obj.getScaledHeight();
+        } else {
+            width = (obj.width || 0) * (obj.scaleX || 1);
+            height = (obj.height || 0) * (obj.scaleY || 1);
+        }
 
         const x = Math.round(left * pxToDotX);
         const y = Math.round(top * pxToDotY);
@@ -918,7 +925,7 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
 
         // Text
         if (obj.type === 'text' || obj.type === 'textbox') {
-            let size = Math.round((obj.fontSize || 20) * (obj.scaleY || 1) * pxToDotY * 0.85);
+            let size = Math.round((obj.fontSize) * (obj.scaleY || 1) * pxToDotY * 0.85);
             if (size < 10) size = 10;
             zpl += `^FO${x},${y}^A0N,${size},${size}^FD${obj.text}^FS\n`;
         }
@@ -934,15 +941,17 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         }
         // Circle
         else if (obj.type === 'circle') {
-            const r = Math.round((obj.radius || 10) * (obj.scaleX || 1) * ((pxToDotX + pxToDotY) / 2));
+            // Đường kính thực tế = getScaledWidth(), bán kính = /2
+            const r = Math.round((obj.getScaledWidth ? obj.getScaledWidth() : (obj.radius * 2 * (obj.scaleX || 1))) * ((pxToDotX + pxToDotY) / 4));
             zpl += `^FO${x},${y}^GC${r},B^FS\n`;
         }
         // Line
         else if (obj.type === 'line') {
-            const x1 = (obj.x1 || 0) * pxToDotX + x;
-            const y1 = (obj.y1 || 0) * pxToDotY + y;
-            const x2 = (obj.x2 || 0) * pxToDotX + x;
-            const y2 = (obj.y2 || 0) * pxToDotY + y;
+            // Tính lại điểm đầu/cuối theo scale, rồi quy đổi sang dot
+            const x1 = ((obj.x1 || 0) * (obj.scaleX || 1) + left) * pxToDotX;
+            const y1 = ((obj.y1 || 0) * (obj.scaleY || 1) + top) * pxToDotY;
+            const x2 = ((obj.x2 || 0) * (obj.scaleX || 1) + left) * pxToDotX;
+            const y2 = ((obj.y2 || 0) * (obj.scaleY || 1) + top) * pxToDotY;
             const lw = Math.max(1, Math.round(Math.abs(x2 - x1)));
             const lh = Math.max(1, Math.round(Math.abs(y2 - y1)));
             zpl += `^FO${Math.round(x1)},${Math.round(y1)}^GB${lw},${lh},${obj.strokeWidth || 1},B^FS\n`;
@@ -953,8 +962,10 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             zpl += `^FO${x},${y}^BQN,2,6^FDLA,${qrValue}^FS\n`;
         }
         // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
-        else if (obj.type === 'image' && obj.customType === 'staticQR') {
-            zpl += `^FO${x},${y}^BQN,2,6^FDLA,${obj.qrValue || ''}^FS\n`;
+        else if (obj.type === 'image' && obj.customType === 'staticQR' && obj._element) {
+            // Xuất QR tĩnh thành ảnh bitmap đúng kích thước
+            const printQuality = document.getElementById('printQuality')?.value || 'mono';
+            zpl += imageToZPL(obj._element, x, y, w, h, printQuality);
         }
         // Ảnh thường
         else if (obj.type === 'image' && !obj.customType && obj._element) {
@@ -972,11 +983,11 @@ function openZPLFile() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.zpl,.txt';
-    input.onchange = function(e) {
+    input.onchange = function (e) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(evt) {
+        reader.onload = function (evt) {
             document.getElementById('zplPrintOutput').value = evt.target.result;
             // Nếu có cảnh báo sửa tay thì ẩn đi để preview lại từ file mới
             const zplWarning = document.getElementById('zplWarning');
