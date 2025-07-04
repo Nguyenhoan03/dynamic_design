@@ -1003,9 +1003,29 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         }
         // QR động (group)
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
-            const qrValue = obj.variable?.replace(/[#{}]/g, '') || 'QR';
-            zpl += `^FO${x},${y}^BQN,2,6^FDLA,${qrValue}^FS\n`;
+            const qrLabel = obj.variable || '#{qr}';
+
+            const scaledHeight = Math.floor(h * 0.75);
+            const offsetY = Math.floor((h - scaledHeight) / 2); 
+
+            const newY = y + offsetY;
+            zpl += `^FO${x},${newY}^GB${w},${scaledHeight},1,B^FS\n`;
+
+            // Tính font size phù hợp width và scaledHeight
+            const fontSize = Math.max(10, Math.min(
+                Math.floor(scaledHeight * 0.6),                          
+                Math.floor(w / (qrLabel.length * 0.6))                  
+            ));
+
+            // Ước lượng chiều rộng text để canh giữa ngang
+            const textWidthEstimate = qrLabel.length * (fontSize * 0.6);
+            const centerX = x + Math.max(0, Math.round((w - textWidthEstimate) / 2));
+            const centerY = newY + Math.max(0, Math.round((scaledHeight - fontSize) / 2));
+
+            // In text placeholder chính giữa khung
+            zpl += `^FO${centerX},${centerY}^A0N,${fontSize},${fontSize}^FD${qrLabel}^FS\n`;
         }
+
         // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
         else if (obj.type === 'image' && obj.customType === 'staticQR' && obj._element) {
             // Xuất QR tĩnh thành ảnh bitmap đúng kích thước

@@ -244,7 +244,8 @@
                                         <button type="button" class="btn btn-light border px-3 py-1 d-flex align-items-center gap-1 shadow-sm" onclick="downloadPDF()" title="Tải PDF">
                                             <i class="bi bi-download"></i> PDF
                                         </button>
-                                        <button type="button" class="btn btn-light border px-3 py-1 d-flex align-items-center gap-1 shadow-sm" onclick="downloadMultiLabelPDF()" title="Tải Multi-Label PDF">
+                                        <button type="button" class="btn btn-light border px-3 py-1 d-flex align-items-center gap-1 shadow-sm"
+                                            onclick="onMultiPDFClick()" title="Tải Multi-Label PDF">
                                             <i class="bi bi-download"></i> Multi PDF
                                         </button>
                                         <button type="button" class="btn btn-light border px-3 py-1 d-flex align-items-center gap-1 shadow-sm" onclick="downloadEPL()" title="Tải EPL">
@@ -291,6 +292,8 @@
         </form>
     </div>
 </div>
+
+
 
 
 
@@ -584,6 +587,35 @@
             ">
             ⏸️
         </button>
+
+
+        <!-- Modal preview Multi PDF -->
+        <div class="modal fade" id="multiLabelPreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem trước từng nhãn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="multiLabelPreviewImg" style="max-width:100%;max-height:400px;">
+                <div id="multiLabelPreviewPage" class="mt-2"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button id="multiLabelPrevBtn" class="btn btn-secondary">Trang trước</button>
+                <button id="multiLabelNextBtn" class="btn btn-secondary">Trang sau</button>
+                <button id="multiLabelDownloadBtn" class="btn btn-success">Tải PDF này</button>
+                <button id="multiLabelDownloadAllBtn" class="btn btn-primary">Tải tất cả PDF</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+
+
+
+
+
 
     <!-- Bootstrap JS -->
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>

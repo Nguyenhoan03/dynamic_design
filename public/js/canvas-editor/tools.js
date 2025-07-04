@@ -343,37 +343,141 @@ document.getElementById('excelInput').addEventListener('change', function (e) {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        // Bỏ dòng đầu tiên (header)
+        if (rows.length < 2) return;
+        // Lấy header và data
+        const header = rows[0];
         const dataRows = rows.slice(1);
-        // Convert rows to CSV string
-        const csv = dataRows.map(r => r.join(',')).join('\n');
+        // Convert sang CSV: header + data
+        const csv = [header, ...dataRows].map(r => r.join(',')).join('\n');
         document.querySelector('textarea[name="csv_rows"]').value = csv;
     };
     reader.readAsArrayBuffer(file);
 });
 
-// Validate CSV data before submit
-// document.getElementById('printForm').addEventListener('submit', function(e) {
-//     const csv = document.querySelector('textarea[name="csv_rows"]').value.trim();
-//     if (!csv) {
-//         alert('Vui lòng nhập dữ liệu hoặc import file Excel!');
-//         e.preventDefault();
-//         return false;
-//     }
-//     // Simple validation: check each row has enough columns (ví dụ: 2 cột trở lên)
-//     // const rows = csv.split('\n');
-//     // for (let i = 0; i < rows.length; i++) {
-//     //     const cols = rows[i].split(',');
-//     //     if (cols.length < 2) {
-//     //         alert('Dòng ' + (i+1) + ' thiếu dữ liệu. Mỗi dòng cần ít nhất 2 cột.');
-//     //         e.preventDefault();
-//     //         return false;
-//     //     }
-//     // }    
-// });
+async function onMultiPDFClick() {
+    // 1. Lấy dữ liệu động từ CSV/Excel thành mảng object dataRows
+    const dataRows = getDataRowsFromCSVOrExcel();
+    console.log(dataRows,"dataRows");
+    if (!dataRows.length) {
+        alert('Vui lòng nhập dữ liệu động (CSV)!');
+        return;
+    }
+
+    // 2. Lấy template ZPL gốc
+    const zplTemplate = document.getElementById('zplPrintOutput').value;
+
+    // 3. Sinh các block ZPL đã thay thế trường động
+    const zplBlocks = dataRows.map(row => {
+        let zpl = zplTemplate;
+        Object.keys(row).forEach(field => {
+            zpl = zpl.replace(new RegExp(`[#\\{]${field}[\\}]`, 'g'), row[field] || '');
+        });
+        return zpl;
+    });
+
+    // 4. Lấy thông số label
+    const width = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
+    const height = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
+    const dpi = parseInt(document.getElementById('dpiSelectPrint').value) || 8;
+
+    // 5. Preview từng trang
+    previewMultiLabelPDF(zplBlocks, width, height, dpi);
+}
+
+function getDataRowsFromCSVOrExcel() {
+    // Lấy dữ liệu từ textarea
+    const csv = document.querySelector('textarea[name="csv_rows"]')?.value || '';
+    const lines = csv.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length < 1) return [];
+    // Dòng đầu là header
+    const headers = lines[0].split(',').map(h => h.trim());
+    const dataRows = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((h, idx) => row[h] = values[idx] || '');
+        dataRows.push(row);
+    }
+    return dataRows;
+}
+
+async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
+    let current = 0;
+    const img = document.getElementById('multiLabelPreviewImg');
+    const page = document.getElementById('multiLabelPreviewPage');
+    const prevBtn = document.getElementById('multiLabelPrevBtn');
+    const nextBtn = document.getElementById('multiLabelNextBtn');
+    const downloadBtn = document.getElementById('multiLabelDownloadBtn');
+    const downloadAllBtn = document.getElementById('multiLabelDownloadAllBtn');
+    const modal = new bootstrap.Modal(document.getElementById('multiLabelPreviewModal'));
+
+    async function showPage(idx) {
+        img.src = '';
+        page.textContent = `Trang ${idx + 1} / ${zplBlocks.length}`;
+        img.alt = 'Đang tải...';
+        // Đảm bảo ZPL hợp lệ
+        let zpl = zplBlocks[idx].trim();
+            console.log('ZPL gửi lên Labelary:', JSON.stringify(zpl));
+
+        if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
+        if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
+        const res = await fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
+            method: 'POST',
+            headers: { 'Accept': 'image/png' },
+            body: zpl
+        });
+        if (res.ok) {
+            const blob = await res.blob();
+            img.src = URL.createObjectURL(blob);
+        } else {
+            img.alt = 'Không thể xem trước';
+        }
+    }
+
+    prevBtn.onclick = () => {
+        if (current > 0) {
+            current--;
+            showPage(current);
+        }
+    };
+    nextBtn.onclick = () => {
+        if (current < zplBlocks.length - 1) {
+            current++;
+            showPage(current);
+        }
+    };
+    downloadBtn.onclick = () => {
+        downloadPDFForZPL(zplBlocks[current], width, height, dpi);
+    };
+    downloadAllBtn.onclick = () => {
+        alert('Tính năng tải tất cả PDF cần backend hỗ trợ merge PDF!');
+    };
+
+    modal.show();
+    showPage(current);
+}
+
+function downloadPDFForZPL(zpl, width, height, dpi) {
+    fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
+        method: 'POST',
+        headers: { 'Accept': 'application/pdf' },
+        body: zpl
+    }).then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'label.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+}
 
 
 
+window.previewMultiLabelPDF = previewMultiLabelPDF;
+window.previewMultiLabelPDF = previewMultiLabelPDF;
+window.getDataRowsFromCSVOrExcel = getDataRowsFromCSVOrExcel;
 window.setAlign = setAlign;
 window.setFontSize = setFontSize;
 window.bringToFront = bringToFront;
@@ -387,3 +491,4 @@ window.changeColor = changeColor;
 window.pauseVideo = pauseVideo;
 window.playVideo = playVideo;
 window.checkZPLTextareaWarning = checkZPLTextareaWarning;
+window.onMultiPDFClick = onMultiPDFClick;
