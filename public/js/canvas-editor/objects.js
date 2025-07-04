@@ -809,7 +809,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Hàm chuyển ảnh (HTMLImageElement) sang ZPL ^GFA
-function imageToZPL(img, left = 0, top = 0, w, h) {
+function imageToZPL(img, left = 0, top = 0, w, h, printQuality = 'mono') {
     // Nếu không truyền w, h thì lấy kích thước gốc
     w = w || img.width;
     h = h || img.height;
@@ -829,7 +829,15 @@ function imageToZPL(img, left = 0, top = 0, w, h) {
             const idx = (y * w + x) * 4;
             const r = pixels[idx], g = pixels[idx + 1], b = pixels[idx + 2];
             const grayscale = 0.299 * r + 0.587 * g + 0.114 * b;
-            rowBinary += grayscale > 128 ? '0' : '1';
+            let bit = '0';
+            if (printQuality === 'grayscale') {
+                // Ngưỡng mềm hơn, ví dụ 160
+                bit = grayscale > 160 ? '0' : '1';
+            } else {
+                // Mono: ngưỡng cứng 128
+                bit = grayscale > 128 ? '0' : '1';
+            }
+            rowBinary += bit;
         }
         for (let i = 0; i < rowBinary.length; i += 8) {
             const byte = rowBinary.substring(i, i + 8).padEnd(8, '0');
@@ -850,12 +858,14 @@ function ConvertImgToZPL(base64Image) {
         const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
         const wPx = Math.round(wInch * dpi * 25.4);
         const hPx = Math.round(hInch * dpi * 25.4);
+        // Lấy lựa chọn printQuality
+        const printQuality = document.getElementById('printQuality')?.value || 'mono';
 
         // Lấy ZPL hiện tại
         const textarea = document.getElementById('zplPrintOutput');
         let zpl = textarea ? textarea.value.trim() : '';
         // Nếu chưa có ^XA thì thêm mới, nếu có thì chèn vào trước ^XZ
-        const imageZPL = imageToZPL(img, 0, 0, wPx, hPx);
+        const imageZPL = imageToZPL(img, 0, 0, wPx, hPx, printQuality);
         if (!zpl.startsWith('^XA')) {
             zpl = `^XA\n${imageZPL}^XZ`;
         } else {
@@ -871,70 +881,68 @@ function ConvertImgToZPL(base64Image) {
 }
 
 // Sử dụng cho convertCanvasToZPL
-function convertCanvasToZPL(canvas, labelWidthInch, labelHeightInch, dpi) {
+function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi = 8) {
+    if (!canvas) return '^XA\n^XZ';
+
     let zpl = '^XA\n';
-    if (!canvas) return zpl + '^XZ';
-
-    dpi = dpi || 8;
-    labelWidthInch = labelWidthInch || 4;
-    labelHeightInch = labelHeightInch || 6;
-
-    // Đổi inch sang dot
+    // Tính số dot vật lý của label
     const labelW = labelWidthInch * dpi * 25.4;
     const labelH = labelHeightInch * dpi * 25.4;
-
-    // Lấy viewportTransform (zoom, pan)
-    const vt = canvas.viewportTransform || [1, 0, 0, 1, 0, 0];
-    const scaleX = vt[0] || 1;
-    const scaleY = vt[3] || 1;
-    const offsetX = vt[4] || 0;
-    const offsetY = vt[5] || 0;
-    const zoom = canvas.getZoom ? canvas.getZoom() : 1;
-
-    // Tính tỉ lệ từ px canvas sang dot ZPL (theo viewport)
-    const pxToDotX = labelW / (canvas.getWidth() * scaleX * zoom);
-    const pxToDotY = labelH / (canvas.getHeight() * scaleY * zoom);
+    // Tỉ lệ chuyển đổi px canvas -> dot label
+    const pxToDotX = labelW / canvas.getWidth();
+    const pxToDotY = labelH / canvas.getHeight();
 
     canvas.getObjects().forEach(obj => {
-        // Lấy đúng vị trí và kích thước như batch.blade.php
-        const left = ((obj.left || 0) * scaleX + offsetX) * zoom;
-        const top = ((obj.top || 0) * scaleY + offsetY) * zoom;
-        const width = (obj.width || 0) * (obj.scaleX || 1) * scaleX * zoom;
-        const height = (obj.height || 0) * (obj.scaleY || 1) * scaleY * zoom;
+        // Lấy vị trí/kích thước gốc trên canvas
+        const left = (obj.left || 0);
+        const top = (obj.top || 0);
+        const width = (obj.width || 0) * (obj.scaleX || 1);
+        const height = (obj.height || 0) * (obj.scaleY || 1);
 
-        // Đổi sang dot
-        const zplLeft = Math.round(left * pxToDotX);
-        const zplTop = Math.round(top * pxToDotY);
-        const zplWidth = Math.round(width * pxToDotX);
-        const zplHeight = Math.round(height * pxToDotY);
+        // Scale sang dot label
+        const x = Math.round(left * pxToDotX);
+        const y = Math.round(top * pxToDotY);
+        const w = Math.round(width * pxToDotX);
+        const h = Math.round(height * pxToDotY);
 
         if (obj.type === 'text' || obj.type === 'textbox') {
-            const fontSize = Math.round((obj.fontSize || 20) * scaleY * zoom * pxToDotY);
-            zpl += `^FO${zplLeft},${zplTop}^A0N,${fontSize},${fontSize}^FD${obj.text}^FS\n`;
-        } else if (obj.type === 'rect') {
-            zpl += `^FO${zplLeft},${zplTop}^GB${zplWidth},${zplHeight},${obj.strokeWidth || 1},B,0^FS\n`;
-        } else if (obj.type === 'circle') {
-            const r = Math.round((obj.radius || 10) * (obj.scaleX || 1) * scaleX * zoom * ((pxToDotX + pxToDotY) / 2));
-            zpl += `^FO${zplLeft},${zplTop}^GC${r},B^FS\n`;
-        } else if (obj.type === 'line') {
-            // Tính lại toạ độ điểm đầu/cuối
-            const x1 = ((obj.x1 || 0) * (obj.scaleX || 1) * scaleX + offsetX) * zoom;
-            const y1 = ((obj.y1 || 0) * (obj.scaleY || 1) * scaleY + offsetY) * zoom;
-            const x2 = ((obj.x2 || 0) * (obj.scaleX || 1) * scaleX + offsetX) * zoom;
-            const y2 = ((obj.y2 || 0) * (obj.scaleY || 1) * scaleY + offsetY) * zoom;
-            const lx = Math.round(x1 * pxToDotX);
-            const ly = Math.round(y1 * pxToDotY);
-            const widthL = Math.round(Math.abs(x2 - x1) * pxToDotX) || 1;
-            const heightL = Math.round(Math.abs(y2 - y1) * pxToDotY) || 1;
-            zpl += `^FO${lx},${ly}^GB${widthL},${heightL},${obj.strokeWidth || 1},B,0^FS\n`;
-        } else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
-            const qrValue = obj.variable ? obj.variable.replace(/[#\{\}]/g, '') : 'QR';
-            zpl += `^FO${zplLeft},${zplTop}^BQN,2,6^FDLA,${qrValue}^FS\n`;
-        } else if (obj.type === 'image' && obj.customType === 'staticQR') {
-            const qrValue = obj.qrValue || '';
-            zpl += `^FO${zplLeft},${zplTop}^BQN,2,6^FDLA,${qrValue}^FS\n`;
-        } else if (obj.type === 'image' && !obj.customType && obj._element) {
-            zpl += imageToZPL(obj._element, zplLeft, zplTop, zplWidth, zplHeight);
+            let size = Math.round((obj.fontSize || 20) * (obj.scaleY || 1) * pxToDotY * 0.85);
+            if (size < 10) size = 10;
+            zpl += `^FO${x},${y}^A0N,${size},${size}^FD${obj.text}^FS\n`;
+        }
+        else if (obj.type === 'rect') {
+            const sw = obj.strokeWidth || 1;
+            const isFill = obj.fill && obj.fill !== 'transparent' && obj.fill !== 'rgba(0,0,0,0)';
+            if (isFill) {
+                zpl += `^FO${x},${y}^GB${w},${h},${sw},F^FS\n`;
+            } else {
+                zpl += `^FO${x},${y}^GB${w},${h},${sw},B^FS\n`;
+            }
+        }
+        else if (obj.type === 'circle') {
+            const r = Math.round((obj.radius || 10) * (obj.scaleX || 1) * ((pxToDotX + pxToDotY) / 2));
+            zpl += `^FO${x},${y}^GC${r},B^FS\n`;
+        }
+        else if (obj.type === 'line') {
+            const x1 = (obj.x1 || 0) * pxToDotX;
+            const y1 = (obj.y1 || 0) * pxToDotY;
+            const x2 = (obj.x2 || 0) * pxToDotX;
+            const y2 = (obj.y2 || 0) * pxToDotY;
+            const lw = Math.max(1, Math.round(Math.abs(x2 - x1)));
+            const lh = Math.max(1, Math.round(Math.abs(y2 - y1)));
+            zpl += `^FO${Math.round(x1)},${Math.round(y1)}^GB${lw},${lh},${obj.strokeWidth || 1},B^FS\n`;
+        }
+        else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
+            const qrValue = obj.variable?.replace(/[#{}]/g, '') || 'QR';
+            zpl += `^FO${x},${y}^BQN,2,6^FDLA,${qrValue}^FS\n`;
+        }
+        else if (obj.type === 'image' && obj.customType === 'staticQR') {
+            zpl += `^FO${x},${y}^BQN,2,6^FDLA,${obj.qrValue || ''}^FS\n`;
+        }
+        else if (obj.type === 'image' && !obj.customType && obj._element) {
+            // Chỉ áp dụng printQuality cho ảnh
+            const printQuality = document.getElementById('printQuality')?.value || 'mono';
+            zpl += imageToZPL(obj._element, x, y, w, h, printQuality);
         }
     });
 

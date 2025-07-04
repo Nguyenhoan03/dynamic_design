@@ -992,26 +992,3 @@ textarea.form-control {
     bottom: 0;
 }
 
-#zplPreviewBox {
-    width: 100%;
-    max-width: 360px;
-    margin: auto;
-    position: relative;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px #0001;
-    overflow: hidden;
-    /* height sẽ được set động bằng JS */
-}
-#labelaryPreviewPrint {
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    display: block;
-    background: #fff;
-    border-radius: 8px;
-    border: 0;
-    margin: 0;
-    padding: 0;
-}

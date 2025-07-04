@@ -67,24 +67,7 @@ function addCircle() {
     window.canvas.add(circle).setActiveObject(circle);
 }
 
-// document.getElementById('uploadImg')?.addEventListener('change', function (e) {
-//     const file = e.target.files[0];
-//     if (!file) return;
-//     const reader = new FileReader();
-//     reader.onload = function (f) {
-//         fabric.Image.fromURL(f.target.result, function (img) {
-//             img.set({
-//                 left: 50,
-//                 top: 50,
-//                 scaleX: 0.5,
-//                 scaleY: 0.5
-//             });
-//             window.canvas.add(img).setActiveObject(img);
-//         }, { crossOrigin: 'Anonymous' }); 
-//     };
-//     reader.readAsDataURL(file);
-//     e.target.value = '';
-// });
+
 
 document.getElementById('uploadFile')?.addEventListener('change', async function (e) {
     const file = e.target.files[0];
@@ -412,8 +395,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const redrawInputs = [
         'printQuality',
         'dpiSelectPrint',
-        'labelWidthPrint',
-        'labelHeightPrint'
+        // 'labelWidthPrint',
+        // 'labelHeightPrint'
     ];
     redrawInputs.forEach(id => {
         const el = document.getElementById(id);
