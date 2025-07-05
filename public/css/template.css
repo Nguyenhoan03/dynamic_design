@@ -1061,10 +1061,20 @@ textarea.form-control {
     color: #c00;
 }
 
-#multiLabelPreviewImg {
-    max-width: 100%;
+.modal-dialog {
+    max-width: 800px;
+    width: 100%;
+  }
+  .modal-content, .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #multiLabelPreviewImg, #labelaryPreviewPrint {
+    width: 100%;
+    max-width: 600px;
     max-height: 400px;
     object-fit: contain;
     display: block;
-    margin: auto;
+    margin: 0 auto;
+    background: #fff;
   }

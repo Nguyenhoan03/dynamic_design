@@ -963,7 +963,6 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         const left = ((obj.left || 0) - viewLeft);
         const top = ((obj.top || 0) - viewTop);
 
-        // --- Sửa width/height cho từng loại ---
         let width = 0, height = 0;
         if (typeof obj.getScaledWidth === 'function') {
             width = obj.getScaledWidth();
@@ -980,7 +979,7 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
 
         // Text
         if (obj.type === 'text' || obj.type === 'textbox') {
-            // Hàm loại bỏ dấu tiếng Việt
+            // Loại bỏ dấu tiếng Việt
             const removeVietnameseTones = (str) => {
                 return str
                     .normalize("NFD")
@@ -988,14 +987,11 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
                     .replace(/đ/g, "d")
                     .replace(/Đ/g, "D");
             };
-
             let size = Math.round((obj.fontSize || 20) * (obj.scaleY || 1) * pxToDotY * 0.85);
             if (size < 10) size = 10;
-
             const textNoAccent = removeVietnameseTones(obj.text || '');
             zpl += `^FO${x},${y}^A0N,${size},${size}^FD${textNoAccent}^FS\n`;
         }
-
         // Rect
         else if (obj.type === 'rect') {
             const sw = obj.strokeWidth || 1;
@@ -1030,29 +1026,21 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             const minModuleSize = 2;
             const scale = Math.floor(Math.min(w, h) / moduleCount);
             const qrScale = Math.max(minModuleSize, scale);
-
             const qrSize = qrScale * moduleCount;
             // Căn giữa QR trong khung
             const qrX = x + Math.floor((w - qrSize) / 2);
             const qrY = y + Math.floor((h - qrSize) / 2);
-
             // Thêm comment để nhận diện QR động khi xuất thực tế
             zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
-
             // Hiển thị placeholder bằng chữ (preview)
             const fontSize = Math.max(10, Math.floor(qrScale * 4));
             const textWidth = qrLabel.length * fontSize * 0.6;
             const textX = x + Math.floor((w - textWidth) / 2);
             const textY = y + Math.floor((h - fontSize) / 2);
-
             zpl += `^FO${textX},${textY}^A0N,${fontSize},${fontSize}^FD${qrLabel}^FS\n`;
         }
-        
-        
-
         // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
         else if (obj.type === 'image' && obj.customType === 'staticQR' && obj._element) {
-            // Xuất QR tĩnh thành ảnh bitmap đúng kích thước
             const printQuality = document.getElementById('printQuality')?.value || 'mono';
             zpl += imageToZPL(obj._element, x, y, w, h, printQuality);
         }
