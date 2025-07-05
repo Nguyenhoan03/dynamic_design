@@ -1026,21 +1026,29 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         // QR động (group)
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrLabel = obj.variable || '#{qr}';
-            // Tính toán vị trí, kích thước khung QR
-            const qrScale = Math.max(2, Math.floor(Math.min(w, h) / 21));
-            const qrSize = qrScale * 21;
+            const moduleCount = 21; // QR version 1: 21x21 modules
+            const minModuleSize = 2;
+            const scale = Math.floor(Math.min(w, h) / moduleCount);
+            const qrScale = Math.max(minModuleSize, scale);
+
+            const qrSize = qrScale * moduleCount;
+            // Căn giữa QR trong khung
             const qrX = x + Math.floor((w - qrSize) / 2);
             const qrY = y + Math.floor((h - qrSize) / 2);
 
-            // Vẽ khung viền QR
-            zpl += `^FO${x},${y}^GB${w},${h},1,B^FS\n`;
-            // Vẽ text placeholder ở giữa khung
-            const fontSize = Math.max(10, Math.floor(qrSize * 0.3));
-            const textX = x + Math.floor((w - qrLabel.length * fontSize * 0.6) / 2);
+            // Thêm comment để nhận diện QR động khi xuất thực tế
+            zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
+
+            // Hiển thị placeholder bằng chữ (preview)
+            const fontSize = Math.max(10, Math.floor(qrScale * 4));
+            const textWidth = qrLabel.length * fontSize * 0.6;
+            const textX = x + Math.floor((w - textWidth) / 2);
             const textY = y + Math.floor((h - fontSize) / 2);
+
             zpl += `^FO${textX},${textY}^A0N,${fontSize},${fontSize}^FD${qrLabel}^FS\n`;
-            // KHÔNG sinh lệnh QR thực sự ở đây!
         }
+        
+        
 
         // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
         else if (obj.type === 'image' && obj.customType === 'staticQR' && obj._element) {
