@@ -355,40 +355,22 @@ document.getElementById('excelInput').addEventListener('change', function (e) {
 async function onMultiPDFClick() {
     // 1. Lấy dữ liệu động từ CSV/Excel thành mảng object dataRows
     const dataRows = getDataRowsFromCSVOrExcel();
-    console.log(dataRows, "dataRows");
     if (!dataRows.length) {
         alert('Vui lòng nhập dữ liệu động (CSV)!');
         return;
     }
 
-    // 2. Lấy template ZPL gốc
-    const zplTemplate = document.getElementById('zplPrintOutput').value;
-
-    // 3. Sinh các block ZPL đã thay thế trường động
-    const zplBlocks = dataRows.map(row => {
-        let zpl = zplTemplate;
-        Object.keys(row).forEach(field => {
-            // Nếu là trường QR động, chỉ thay giá trị trong ^FDLA,#{field}_qr^FS
-            if (field.endsWith('_qr')) {
-                zpl = zpl.replace(
-                    new RegExp(`\\^FX_QR_FIELD:#?\\{${field}\\},(\\d+),(\\d+),(\\d+)\\n\\^FO\\d+,\\d+\\^A0N,[^\\^]*\\^FD#?\\{${field}\\}\\^FS\\n?`, 'g'),
-                    (match, qrX, qrY, qrScale) => {
-                        return `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${row[field]}^FS\n`;
-                    }
-                );
-            } else {
-                zpl = zpl.replace(new RegExp(`[#]?\\{${field}\\}`, 'g'), row[field] || '');
-            }
-        });
-        return zpl;
-    });
-
-    // 4. Lấy thông số label
+    // 2. Lấy thông số label
     const width = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
     const height = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
     const dpi = parseInt(document.getElementById('dpiSelectPrint').value) || 8;
 
-    // 5. Preview từng trang
+    // 3. Sinh các block ZPL đã thay thế trường động bằng cách gọi convertCanvasToZPL với dynamicData
+    const zplBlocks = dataRows.map(row => {
+        return window.convertCanvasToZPL(window.canvas, width, height, dpi, false, row);
+    });
+
+    // 4. Preview từng trang
     previewMultiLabelPDF(zplBlocks, width, height, dpi);
 }
 
