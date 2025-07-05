@@ -266,7 +266,7 @@
                     <hr>
                     <div id="csvSection">
     <label class="form-label fw-semibold mb-2">
-        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small">ten_qr, ten_text</span>
+        Nhập dữ liệu (CSV): <span id="dynamic-fields-label" class="text-muted small"></span>
     </label>
     <div class="mb-3">
         <label class="form-label fw-semibold mb-2">Hoặc nhập từ file Excel (.xlsx, .xls)</label>

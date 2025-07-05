@@ -343,12 +343,10 @@ document.getElementById('excelInput').addEventListener('change', function (e) {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        if (rows.length < 2) return;
-        // Lấy header và data
-        const header = rows[0];
+        // Bỏ dòng đầu tiên (header)
         const dataRows = rows.slice(1);
-        // Convert sang CSV: header + data
-        const csv = [header, ...dataRows].map(r => r.join(',')).join('\n');
+        // Convert rows to CSV string
+        const csv = dataRows.map(r => r.join(',')).join('\n');
         document.querySelector('textarea[name="csv_rows"]').value = csv;
     };
     reader.readAsArrayBuffer(file);
@@ -357,7 +355,7 @@ document.getElementById('excelInput').addEventListener('change', function (e) {
 async function onMultiPDFClick() {
     // 1. Lấy dữ liệu động từ CSV/Excel thành mảng object dataRows
     const dataRows = getDataRowsFromCSVOrExcel();
-    console.log(dataRows,"dataRows");
+    console.log(dataRows, "dataRows");
     if (!dataRows.length) {
         alert('Vui lòng nhập dữ liệu động (CSV)!');
         return;
@@ -370,10 +368,11 @@ async function onMultiPDFClick() {
     const zplBlocks = dataRows.map(row => {
         let zpl = zplTemplate;
         Object.keys(row).forEach(field => {
-            zpl = zpl.replace(new RegExp(`[#\\{]${field}[\\}]`, 'g'), row[field] || '');
+            zpl = zpl.replace(new RegExp(`[#]?\\{${field}\\}`, 'g'), row[field] || '');
         });
         return zpl;
     });
+    console.log(zplBlocks, "zplBlocks");
 
     // 4. Lấy thông số label
     const width = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
@@ -385,15 +384,25 @@ async function onMultiPDFClick() {
 }
 
 function getDataRowsFromCSVOrExcel() {
+    // Lấy dynamic fields từ label (hoặc từ getDynamicFieldsFromCanvas)
+    const fieldsLabel = document.getElementById('dynamic-fields-label');
+    let headers = [];
+    if (fieldsLabel && fieldsLabel.textContent.trim()) {
+        headers = fieldsLabel.textContent.split(',').map(h => h.trim());
+    } else {
+        // fallback nếu không có label
+        headers = getDynamicFieldsFromCanvas();
+    }
+
     // Lấy dữ liệu từ textarea
     const csv = document.querySelector('textarea[name="csv_rows"]')?.value || '';
     const lines = csv.split('\n').map(l => l.trim()).filter(l => l);
-    if (lines.length < 1) return [];
-    // Dòng đầu là header
-    const headers = lines[0].split(',').map(h => h.trim());
+    if (!headers.length || lines.length < 1) return []; // Phải có header + ít nhất 1 dòng data
+
     const dataRows = [];
-    for (let i = 1; i < lines.length; i++) {
+    for (let i = 0; i < lines.length; i++) {
         const values = lines[i].split(',').map(v => v.trim());
+        if (values.length !== headers.length) continue;
         const row = {};
         headers.forEach((h, idx) => row[h] = values[idx] || '');
         dataRows.push(row);
@@ -417,13 +426,13 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         img.alt = 'Đang tải...';
         // Đảm bảo ZPL hợp lệ
         let zpl = zplBlocks[idx].trim();
-            console.log('ZPL gửi lên Labelary:', JSON.stringify(zpl));
+        console.log('ZPL gửi lên Labelary:', JSON.stringify(zpl));
 
         if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
         if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
         const res = await fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
             method: 'POST',
-            headers: { 'Accept': 'image/png' },
+            headers: { 'Accept': 'image/png', "Content-Type": "application/x-www-form-urlencoded" },
             body: zpl
         });
         if (res.ok) {
@@ -463,14 +472,14 @@ function downloadPDFForZPL(zpl, width, height, dpi) {
         headers: { 'Accept': 'application/pdf' },
         body: zpl
     }).then(res => res.blob())
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'label.pdf';
-        a.click();
-        URL.revokeObjectURL(url);
-      });
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'label.pdf';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
 }
 
 
