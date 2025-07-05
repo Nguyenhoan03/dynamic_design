@@ -402,6 +402,11 @@ function getDataRowsFromCSVOrExcel() {
 }
 
 async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
+    // Lấy thông số từ form giống hàm previewZPL
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
+    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
+    const printDpi = parseInt(document.getElementById('dpiSelectPrint').value) || 8;
+
     let current = 0;
     const img = document.getElementById('multiLabelPreviewImg');
     const page = document.getElementById('multiLabelPreviewPage');
@@ -411,33 +416,96 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     const downloadAllBtn = document.getElementById('multiLabelDownloadAllBtn');
     const modal = new bootstrap.Modal(document.getElementById('multiLabelPreviewModal'));
 
-    async function showPage(idx) {
+    // Style cho modal body
+    const modalBody = img.closest('.modal-body');
+    if (modalBody) {
+        modalBody.style.cssText = `
+            padding: 20px;
+            background: #f8f9fa;
+            text-align: center;
+            max-height: 90vh;
+            overflow: auto;
+        `;
+    }
 
+    // Style cho preview container
+    const previewContainer = img.closest('.preview-container');
+    if (previewContainer) {
+        previewContainer.style.cssText = `
+            width: 100%;
+            max-width: 812px; // Khớp với kích thước thực của ảnh
+            margin: 0 auto;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        `;
+    }
+
+    // Style cho preview image
+    img.style.cssText = `
+        width: 100%;
+        height: auto;
+        display: block;
+        background: white;
+    `;
+
+    async function showPage(idx) {
         const zplCodeTextarea = document.getElementById('zplCodeTextarea');
         if (zplCodeTextarea) {
-            zplCodeTextarea.value = zplBlocks[current];
+            zplCodeTextarea.value = zplBlocks[idx];
         }
-
 
         img.src = '';
         page.textContent = `Trang ${idx + 1} / ${zplBlocks.length}`;
         img.alt = 'Đang tải...';
-        // Đảm bảo ZPL hợp lệ
+        
         let zpl = zplBlocks[idx].trim();
-        console.log('ZPL gửi lên Labelary:', JSON.stringify(zpl));
-
         if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
         if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
-        const res = await fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
-            method: 'POST',
-            headers: { 'Accept': 'image/png', "Content-Type": "application/x-www-form-urlencoded" },
-            body: zpl
-        });
-        if (res.ok) {
-            const blob = await res.blob();
-            img.src = URL.createObjectURL(blob);
-        } else {
-            img.alt = 'Không thể xem trước';
+
+        // Log ZPL để debug
+        console.log('Sending ZPL:', zpl);
+        console.log('API URL:', `https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`);
+
+        try {
+            const res = await fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
+                method: 'POST',
+                headers: { 
+                    'Accept': 'image/png',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: zpl
+            });
+
+            // Log response details
+            console.log('Response status:', res.status);
+            console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+
+            if (res.ok) {
+                const blob = await res.blob();
+                console.log('Blob size:', blob.size, 'bytes');
+                console.log('Blob type:', blob.type);
+
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+                img.onload = () => {
+                    console.log('Image loaded:', img.naturalWidth, 'x', img.naturalHeight);
+                };
+                
+                page.innerHTML = `
+                    <div>Trang ${idx + 1} / ${zplBlocks.length}</div>
+                    <div style="color:#666; font-size:12px; margin-top:5px;">
+                        ${labelWidthInch}" × ${labelHeightInch}" - ${printDpi} dpmm
+                    </div>
+                `;
+            } else {
+                const errorText = await res.text();
+                console.error('API Error:', errorText);
+                img.alt = 'Không thể xem trước';
+            }
+        } catch (err) {
+            console.error('API Call Error:', err);
+            img.alt = 'Lỗi khi tải preview';
         }
     }
 
@@ -454,7 +522,8 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         }
     };
     downloadBtn.onclick = () => {
-        downloadPDFForZPL(zplBlocks[current], width, height, dpi);
+        // Dùng thông số mới khi tải PDF
+        downloadPDFForZPL(zplBlocks[current], labelWidthInch, labelHeightInch, printDpi);
     };
     downloadAllBtn.onclick = () => {
         alert('Tính năng tải tất cả PDF cần backend hỗ trợ merge PDF!');
@@ -464,63 +533,55 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     showPage(current);
 }
 
-async function downloadPDFForZPL(zpl, width, height, dpi) {
-    try {
-        const dotsPerInch = dpi * 25.4;
-        const res = await fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
-            method: 'POST',
-            headers: { 'Accept': 'image/png', "Content-Type": "application/x-www-form-urlencoded" },
-            body: zpl
-        });
+// Cập nhật lại hàm downloadPDFForZPL để xử lý lỗi tốt hơn và lấy đúng thông số in
+function downloadPDFForZPL(zpl, width, height, dpi) {
+    // Lấy lại thông số từ form để đảm bảo đồng bộ
+    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const printDpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
 
-        if (!res.ok) {
-            alert('Tải ảnh từ Labelary thất bại!');
-            return;
-        }
-
-        const blob = await res.blob();
-        const imgBitmap = await createImageBitmap(blob);
-
-        // Vẽ vào canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = imgBitmap.width;
-        canvas.height = imgBitmap.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(imgBitmap, 0, 0);
-
-        const pngDataUrl = canvas.toDataURL('image/png');
-
-        // Tạo PDF bằng pdf-lib
-        const { PDFDocument } = window['pdf-lib'];
-        const pdfDoc = await PDFDocument.create();
-        const pngImage = await pdfDoc.embedPng(pngDataUrl);
-
-        const pageWidth = width * 72; // inch to point
-        const pageHeight = height * 72;
-
-        const page = pdfDoc.addPage([pageWidth, pageHeight]);
-        page.drawImage(pngImage, {
-            x: 0,
-            y: 0,
-            width: pageWidth,
-            height: pageHeight,
-        });
-
-        const pdfBytes = await pdfDoc.save();
-        const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blobPDF);
-        link.download = 'label.pdf';
-        link.click();
-    } catch (error) {
-        console.error("Lỗi khi tạo PDF từ ZPL:", error);
-        alert("Có lỗi khi tạo PDF!");
+    // Đảm bảo ZPL hợp lệ
+    if (!zpl.trim()) {
+        alert('Không có nội dung ZPL để tạo PDF!');
+        return;
     }
+
+    // Chuẩn hoá ZPL
+    zpl = zpl.trim();
+    if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
+    if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
+
+    // Dùng thông số mới (labelWidthInch, labelHeightInch, printDpi) thay vì tham số cũ
+    fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
+        method: 'POST',
+        headers: { 
+            'Accept': 'application/pdf',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: zpl
+    }).then(res => {
+        if (!res.ok) {
+            throw new Error(`Lỗi HTTP: ${res.status}`);
+        }
+        return res.blob();
+    }).then(blob => {
+        if (blob.size < 1000) {
+            throw new Error('File PDF trả về quá nhỏ, có thể bị lỗi!');
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'label.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+    }).catch(err => {
+        console.error('Lỗi khi tải PDF:', err);
+        alert('Không thể tải PDF: ' + err.message);
+    });
 }
 
 
 
-window.previewMultiLabelPDF = previewMultiLabelPDF;
 window.previewMultiLabelPDF = previewMultiLabelPDF;
 window.getDataRowsFromCSVOrExcel = getDataRowsFromCSVOrExcel;
 window.setAlign = setAlign;

@@ -1078,3 +1078,37 @@ textarea.form-control {
     margin: 0 auto;
     background: #fff;
   }
+
+  #multiLabelPreviewModal .modal-dialog {
+    max-width: 90vw;
+    margin: 1.75rem auto;
+}
+
+#multiLabelPreviewModal .modal-content {
+    background: #f8f9fa;
+}
+
+#multiLabelPreviewModal .preview-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 0 auto;
+    text-align: center;
+}
+
+#multiLabelPreviewImg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    background: white;
+}
+
+#zplCodeTextarea {
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+    overflow: auto;
+    background: #f8f9fa;
+}

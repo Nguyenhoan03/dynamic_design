@@ -591,25 +591,35 @@
 
         <!-- Modal preview Multi PDF -->
         <div class="modal fade" id="multiLabelPreviewModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" style="margin:-7px!important; padding:0!important;">
-            <div class="modal-header">
-                <h5 class="modal-title">Xem trước từng nhãn</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xem trước từng nhãn</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="zpl-preview mb-3">
+                            <textarea id="zplCodeTextarea" class="form-control" rows="6" readonly></textarea>
+                        </div>
+                        <div class="preview-container">
+                            <img id="multiLabelPreviewImg" alt="">
+                            <div id="multiLabelPreviewPage" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <button id="multiLabelPrevBtn" class="btn btn-secondary">← Trước</button>
+                                <button id="multiLabelNextBtn" class="btn btn-secondary">Sau →</button>
+                            </div>
+                            <div>
+                                <button id="multiLabelDownloadBtn" class="btn btn-success">Tải PDF này</button>
+                                <button id="multiLabelDownloadAllBtn" class="btn btn-primary">Tải tất cả PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body text-center">
-                <textarea id="zplCodeTextarea" class="form-control mt-2" rows="8" readonly></textarea>
-                <img id="multiLabelPreviewImg" style="max-width:100%;max-height:400px;">
-                <div id="multiLabelPreviewPage" class="mt-2"></div>
-            </div>
-            <div class="modal-footer justify-content-between">
-                <button id="multiLabelPrevBtn" class="btn btn-secondary">Trang trước</button>
-                <button id="multiLabelNextBtn" class="btn btn-secondary">Trang sau</button>
-                <button id="multiLabelDownloadBtn" class="btn btn-success">Tải PDF này</button>
-                <button id="multiLabelDownloadAllBtn" class="btn btn-primary">Tải tất cả PDF</button>
-            </div>
-            </div>
-        </div>
         </div>
 
 
