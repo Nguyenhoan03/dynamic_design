@@ -464,20 +464,58 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     showPage(current);
 }
 
-function downloadPDFForZPL(zpl, width, height, dpi) {
-    fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
-        method: 'POST',
-        headers: { 'Accept': 'application/pdf' },
-        body: zpl
-    }).then(res => res.blob())
-        .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'label.pdf';
-            a.click();
-            URL.revokeObjectURL(url);
+async function downloadPDFForZPL(zpl, width, height, dpi) {
+    try {
+        const dotsPerInch = dpi * 25.4;
+        const res = await fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${width}x${height}/0/`, {
+            method: 'POST',
+            headers: { 'Accept': 'image/png', "Content-Type": "application/x-www-form-urlencoded" },
+            body: zpl
         });
+
+        if (!res.ok) {
+            alert('Tải ảnh từ Labelary thất bại!');
+            return;
+        }
+
+        const blob = await res.blob();
+        const imgBitmap = await createImageBitmap(blob);
+
+        // Vẽ vào canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = imgBitmap.width;
+        canvas.height = imgBitmap.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imgBitmap, 0, 0);
+
+        const pngDataUrl = canvas.toDataURL('image/png');
+
+        // Tạo PDF bằng pdf-lib
+        const { PDFDocument } = window['pdf-lib'];
+        const pdfDoc = await PDFDocument.create();
+        const pngImage = await pdfDoc.embedPng(pngDataUrl);
+
+        const pageWidth = width * 72; // inch to point
+        const pageHeight = height * 72;
+
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        page.drawImage(pngImage, {
+            x: 0,
+            y: 0,
+            width: pageWidth,
+            height: pageHeight,
+        });
+
+        const pdfBytes = await pdfDoc.save();
+        const blobPDF = new Blob([pdfBytes], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blobPDF);
+        link.download = 'label.pdf';
+        link.click();
+    } catch (error) {
+        console.error("Lỗi khi tạo PDF từ ZPL:", error);
+        alert("Có lỗi khi tạo PDF!");
+    }
 }
 
 
