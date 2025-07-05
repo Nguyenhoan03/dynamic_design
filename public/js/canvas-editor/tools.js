@@ -370,9 +370,10 @@ async function onMultiPDFClick() {
         Object.keys(row).forEach(field => {
             // Nếu là trường QR động, chỉ thay giá trị trong ^FDLA,#{field}_qr^FS
             if (field.endsWith('_qr')) {
+                // Thay thế ^FD#{field}^FS bằng lệnh QR thực sự
                 zpl = zpl.replace(
-                    new RegExp(`(\\^FDLA,)#?\\{${field}\\}(\\^FS)`, 'g'),
-                    `$1${row[field]}$2`
+                    new RegExp(`\\^FD#?\\{${field}\\}\\^FS`, 'g'),
+                    `^BQN,2,10^FDLA,${row[field]}^FS`
                 );
             } else {
                 zpl = zpl.replace(new RegExp(`[#]?\\{${field}\\}`, 'g'), row[field] || '');

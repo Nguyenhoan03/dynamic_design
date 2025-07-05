@@ -782,8 +782,30 @@ let previewRotation = 0;
 function rotatePreview() {
     previewRotation = (previewRotation + 90) % 360;
     const img = document.getElementById('labelaryPreviewPrint');
-    if (img) {
+    const box = document.getElementById('zplPreviewBox');
+    if (img && box) {
+        // Thêm hiệu ứng transition nếu chưa có
+        if (!img.style.transition) {
+            img.style.transition = 'transform 0.4s cubic-bezier(0.4,0,0.2,1), max-width 0.4s, max-height 0.4s';
+        }
         img.style.transform = `rotate(${previewRotation}deg)`;
+
+        // Lấy kích thước gốc của box
+        const boxW = box.offsetWidth;
+        const boxH = box.offsetHeight;
+
+        // Nếu xoay 90 hoặc 270, hoán đổi max-width/max-height
+        if (previewRotation % 180 !== 0) {
+            img.style.maxWidth = boxH + 'px';
+            img.style.maxHeight = boxW + 'px';
+        } else {
+            img.style.maxWidth = boxW + 'px';
+            img.style.maxHeight = boxH + 'px';
+        }
+
+        // Đảm bảo ảnh luôn căn giữa
+        img.style.display = 'block';
+        img.style.margin = 'auto';
     }
 }
 
@@ -1002,21 +1024,22 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             zpl += `^FO${Math.round(x1)},${Math.round(y1)}^GB${lw},${lh},${obj.strokeWidth || 1},B^FS\n`;
         }
         // QR động (group)
-          else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
+        else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrLabel = obj.variable || '#{qr}';
             // Tính toán vị trí, kích thước khung QR
-            // ... (x, y, w, h như bạn đã có)
-            // Tính scale QR code ZPL để vừa khít khung (scale = min(w, h) / 21)
             const qrScale = Math.max(2, Math.floor(Math.min(w, h) / 21));
             const qrSize = qrScale * 21;
             const qrX = x + Math.floor((w - qrSize) / 2);
             const qrY = y + Math.floor((h - qrSize) / 2);
 
-            // Chỉ xuất QR code, KHÔNG vẽ khung viền
-            zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrLabel}^FS\n`;
-            
-            // Nếu muốn hiển thị tên biến QR ở giữa khung khi ở chế độ thiết kế (không in động)
-            // thì chỉ cần vẽ text placeholder ở đây nếu cần.
+            // Vẽ khung viền QR
+            zpl += `^FO${x},${y}^GB${w},${h},1,B^FS\n`;
+            // Vẽ text placeholder ở giữa khung
+            const fontSize = Math.max(10, Math.floor(qrSize * 0.3));
+            const textX = x + Math.floor((w - qrLabel.length * fontSize * 0.6) / 2);
+            const textY = y + Math.floor((h - fontSize) / 2);
+            zpl += `^FO${textX},${textY}^A0N,${fontSize},${fontSize}^FD${qrLabel}^FS\n`;
+            // KHÔNG sinh lệnh QR thực sự ở đây!
         }
 
         // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
