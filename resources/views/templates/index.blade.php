@@ -598,6 +598,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
+                <textarea id="zplCodeTextarea" class="form-control mt-2" rows="8" readonly></textarea>
                 <img id="multiLabelPreviewImg" style="max-width:100%;max-height:400px;">
                 <div id="multiLabelPreviewPage" class="mt-2"></div>
             </div>

@@ -1002,28 +1002,21 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             zpl += `^FO${Math.round(x1)},${Math.round(y1)}^GB${lw},${lh},${obj.strokeWidth || 1},B^FS\n`;
         }
         // QR động (group)
-        else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
+          else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrLabel = obj.variable || '#{qr}';
+            // Tính toán vị trí, kích thước khung QR
+            // ... (x, y, w, h như bạn đã có)
+            // Tính scale QR code ZPL để vừa khít khung (scale = min(w, h) / 21)
+            const qrScale = Math.max(2, Math.floor(Math.min(w, h) / 21));
+            const qrSize = qrScale * 21;
+            const qrX = x + Math.floor((w - qrSize) / 2);
+            const qrY = y + Math.floor((h - qrSize) / 2);
 
-            const scaledHeight = Math.floor(h * 0.75);
-            const offsetY = Math.floor((h - scaledHeight) / 2); 
-
-            const newY = y + offsetY;
-            zpl += `^FO${x},${newY}^GB${w},${scaledHeight},1,B^FS\n`;
-
-            // Tính font size phù hợp width và scaledHeight
-            const fontSize = Math.max(10, Math.min(
-                Math.floor(scaledHeight * 0.6),                          
-                Math.floor(w / (qrLabel.length * 0.6))                  
-            ));
-
-            // Ước lượng chiều rộng text để canh giữa ngang
-            const textWidthEstimate = qrLabel.length * (fontSize * 0.6);
-            const centerX = x + Math.max(0, Math.round((w - textWidthEstimate) / 2));
-            const centerY = newY + Math.max(0, Math.round((scaledHeight - fontSize) / 2));
-
-            // In text placeholder chính giữa khung
-            zpl += `^FO${centerX},${centerY}^A0N,${fontSize},${fontSize}^FD${qrLabel}^FS\n`;
+            // Chỉ xuất QR code, KHÔNG vẽ khung viền
+            zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrLabel}^FS\n`;
+            
+            // Nếu muốn hiển thị tên biến QR ở giữa khung khi ở chế độ thiết kế (không in động)
+            // thì chỉ cần vẽ text placeholder ở đây nếu cần.
         }
 
         // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)

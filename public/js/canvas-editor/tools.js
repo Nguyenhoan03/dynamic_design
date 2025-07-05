@@ -368,11 +368,18 @@ async function onMultiPDFClick() {
     const zplBlocks = dataRows.map(row => {
         let zpl = zplTemplate;
         Object.keys(row).forEach(field => {
-            zpl = zpl.replace(new RegExp(`[#]?\\{${field}\\}`, 'g'), row[field] || '');
+            // Nếu là trường QR động, chỉ thay giá trị trong ^FDLA,#{field}_qr^FS
+            if (field.endsWith('_qr')) {
+                zpl = zpl.replace(
+                    new RegExp(`(\\^FDLA,)#?\\{${field}\\}(\\^FS)`, 'g'),
+                    `$1${row[field]}$2`
+                );
+            } else {
+                zpl = zpl.replace(new RegExp(`[#]?\\{${field}\\}`, 'g'), row[field] || '');
+            }
         });
         return zpl;
     });
-    console.log(zplBlocks, "zplBlocks");
 
     // 4. Lấy thông số label
     const width = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
@@ -421,6 +428,13 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     const modal = new bootstrap.Modal(document.getElementById('multiLabelPreviewModal'));
 
     async function showPage(idx) {
+
+        const zplCodeTextarea = document.getElementById('zplCodeTextarea');
+        if (zplCodeTextarea) {
+            zplCodeTextarea.value = zplBlocks[current];
+        }
+
+
         img.src = '';
         page.textContent = `Trang ${idx + 1} / ${zplBlocks.length}`;
         img.alt = 'Đang tải...';
