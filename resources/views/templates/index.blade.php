@@ -194,7 +194,11 @@
                                                     <input type="number" id="labelWidthPrint" value="4" min="1" step="1" class="form-control rounded-2" style="max-width:70px;">
                                                     <span class="input-group-text px-2">x</span>
                                                     <input type="number" id="labelHeightPrint" value="6" min="1" step="1" class="form-control rounded-2" style="max-width:70px;">
-                                                    <span class="input-group-text px-2">inches</span>
+                                                    <select id="labelUnit" class="form-select rounded-2" style="max-width:80px;">
+                                                        <option value="inch">inch</option>
+                                                        <option value="cm">cm</option>
+                                                        <option value="mm">mm</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                             <div class="col-5 col-sm-5">

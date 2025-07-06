@@ -1162,3 +1162,4 @@ window.downloadMultiLabelPDF = downloadMultiLabelPDF;
 window.editText = editText;
 window.copyPermalink = copyPermalink;
 window.openZPLFile = openZPLFile;
+
