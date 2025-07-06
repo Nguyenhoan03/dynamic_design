@@ -309,13 +309,25 @@ function goToLineInTextarea(textarea, lineNumber) {
     const lines = textarea.value.split('\n');
     let position = 0;
     for (let i = 0; i < lineNumber - 1 && i < lines.length; i++) {
-        position += lines[i].length + 1; // +1 for the newline character
+        position += lines[i].length + 1; // +1 for newline
     }
+
     textarea.focus();
     textarea.setSelectionRange(position, position);
-    // Scroll đến dòng
-    const scrollHeightPerLine = textarea.scrollHeight / lines.length;
-    textarea.scrollTop = scrollHeightPerLine * (lineNumber - 1);
+
+    // Scroll đến caret (vị trí con trỏ)
+    requestAnimationFrame(() => {
+        const span = document.createElement("span");
+        span.textContent = '\u200b'; // zero-width space
+        const div = document.createElement("div");
+        div.appendChild(span);
+        textarea.parentNode.insertBefore(div, textarea.nextSibling);
+
+        textarea.setSelectionRange(position, position);
+        textarea.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+        div.remove(); // cleanup
+    });
 }
 
 
