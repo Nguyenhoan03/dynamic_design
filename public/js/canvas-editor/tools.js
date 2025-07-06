@@ -377,12 +377,25 @@ async function onMultiPDFClick() {
     const height = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
     const dpi = parseInt(document.getElementById('dpiSelectPrint').value) || 8;
 
-    // 3. Sinh các block ZPL đã thay thế trường động bằng cách gọi convertCanvasToZPL với dynamicData
+    // 3. Lấy ZPL từ textarea thay vì canvas
+    const zplTextarea = document.getElementById('zplPrintOutput');
+    if (!zplTextarea || !zplTextarea.value.trim()) {
+        alert('Vui lòng nhập mã ZPL vào textarea!');
+        return;
+    }
+
+    // 4. Tạo các block ZPL bằng cách thay thế các biến động
     const zplBlocks = dataRows.map(row => {
-        return window.convertCanvasToZPL(window.canvas, width, height, dpi, false, row);
+        let zpl = zplTextarea.value.trim();
+        // Thay thế các biến động
+        Object.entries(row).forEach(([key, value]) => {
+            const regex = new RegExp(`#\\{${key}\\}`, 'g');
+            zpl = zpl.replace(regex, value);
+        });
+        return zpl;
     });
 
-    // 4. Preview từng trang
+    // 5. Preview từng trang
     previewMultiLabelPDF(zplBlocks, width, height, dpi);
 }
 
@@ -427,6 +440,7 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     const downloadBtn = document.getElementById('multiLabelDownloadBtn');
     const downloadAllBtn = document.getElementById('multiLabelDownloadAllBtn');
     const modal = new bootstrap.Modal(document.getElementById('multiLabelPreviewModal'));
+    const zplCodeTextarea = document.getElementById('zplCodeTextarea');
 
     // Style cho modal body
     const modalBody = img.closest('.modal-body');
@@ -462,7 +476,6 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     `;
 
     async function showPage(idx) {
-        const zplCodeTextarea = document.getElementById('zplCodeTextarea');
         if (zplCodeTextarea) {
             zplCodeTextarea.value = zplBlocks[idx];
         }
@@ -475,10 +488,6 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
         if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
 
-        // Log ZPL để debug
-        console.log('Sending ZPL:', zpl);
-        console.log('API URL:', `https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`);
-
         try {
             const res = await fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
                 method: 'POST',
@@ -489,15 +498,8 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
                 body: zpl
             });
 
-            // Log response details
-            console.log('Response status:', res.status);
-            console.log('Response headers:', Object.fromEntries(res.headers.entries()));
-
             if (res.ok) {
                 const blob = await res.blob();
-                console.log('Blob size:', blob.size, 'bytes');
-                console.log('Blob type:', blob.type);
-
                 const url = URL.createObjectURL(blob);
                 img.src = url;
                 img.onload = () => {
@@ -527,18 +529,24 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
             showPage(current);
         }
     };
+
     nextBtn.onclick = () => {
         if (current < zplBlocks.length - 1) {
             current++;
             showPage(current);
         }
     };
+
     downloadBtn.onclick = () => {
-        // Dùng thông số mới khi tải PDF
-        downloadPDFForZPL(zplBlocks[current], labelWidthInch, labelHeightInch, printDpi);
+        // Lấy ZPL từ textarea thay vì từ blocks
+        const currentZpl = zplCodeTextarea ? zplCodeTextarea.value.trim() : zplBlocks[current];
+        downloadPDFForZPL(currentZpl, labelWidthInch, labelHeightInch, printDpi);
     };
+
     downloadAllBtn.onclick = () => {
-        alert('Tính năng tải tất cả PDF cần backend hỗ trợ merge PDF!');
+        // Tải tất cả các trang
+        const allZpl = zplBlocks.join('\n');
+        downloadPDFForZPL(allZpl, labelWidthInch, labelHeightInch, printDpi);
     };
 
     modal.show();
