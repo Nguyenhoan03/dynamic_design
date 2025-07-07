@@ -584,7 +584,20 @@ function openPrintModal() {
     }, 200);
 }
 
+// Hàm chuyển đổi kích thước sang inch
+function convertToInch(value, unit) {
+    switch(unit) {
+        case 'mm':
+            return value / 25.4;
+        case 'cm':
+            return value / 2.54;
+        case 'inch':
+        default:
+            return value;
+    }
+}
 
+// Cập nhật hàm downloadPDF để xử lý đơn vị
 async function downloadPDF() {
     const img = document.getElementById('labelaryPreviewPrint');
     if (!img || !img.src) {
@@ -592,10 +605,12 @@ async function downloadPDF() {
         return;
     }
 
-    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
-    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
+    const labelWidth = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeight = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const labelWidthInch = convertToInch(labelWidth, labelUnit);
+    const labelHeightInch = convertToInch(labelHeight, labelUnit);
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-    const dotsPerInch = dpi * 25.4;
 
     // Tạo ảnh vẽ ra canvas để đảm bảo đúng PNG
     const canvas = document.createElement('canvas');
@@ -607,7 +622,6 @@ async function downloadPDF() {
 
     const { PDFDocument } = window['pdf-lib'];
     const pdfDoc = await PDFDocument.create();
-
     const pngImage = await pdfDoc.embedPng(pngDataUrl);
 
     // Chuyển inch sang point (1 inch = 72 point trong PDF)
@@ -630,7 +644,7 @@ async function downloadPDF() {
     link.click();
 }
 
-
+// Cập nhật hàm downloadMultiLabelPDF để xử lý đơn vị
 async function downloadMultiLabelPDF() {
     const img = document.getElementById('labelaryPreviewPrint');
     const count = parseInt(document.getElementById('labelCount').value) || 1;
@@ -639,13 +653,17 @@ async function downloadMultiLabelPDF() {
         return;
     }
 
-    const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
-    const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
+    const labelWidth = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeight = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const labelWidthInch = convertToInch(labelWidth, labelUnit);
+    const labelHeightInch = convertToInch(labelHeight, labelUnit);
+
     // Đúng chuẩn PDF: 1 inch = 72 point
     const pageWidth = labelWidthInch * 72;
     const pageHeight = labelHeightInch * 72;
 
-    // Đảm bảo lấy đúng PNG base64 từ canvas (giống downloadPDF)
+    // Đảm bảo lấy đúng PNG base64 từ canvas
     const canvas = document.createElement('canvas');
     canvas.width = img.naturalWidth || img.width;
     canvas.height = img.naturalHeight || img.height;
@@ -675,21 +693,25 @@ async function downloadMultiLabelPDF() {
     link.click();
 }
 
+// Cập nhật hàm downloadEPL để xử lý đơn vị
 function downloadEPL() {
-    const wInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
-    const hInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
+    const labelWidth = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+    const labelHeight = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const wInch = convertToInch(labelWidth, labelUnit);
+    const hInch = convertToInch(labelHeight, labelUnit);
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
     const widthDot = Math.round(wInch * dpi * 25.4);
     const heightDot = Math.round(hInch * dpi * 25.4);
 
     const epl = convertCanvasToEPL(window.canvas, widthDot, heightDot);
-
     const blob = new Blob([epl], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'label.epl';
     link.click();
 }
+
 function convertCanvasToEPL(canvas, widthDot, heightDot) {
     let epl = `! 0 200 200 ${heightDot} 1\nN\n`;
     canvas.getObjects().forEach(obj => {
@@ -812,10 +834,14 @@ function rotatePreview() {
 function previewZPL() {
     const zpl = document.getElementById('zplPrintOutput').value;
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
+    
+    // Lấy label size từ input và chuyển sang inch
+    const labelWidth = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
+    const labelHeight = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
+    const wInch = convertToInch(labelWidth, labelUnit);
+    const hInch = convertToInch(labelHeight, labelUnit);
 
-    // Lấy label size từ input (inch)
-    const wInch = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
-    const hInch = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
     fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${wInch}x${hInch}/0/`, {
         method: "POST",
         headers: {
@@ -824,20 +850,20 @@ function previewZPL() {
         },
         body: zpl
     })
-        .then(response => {
-            if (!response.ok) throw new Error("Không thể render ZPL!");
-            return response.blob();
-        })
-        .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const img = document.getElementById('labelaryPreviewPrint');
-            img.src = url;
-            img.style.transform = `rotate(${previewRotation}deg)`;
-        })
-        .catch(err => {
-            alert("Không thể xem trước ZPL: " + err.message);
-            document.getElementById('labelaryPreviewPrint').src = "";
-        });
+    .then(response => {
+        if (!response.ok) throw new Error("Không thể render ZPL!");
+        return response.blob();
+    })
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const img = document.getElementById('labelaryPreviewPrint');
+        img.src = url;
+        img.style.transform = `rotate(${previewRotation}deg)`;
+    })
+    .catch(err => {
+        alert("Không thể xem trước ZPL: " + err.message);
+        document.getElementById('labelaryPreviewPrint').src = "";
+    });
 }
 
 function AddImageZPL() {
@@ -994,10 +1020,22 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
                     .replace(/đ/g, "d")
                     .replace(/Đ/g, "D");
             };
-            let size = Math.round((obj.fontSize || 20) * (obj.scaleY || 1) * pxToDotY * 0.85);
-            if (size < 10) size = 10;
+            // Lấy kích thước thực tế của text box sau khi scale
+            const boundingRect = obj.getBoundingRect();
+            const actualWidth = boundingRect.width;
+            const actualHeight = boundingRect.height;
+            
+            // Tính toán kích thước font dựa trên tỷ lệ thực tế
+            const heightInDots = Math.round(actualHeight * pxToDotY);
+            const widthInDots = Math.round((actualWidth / textContent.length) * pxToDotX); // Chia cho độ dài text để có width per character
+            
+            // Đảm bảo kích thước tối thiểu
+            const fontHeight = Math.max(10, heightInDots);
+            const fontWidth = Math.max(10, widthInDots);
+            
             const textNoAccent = removeVietnameseTones(textContent);
-            zpl += `^FO${x},${y}^A0N,${size},${size}^FD${textNoAccent}^FS\n`;
+            // Sử dụng ^A0 với cả chiều cao và chiều rộng
+            zpl += `^FO${x},${y}^A0N,${fontHeight},${fontWidth}^FD${textNoAccent}^FS\n`;
         }
         // Rect
         else if (obj.type === 'rect') {
@@ -1162,4 +1200,6 @@ window.downloadMultiLabelPDF = downloadMultiLabelPDF;
 window.editText = editText;
 window.copyPermalink = copyPermalink;
 window.openZPLFile = openZPLFile;
+
+
 

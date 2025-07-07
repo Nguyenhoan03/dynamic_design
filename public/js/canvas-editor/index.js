@@ -35,6 +35,38 @@ if (saved) {
     saveCanvasToLocal();
 }
 
+// Thêm event listener cho thay đổi đơn vị
+document.addEventListener('DOMContentLoaded', function() {
+    const labelUnit = document.getElementById('labelUnit');
+    if (labelUnit) {
+        labelUnit.addEventListener('change', function() {
+            // Cập nhật step và min dựa trên đơn vị
+            const widthInput = document.getElementById('labelWidthPrint');
+            const heightInput = document.getElementById('labelHeightPrint');
+            
+            switch(this.value) {
+                case 'mm':
+                    widthInput.step = heightInput.step = '1';
+                    widthInput.min = heightInput.min = '1';
+                    break;
+                case 'cm':
+                    widthInput.step = heightInput.step = '0.1';
+                    widthInput.min = heightInput.min = '0.1';
+                    break;
+                case 'inch':
+                    widthInput.step = heightInput.step = '0.1';
+                    widthInput.min = heightInput.min = '0.1';
+                    break;
+            }
+            
+            // Cập nhật preview nếu có
+            if (document.getElementById('zplPrintOutput').value) {
+                previewZPL();
+            }
+        });
+    }
+});
+
 // Khi trang load xong, cập nhật kích thước canvas-box và thẻ canvas cho đúng
 document.addEventListener('DOMContentLoaded', function () {
 
