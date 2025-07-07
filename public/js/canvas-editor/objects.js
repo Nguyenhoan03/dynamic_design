@@ -541,7 +541,10 @@ function openPrintModal() {
     document.getElementById('template_zoom').value = canvas.getZoom();
     document.getElementById('template_viewport').value = JSON.stringify(canvas.viewportTransform);
 
+    // Lưu thêm kích thước canvas vào config
     const config = canvas.toJSON(['customType', 'variable']);
+    config.canvasWidth = canvas.width;
+    config.canvasHeight = canvas.height;
     document.getElementById('template_config').value = JSON.stringify(config);
 
     const cloneCanvas = new fabric.StaticCanvas(null, {
@@ -875,31 +878,12 @@ function previewZPL() {
         return;
     }
 
-    // Cập nhật kích thước preview trước khi tải ảnh mới
-    updatePreviewSize();
-
     // Lấy canvas hiện tại
     const canvas = window.canvas;
     if (!canvas) {
         console.error('Không tìm thấy canvas');
         return;
     }
-
-    // Lấy viewport transform để tính toán zoom và pan
-    const vt = canvas.viewportTransform;
-    if (!vt) {
-        console.error('Không tìm thấy viewportTransform');
-        return;
-    }
-
-    // Lấy zoom level và pan
-    const zoom = vt[0];  // Tỷ lệ zoom hiện tại
-    const translateX = vt[4];
-    const translateY = vt[5];
-
-    // Tính kích thước thực của viewport (đã tính zoom)
-    const viewportWidth = canvas.width / zoom;
-    const viewportHeight = canvas.height / zoom;
 
     // Lấy và kiểm tra preview elements
     const previewBox = document.getElementById('zplPreviewBox');
@@ -909,10 +893,6 @@ function previewZPL() {
         console.error('Không tìm thấy phần tử preview');
         return;
     }
-
-    // Set kích thước cho preview box theo kích thước thực của viewport
-    previewBox.style.width = viewportWidth + 'px';
-    previewBox.style.height = viewportHeight + 'px';
 
     // Lấy thông số label size từ input
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
@@ -954,22 +934,51 @@ function previewZPL() {
         const url = URL.createObjectURL(blob);
         
         previewImg.onload = function() {
+            // Tính toán tỷ lệ zoom để preview khớp với canvas
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const imgWidth = this.naturalWidth;
+            const imgHeight = this.naturalHeight;
+
+            // Tính toán zoom để preview lấp đầy container và khớp với canvas
+            const containerWidth = previewBox.offsetWidth;
+            const containerHeight = previewBox.offsetHeight;
+            
+            // Tính zoom dựa trên tỷ lệ giữa kích thước canvas và container
+            const zoomX = containerWidth / imgWidth;
+            const zoomY = containerHeight / imgHeight;
+            const zoom = Math.min(zoomX, zoomY);
+
+            // Áp dụng zoom và căn giữa
+            previewImg.style.width = canvasWidth + 'px';
+            previewImg.style.height = canvasHeight + 'px';
+            previewImg.style.objectFit = 'contain';
+            previewImg.style.margin = '0';
+            previewImg.style.padding = '0';
+            
             // Áp dụng rotation nếu có
             if (previewRotation) {
                 previewImg.style.transform = `rotate(${previewRotation}deg)`;
             }
+
+            // Cập nhật kích thước container
+            previewBox.style.width = canvasWidth + 'px';
+            previewBox.style.height = canvasHeight + 'px';
+            previewBox.style.overflow = 'hidden';
+            previewBox.style.display = 'flex';
+            previewBox.style.alignItems = 'center';
+            previewBox.style.justifyContent = 'center';
             
             console.log('Preview loaded:', {
-                viewportSize: `${viewportWidth}x${viewportHeight}px`,
-                zoom,
-                previewSize: `${this.naturalWidth}x${this.naturalHeight}px`,
-                boxSize: `${previewBox.offsetWidth}x${previewBox.offsetHeight}px`
+                canvasSize: `${canvasWidth}x${canvasHeight}px`,
+                previewSize: `${imgWidth}x${imgHeight}px`,
+                containerSize: `${containerWidth}x${containerHeight}px`,
+                zoom
             });
         };
         
         previewImg.onerror = function(err) {
             console.error('Lỗi load ảnh:', err);
-            // alert('Không thể tải ảnh preview');
         };
         
         previewImg.src = url;

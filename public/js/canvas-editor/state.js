@@ -75,6 +75,22 @@ function restoreCanvasState(state) {
     }
 }
 
+// Hàm khôi phục kích thước canvas từ config
+function restoreCanvasDimensions(config) {
+    if (!window.canvas || !config) return;
+
+    // Khôi phục kích thước canvas từ config nếu có
+    if (config.canvasWidth && config.canvasHeight) {
+        window.canvas.setWidth(config.canvasWidth);
+        window.canvas.setHeight(config.canvasHeight);
+        const box = document.getElementById('canvasBox');
+        if (box) {
+            box.style.width = config.canvasWidth + 'px';
+            box.style.height = config.canvasHeight + 'px';
+        }
+    }
+}
+
 // Lưu template lên server
 async function saveTemplate() {
     const state = saveCanvasState();
@@ -116,6 +132,11 @@ async function loadTemplate(templateId) {
         
         const data = await response.json();
         
+        // Khôi phục kích thước canvas trước
+        if (data.canvas_objects) {
+            restoreCanvasDimensions(data.canvas_objects);
+        }
+        
         // Khôi phục state
         restoreCanvasState({
             viewport_state: data.viewport_state,
@@ -128,3 +149,6 @@ async function loadTemplate(templateId) {
         throw error;
     }
 }
+
+// Export functions
+window.restoreCanvasDimensions = restoreCanvasDimensions;

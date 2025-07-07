@@ -135,12 +135,17 @@ class TemplateController extends Controller
         $height = $request->input('height');
         $config = $request->input('config');
 
+        // Thêm kích thước canvas vào config
+        $configArray = is_string($config) ? json_decode($config, true) : $config;
+        $configArray['canvasWidth'] = $width;
+        $configArray['canvasHeight'] = $height;
+
         $template = Template::where('name', $name)->first();
 
         if ($template) {
-            if ($template->config !== $config) {
+            if ($template->config !== $configArray) {
                 $template->update([
-                    'config' => $config,
+                    'config' => $configArray,
                     'width' => $width,
                     'height' => $height,
                 ]);
@@ -152,7 +157,7 @@ class TemplateController extends Controller
                 'name' => $name,
                 'width' => $width,
                 'height' => $height,
-                'config' => $config,
+                'config' => $configArray,
             ]);
             return response()->json(['status' => 'created', 'template' => $template]);
         }
@@ -161,9 +166,8 @@ class TemplateController extends Controller
     /**
      * Tạo mới hoặc cập nhật template theo tên.
      */
-    private function createOrUpdateTemplate($name, $width, $height,$unit, $config, $elements = [], $id = null)
+    private function createOrUpdateTemplate($name, $width, $height, $unit, $config, $elements = [], $id = null)
     {
-
         if ($id) {
             $template = Template::find($id);
             if ($template) {
@@ -182,10 +186,15 @@ class TemplateController extends Controller
             $template->name = $name;
         }
 
+        // Thêm kích thước canvas vào config
+        $configArray = is_string($config) ? json_decode($config, true) : $config;
+        $configArray['canvasWidth'] = $width;
+        $configArray['canvasHeight'] = $height;
+
         $template->width = $width;
         $template->height = $height;
         $template->unit = $unit;
-        $template->config = $config;
+        $template->config = $configArray;
         $template->save();
 
         // Nếu có elements thì cập nhật lại

@@ -22,7 +22,12 @@ function saveCanvasToLocal() {
 const saved = localStorage.getItem('canvas_design');
 const savedName = localStorage.getItem('canvas_design_name');
 if (saved) {
-    window.canvas.loadFromJSON(saved, function () {
+    const config = JSON.parse(saved);
+    // Khôi phục kích thước canvas trước
+    if (window.restoreCanvasDimensions) {
+        window.restoreCanvasDimensions(config);
+    }
+    window.canvas.loadFromJSON(config, function () {
         window.canvas.renderAll();
         if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
         const nameInput = document.querySelector('.name_design');

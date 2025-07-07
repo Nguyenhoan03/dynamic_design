@@ -663,103 +663,155 @@
         });
     </script>
     <script>
-    window.defaultCanvasWidth = {{ $width ?? 750 }};
-    window.defaultCanvasHeight = {{ $height ?? 350 }};
-    window.defaultCanvasUnit = "{{ $unit ?? 'px' }}" !== "" ? "{{ $unit ?? 'px' }}" : (localStorage.getItem('canvas_design_unit') || 'px');
-
-</script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-    // Hàm chuyển đổi đơn vị sang px
-    function convertToPx(value, unit) {
-        const factors = {
-            mm: 3.7795275591,
-            cm: 37.795275591,
-            inch: 96,
-            px: 1
+        // Khởi tạo giá trị mặc định từ PHP
+        window.defaultConfig = {
+            width: {{ $width ?? 750 }},
+            height: {{ $height ?? 350 }},
+            unit: '{{ $unit ?? "px" }}',
+            config: {!! isset($config) ? json_encode($config) : 'null' !!}
         };
-        return value * (factors[unit] || 1);
-    }
 
-    @if(isset($config) && $config)
-        // Nếu vào edit, luôn lấy dữ liệu từ DB và xóa localStorage
-        localStorage.removeItem('canvas_design');
-        localStorage.removeItem('canvas_design_name');
-        localStorage.removeItem('canvas_design_width');
-        localStorage.removeItem('canvas_design_height');
-        localStorage.removeItem('canvas_design_unit');
+        // Hàm chuyển đổi đơn vị sang px
+        function convertToPx(value, unit) {
+            const factors = {
+                mm: 3.7795275591,
+                cm: 37.795275591,
+                inch: 96,
+                px: 1
+            };
+            return value * (factors[unit] || 1);
+        }
 
-        // Lưu giá trị gốc để hiển thị info
-        window.originWidth = {{ $width }};
-        window.originHeight = {{ $height }};
-        window.originUnit = "{{ $unit ?? 'px' }}";
-        updateCanvasInfo();   
-        setTimeout(function() {
-            let json = @json($config);
-            if (typeof json === 'string') json = JSON.parse(json);
-            if (window.canvas && json) {
-                // Chuyển width/height sang px
-                const pxW = convertToPx({{ $width }}, "{{ $unit ?? 'px' }}");
-                const pxH = convertToPx({{ $height }}, "{{ $unit ?? 'px' }}");
-                window.canvas.setWidth(pxW);
-                window.canvas.setHeight(pxH);
-                window.canvas.loadFromJSON(json, function() {
-                    window.canvas.renderAll();
-                });
-                // Cập nhật box
+        // Hàm lưu canvas vào localStorage
+        function saveCanvasToLocal() {
+            if (!window.canvas) return;
+            const config = window.canvas.toJSON(['customType', 'variable', 'qrValue']);
+            // Thêm kích thước canvas vào config
+            config.canvasWidth = window.canvas.getWidth();
+            config.canvasHeight = window.canvas.getHeight();
+            localStorage.setItem('canvas_design', JSON.stringify(config));
+            
+            // Lưu thêm các thông số riêng
+            const nameInput = document.querySelector('.name_design');
+            if (nameInput) {
+                localStorage.setItem('canvas_design_name', nameInput.value);
+            }
+            localStorage.setItem('canvas_design_width', window.canvas.getWidth());
+            localStorage.setItem('canvas_design_height', window.canvas.getHeight());
+            localStorage.setItem('canvas_design_unit', window.originUnit || 'px');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            window.defaultCanvasWidth = defaultConfig.width;
+            window.defaultCanvasHeight = defaultConfig.height;
+            window.defaultCanvasUnit = defaultConfig.unit !== "" ? defaultConfig.unit : (localStorage.getItem('canvas_design_unit') || 'px');
+
+            if (defaultConfig.config) {
+                // Nếu vào edit, luôn lấy dữ liệu từ DB và xóa localStorage
+                localStorage.removeItem('canvas_design');
+                localStorage.removeItem('canvas_design_name');
+                localStorage.removeItem('canvas_design_width');
+                localStorage.removeItem('canvas_design_height');
+                localStorage.removeItem('canvas_design_unit');
+
+                // Lưu giá trị gốc để hiển thị info
+                window.originWidth = defaultConfig.width;
+                window.originHeight = defaultConfig.height;
+                window.originUnit = defaultConfig.unit;
+                updateCanvasInfo();   
+
+                setTimeout(function() {
+                    const config = defaultConfig.config;
+                    if (window.canvas && config) {
+                        // Khôi phục kích thước canvas từ config nếu có
+                        if (config.canvasWidth && config.canvasHeight) {
+                            window.canvas.setWidth(config.canvasWidth);
+                            window.canvas.setHeight(config.canvasHeight);
+                            const box = document.getElementById('canvasBox');
+                            if (box) {
+                                box.style.width = config.canvasWidth + 'px';
+                                box.style.height = config.canvasHeight + 'px';
+                            }
+                        } else {
+                            // Fallback về kích thước từ template nếu không có trong config
+                            const pxW = convertToPx(defaultConfig.width, defaultConfig.unit);
+                            const pxH = convertToPx(defaultConfig.height, defaultConfig.unit);
+                            window.canvas.setWidth(pxW);
+                            window.canvas.setHeight(pxH);
+                            const box = document.getElementById('canvasBox');
+                            if (box) {
+                                box.style.width = pxW + 'px';
+                                box.style.height = pxH + 'px';
+                            }
+                        }
+                        window.canvas.loadFromJSON(config, function() {
+                            window.canvas.renderAll();
+                            if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
+                            // Lưu lại vào localStorage sau khi load xong
+                            saveCanvasToLocal();
+                        });
+                    }
+                }, 300);
+            } else {
+                // Nếu không phải edit, ưu tiên lấy từ localStorage
+                let width, height, unit;
+                if (localStorage.getItem('canvas_design_width') && localStorage.getItem('canvas_design_unit')) {
+                    width = parseFloat(localStorage.getItem('canvas_design_width'));
+                    height = parseFloat(localStorage.getItem('canvas_design_height'));
+                    unit = localStorage.getItem('canvas_design_unit');
+                } else {
+                    width = window.defaultCanvasWidth || 750;
+                    height = window.defaultCanvasHeight || 350;
+                    unit = window.defaultCanvasUnit || 'px';
+                }
+
+                const pxW = convertToPx(width, unit);
+                const pxH = convertToPx(height, unit);
+
                 const box = document.getElementById('canvasBox');
                 if (box) {
                     box.style.width = pxW + 'px';
                     box.style.height = pxH + 'px';
                 }
-            }
-        }, 300);
-    @else
-        // Nếu không phải edit, ưu tiên lấy từ localStorage
-        let width, height, unit;
-        if (localStorage.getItem('canvas_design_width') && localStorage.getItem('canvas_design_unit')) {
-            width = Number(localStorage.getItem('canvas_design_width'));
-            height = Number(localStorage.getItem('canvas_design_height'));
-            unit = localStorage.getItem('canvas_design_unit');
-        } else {
-            width = window.defaultCanvasWidth || 750;
-            height = window.defaultCanvasHeight || 350;
-            unit = window.defaultCanvasUnit || 'px';
-        }
-        window.originWidth = width;
-        window.originHeight = height;
-        window.originUnit = unit;
 
-        const pxW = convertToPx(width, unit);
-        const pxH = convertToPx(height, unit);
+                window.canvas.setWidth(pxW);
+                window.canvas.setHeight(pxH);
 
-        const box = document.getElementById('canvasBox');
-        if (box) {
-            box.style.width = pxW + 'px';
-            box.style.height = pxH + 'px';
-        }
-        const canvasEl = document.getElementById('templateCanvas');
-        if (canvasEl) {
-            canvasEl.width = pxW;
-            canvasEl.height = pxH;
-        }
-        if (window.canvas) {
-            window.canvas.setWidth(pxW);
-            window.canvas.setHeight(pxH);
-            // Load từ localStorage nếu có
-            const saved = localStorage.getItem('canvas_design');
-            if (saved) {
-                window.canvas.loadFromJSON(saved, function() {
-                    window.canvas.renderAll();
-                });
-            } else {
-                window.canvas.renderAll();
+                const saved = localStorage.getItem('canvas_design');
+                if (saved) {
+                    try {
+                        const config = JSON.parse(saved);
+                        // Khôi phục kích thước canvas từ config nếu có
+                        if (config.canvasWidth && config.canvasHeight) {
+                            window.canvas.setWidth(config.canvasWidth);
+                            window.canvas.setHeight(config.canvasHeight);
+                            if (box) {
+                                box.style.width = config.canvasWidth + 'px';
+                                box.style.height = config.canvasHeight + 'px';
+                            }
+                        }
+                        window.canvas.loadFromJSON(config, function() {
+                            window.canvas.renderAll();
+                            if (typeof updateCanvasInfo === 'function') updateCanvasInfo();
+                        });
+                    } catch (e) {
+                        console.error('Lỗi load canvas từ localStorage:', e);
+                    }
+                }
             }
-        }
-    @endif
-});
-</script>
+
+            // Đăng ký sự kiện lưu khi canvas thay đổi
+            window.canvas.on('object:modified', saveCanvasToLocal);
+            window.canvas.on('object:added', saveCanvasToLocal);
+            window.canvas.on('object:removed', saveCanvasToLocal);
+            
+            // Lưu khi thay đổi kích thước canvas
+            window.canvas.on('resize', function() {
+                saveCanvasToLocal();
+                updateCanvasInfo();
+            });
+        });
+    </script>
 
 
     <script>
