@@ -112,7 +112,7 @@
             <input type="hidden" name="template_viewport" id="template_viewport">
             <input type="hidden" name="template_image" id="template_image">
 
-            <div class="modal-content shadow-sm border-0">
+            <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title fw-bold">📄 In/Export</h5>
                     <button type="button" class="btn-close bg-white" data-bs-dismiss="modal"></button>

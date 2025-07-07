@@ -1062,7 +1062,7 @@ textarea.form-control {
 }
 
 .modal-dialog {
-    max-width: 800px;
+    max-width: 95%!important;
     width: 100%;
   }
   .modal-content, .modal-body {
@@ -1080,7 +1080,7 @@ textarea.form-control {
   }
 
   #multiLabelPreviewModal .modal-dialog {
-    max-width: 800px;
+    max-width: 95%!important;
     /* margin: 1.75rem auto; */
 }
 
