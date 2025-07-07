@@ -97,7 +97,7 @@
 
 
     <div class="modal fade" id="printModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered draggable">
         <form id="printForm" method="POST" action="/print-batch" class="w-100">
             @csrf
             <!-- Hidden fields -->
@@ -132,7 +132,7 @@
                         <div class="tab-pane fade show active" id="pdfTabPane" role="tabpanel">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Xem trước PDF:</label>
-                                <img id="canvasPreview" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
+                            <img id="canvasPreview" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;align-items: center;justify-content: center;margin: 0 auto;">
                             </div>
                            
                         </div>
@@ -140,7 +140,7 @@
                         <div class="tab-pane fade" id="zplTabPane" role="tabpanel">
                         <div class="row g-3">
                             <!-- ZPL textarea bên trái -->
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <div class="card shadow-sm border-0 h-100">
                                     <div class="card-body pb-2">
                                         <label class="form-label fw-semibold mb-2">Mã ZPL sinh ra từ thiết kế <span class="text-muted small">(có thể sửa trực tiếp)</span>:</label>
@@ -210,21 +210,15 @@
                                 </div>
                             </div>
                             <!-- Preview bên phải -->
-                            <div class="col-md-6">
+                            <div class="col-md-9">
                                 <div class="card shadow-sm border-0 h-100">
                                     <div class="card-header py-2 px-3 bg-light border-bottom rounded-top-3">
                                         <span class="fw-semibold"><i class="bi bi-image"></i> Xem trước ZPL</span>
                                     </div>
-                                    <div class="card-body d-flex justify-content-center align-items-center">
-                                        <div id="zplPreviewBox"
-                                            style="background:#fff; border:1px solid #ddd; border-radius:10px; box-shadow:0 2px 8px #0001; display:flex; align-items:center; justify-content:center; width:100%; padding:0; margin:0; overflow:hidden;">
-                                            <img id="labelaryPreviewPrint"
-                                                style="width:100%; object-fit:contain; display:block; background:#fff; border-radius:8px; border:0; margin:0; padding:0;"
-                                                alt="ZPL Preview"
-                                                onerror="this.style.display='none';document.getElementById('zplPreviewError').style.display='block';"
-                                                onload="this.style.display='block';document.getElementById('zplPreviewError').style.display='none';">
-                                            <div id="zplPreviewError" style="display:none; color:#c00; text-align:center; font-size:1.1rem;">
-                                                Không thể hiển thị ZPL Preview.<br>Kiểm tra lại mã ZPL hoặc thông số nhãn.
+                                    <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 500px; padding: 0;">
+                                        <div class="preview-container">
+                                            <div id="zplPreviewBox" style="width: 100%; height: 100%; background: #fff;">
+                                                <img id="labelaryPreviewPrint" style="width: 100%; height: 100%; object-fit: contain;" alt="ZPL Preview">
                                             </div>
                                         </div>
                                     </div>
@@ -880,8 +874,101 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
- </script>
- 
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function makeModalDraggable(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        const dialog = modal.querySelector('.modal-dialog');
+        const header = modal.querySelector('.modal-header');
+        
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        function dragStart(e) {
+            if (e.type === "touchstart") {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+
+            if (e.target === header || header.contains(e.target)) {
+                isDragging = true;
+                dialog.classList.add('dragging');
+            }
+        }
+
+        function dragEnd() {
+            isDragging = false;
+            dialog.classList.remove('dragging');
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            if (e.type === "touchmove") {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            // Cho phép di chuyển tự do hơn, chỉ giới hạn khi modal gần ra khỏi màn hình
+            const rect = dialog.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const buffer = 50; // Để lại 50px margin
+
+            // Giới hạn di chuyển để modal không hoàn toàn ra khỏi màn hình
+            if (currentX < -rect.width + buffer) currentX = -rect.width + buffer;
+            if (currentX > viewportWidth - buffer) currentX = viewportWidth - buffer;
+            if (currentY < -rect.height + buffer) currentY = -rect.height + buffer;
+            if (currentY > viewportHeight - buffer) currentY = viewportHeight - buffer;
+
+            dialog.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        }
+
+        // Thêm sự kiện double click để reset vị trí
+        header.addEventListener('dblclick', function() {
+            xOffset = 0;
+            yOffset = 0;
+            dialog.style.transform = 'translate(0px, 0px)';
+        });
+
+        header.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        header.addEventListener('touchstart', dragStart);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('touchend', dragEnd);
+
+        // Reset position khi modal mở
+        modal.addEventListener('show.bs.modal', function() {
+            xOffset = 0;
+            yOffset = 0;
+            dialog.style.transform = 'translate(0px, 0px)';
+        });
+    }
+
+    // Áp dụng cho các modal
+    makeModalDraggable('printModal');
+    makeModalDraggable('multiLabelPreviewModal');
+});
+</script>
 
 </body>
 </html>

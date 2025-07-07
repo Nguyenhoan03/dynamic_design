@@ -992,28 +992,30 @@ textarea.form-control {
     bottom: 0;
 }
 
+.zpl-preview-wrapper {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    position: relative;
+    background: #f8f9fa;
+}
+
 #zplPreviewBox {
     width: 100%;
-    max-width: 360px;
-    margin: auto;
-    position: relative;
+    height: 400px;
     background: #fff;
     border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px #0001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    /* height sẽ được set động bằng JS */
 }
+
 #labelaryPreviewPrint {
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
+    max-width: 100%;
+    max-height: 100%;
     display: block;
-    background: #fff;
-    border-radius: 8px;
-    border: 0;
-    margin: 0;
-    padding: 0;
+    object-fit: contain;
 }
 
 #zplLinearWarning {
@@ -1064,12 +1066,45 @@ textarea.form-control {
 .modal-dialog {
     max-width: 95%!important;
     width: 100%;
-  }
-  .modal-content, .modal-body {
+    position: fixed;
+    cursor: move;
+    margin: 1.75rem auto;
+    transform: translate(0, 0);
+}
+
+.modal-dialog.dragging {
+    user-select: none;
+    cursor: grabbing;
+}
+
+.modal-content {
+    height: 100%;
+    position: relative;
+}
+
+/* Đảm bảo modal có thể di chuyển tự do */
+.modal {
+    overflow: visible !important;
     padding: 0 !important;
-    margin: 0 !important;
-  }
-  #multiLabelPreviewImg, #labelaryPreviewPrint {
+}
+
+/* Thêm cursor grab khi hover vào header */
+.modal-header {
+    cursor: grab;
+    user-select: none;
+}
+
+.modal-header:active {
+    cursor: grabbing;
+}
+
+/* Đảm bảo nội dung modal có thể scroll */
+.modal-body {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
+#multiLabelPreviewImg, #labelaryPreviewPrint {
     width: 100%;
    
     object-fit: contain;
@@ -1077,9 +1112,9 @@ textarea.form-control {
     margin: 0 auto;
     background: #fff;
     z-index: 1100;
-  }
+}
 
-  #multiLabelPreviewModal .modal-dialog {
+#multiLabelPreviewModal .modal-dialog {
     max-width: 95%!important;
     /* margin: 1.75rem auto; */
 }
@@ -1113,4 +1148,15 @@ textarea.form-control {
     background: #f8f9fa;
     max-height: 220px;
     /* height: 100%; */
+}
+
+.preview-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    padding: 20px;
 }

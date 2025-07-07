@@ -832,34 +832,50 @@ function rotatePreview() {
 }
 
 function previewZPL() {
-    // Lấy ZPL từ textarea
     const textarea = document.getElementById('zplPrintOutput');
     const zpl = textarea ? textarea.value.trim() : '';
     
-    // Nếu không có ZPL, return
-    if (!zpl) return;
-
-    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
-    
-    // Lấy label size từ input và chuyển sang inch
-    const labelWidth = parseFloat(document.getElementById('labelWidthPrint').value) || 4;
-    const labelHeight = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
-    const wInch = convertToInch(labelWidth, labelUnit);
-    const hInch = convertToInch(labelHeight, labelUnit);
-
-    // Hiển thị cảnh báo nếu ZPL đã được sửa thủ công
-    const zplWarning = document.getElementById('zplWarning');
-    if (zplWarning) {
-        const originalZPL = convertCanvasToZPL(window.canvas, labelWidth, labelHeight, dpi);
-        if (zpl !== originalZPL) {
-            zplWarning.style.display = 'block';
-        } else {
-            zplWarning.style.display = 'none';
-        }
+    if (!zpl) {
+        console.error('Không có nội dung ZPL');
+        return;
+    }
+    if (!zpl.startsWith('^XA') || !zpl.endsWith('^XZ')) {
+        console.error('ZPL không hợp lệ - phải bắt đầu bằng ^XA và kết thúc bằng ^XZ');
+        return;
     }
 
-    fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${wInch}x${hInch}/0/`, {
+    // Lấy và kiểm tra các thông số
+    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
+    const labelWidth = parseFloat(document.getElementById('labelWidthPrint').value);
+    const labelHeight = parseFloat(document.getElementById('labelHeightPrint').value);
+
+    if (!labelWidth || !labelHeight || labelWidth <= 0 || labelHeight <= 0) {
+        console.error('Kích thước nhãn không hợp lệ:', { labelWidth, labelHeight });
+        return;
+    }
+
+    const wInch = convertToInch(labelWidth, labelUnit);
+    const hInch = convertToInch(labelHeight, labelUnit);
+    
+    if (wInch <= 0 || hInch <= 0) {
+        console.error('Kích thước inch không hợp lệ:', { wInch, hInch });
+        return;
+    }
+
+    // Lấy và kiểm tra preview elements
+    const previewBox = document.getElementById('zplPreviewBox');
+    const previewImg = document.getElementById('labelaryPreviewPrint');
+    
+    if (!previewBox || !previewImg) {
+        console.error('Không tìm thấy phần tử preview');
+        return;
+    }
+
+    // Gọi API Labelary
+    const apiUrl = `https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${wInch}x${hInch}/0/`;
+    
+    fetch(apiUrl, {
         method: "POST",
         headers: {
             "Accept": "image/png",
@@ -868,18 +884,40 @@ function previewZPL() {
         body: zpl
     })
     .then(response => {
-        if (!response.ok) throw new Error("Không thể render ZPL!");
+        if (!response.ok) {
+            throw new Error(`Lỗi API: ${response.status} ${response.statusText}`);
+        }
         return response.blob();
     })
     .then(blob => {
         const url = URL.createObjectURL(blob);
-        const img = document.getElementById('labelaryPreviewPrint');
-        img.src = url;
-        img.style.transform = `rotate(${previewRotation}deg)`;
+        
+        previewImg.onload = function() {
+            // Áp dụng rotation nếu có
+            if (previewRotation) {
+                previewImg.style.transform = `rotate(${previewRotation}deg)`;
+            }
+            console.log('Preview image loaded:', {
+                naturalWidth: this.naturalWidth,
+                naturalHeight: this.naturalHeight,
+                width: this.width,
+                height: this.height,
+                boxWidth: previewBox.offsetWidth,
+                boxHeight: previewBox.offsetHeight
+            });
+        };
+        
+        previewImg.onerror = function(err) {
+            console.error('Lỗi load ảnh:', err);
+            alert('Không thể tải ảnh preview');
+        };
+        
+        previewImg.src = url;
     })
     .catch(err => {
+        console.error('Lỗi xử lý ZPL:', err);
         alert("Không thể xem trước ZPL: " + err.message);
-        document.getElementById('labelaryPreviewPrint').src = "";
+        if (previewImg) previewImg.src = "";
     });
 }
 
@@ -1049,9 +1087,9 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         labelH / viewportHeight
     );
 
-    // 5. Tính offset để căn giữa
-    const offsetX = (labelW - (viewportWidth * scaleToZPL)) / 2;
-    const offsetY = (labelH - (viewportHeight * scaleToZPL)) / 2;
+    // 5. Tính offset để căn giữa (nếu cần)
+    const offsetX = preview ? 0 : (labelW - (viewportWidth * scaleToZPL)) / 2;
+    const offsetY = preview ? 0 : (labelH - (viewportHeight * scaleToZPL)) / 2;
 
     // 6. Xử lý từng object
     canvas.getObjects().forEach(obj => {
