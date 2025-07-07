@@ -953,14 +953,26 @@ function ConvertImgToZPL(base64Image) {
         const wInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
         const hInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
         const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-        const wPx = Math.round(wInch * dpi * 25.4);
-        const hPx = Math.round(hInch * dpi * 25.4);
+        
+        // Tính kích thước pixel tối đa cho phép (giới hạn ở 1500px cho chiều dài nhất)
+        const maxDimension = 1500;
+        let wPx = Math.round(wInch * dpi * 25.4);
+        let hPx = Math.round(hInch * dpi * 25.4);
+        
+        // Scale down nếu kích thước quá lớn
+        if (wPx > maxDimension || hPx > maxDimension) {
+            const scale = Math.min(maxDimension / wPx, maxDimension / hPx);
+            wPx = Math.round(wPx * scale);
+            hPx = Math.round(hPx * scale);
+        }
+
         // Lấy lựa chọn printQuality
         const printQuality = document.getElementById('printQuality')?.value || 'mono';
 
         // Lấy ZPL hiện tại
         const textarea = document.getElementById('zplPrintOutput');
         let zpl = textarea ? textarea.value.trim() : '';
+        
         // Nếu chưa có ^XA thì thêm mới, nếu có thì chèn vào trước ^XZ
         const imageZPL = imageToZPL(img, 0, 0, wPx, hPx, printQuality);
         if (!zpl.startsWith('^XA')) {
