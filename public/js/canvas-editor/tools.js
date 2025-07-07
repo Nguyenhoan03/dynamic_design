@@ -489,7 +489,9 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         }
 
         img.src = '';
+        // Số trang nhỏ gọn, đẹp
         page.textContent = `Trang ${idx + 1} / ${zplBlocks.length}`;
+        page.className = 'mt-2 page-indicator';
         img.alt = 'Đang tải...';
         
         // Xử lý QR code trong ZPL với scale tốt hơn
@@ -510,15 +512,27 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
                 const url = URL.createObjectURL(blob);
                 img.src = url;
                 img.onload = () => {
-                    console.log('Image loaded:', img.naturalWidth, 'x', img.naturalHeight);
+                    // Quy đổi đơn vị sang px để set width/height đúng tỷ lệ
+                    let pxW, pxH;
+                    if (document.getElementById('labelUnit').value === 'mm') {
+                        pxW = labelWidthInch * 25.4 * 3.7795275591 / 25.4;
+                        pxH = labelHeightInch * 25.4 * 3.7795275591 / 25.4;
+                    } else if (document.getElementById('labelUnit').value === 'cm') {
+                        pxW = labelWidthInch * 2.54 * 37.795275591 / 2.54;
+                        pxH = labelHeightInch * 2.54 * 37.795275591 / 2.54;
+                    } else {
+                        pxW = labelWidthInch * 96;
+                        pxH = labelHeightInch * 96;
+                    }
+                    img.style.width = pxW + 'px';
+                    img.style.height = pxH + 'px';
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '80vh';
+                    img.style.objectFit = 'contain';
+                    img.style.background = '#fff';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
                 };
-                
-                // page.innerHTML = `
-                //     <div>Trang ${idx + 1} / ${zplBlocks.length}</div>
-                //     <div style="color:#666; font-size:12px; margin-top:5px;">
-                //         ${labelWidthInch}" × ${labelHeightInch}" - ${printDpi} dpmm
-                //     </div>
-                // `;
             } else {
                 const errorText = await res.text();
                 console.error('API Error:', errorText);

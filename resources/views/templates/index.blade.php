@@ -594,7 +594,7 @@
                         </div>
                         <div class="preview-container">
                             <img id="multiLabelPreviewImg" alt="">
-                            <div id="multiLabelPreviewPage" class="mt-2"></div>
+                            <div id="multiLabelPreviewPage" class="mt-2 page-indicator"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
