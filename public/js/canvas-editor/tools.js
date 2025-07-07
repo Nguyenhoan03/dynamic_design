@@ -459,7 +459,7 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     if (previewContainer) {
         previewContainer.style.cssText = `
             width: 100%;
-            max-width: 812px; // Khớp với kích thước thực của ảnh
+            max-width: 812px;
             margin: 0 auto;
             background: white;
             border: 1px solid #ddd;
@@ -484,9 +484,8 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         page.textContent = `Trang ${idx + 1} / ${zplBlocks.length}`;
         img.alt = 'Đang tải...';
         
-        let zpl = zplBlocks[idx].trim();
-        if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
-        if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
+        // Xử lý QR code trong ZPL với scale tốt hơn
+        let zpl = processQRInZPL(zplBlocks[idx].trim());
 
         try {
             const res = await fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
@@ -538,14 +537,14 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
     };
 
     downloadBtn.onclick = () => {
-        // Lấy ZPL từ textarea thay vì từ blocks
+        // Lấy ZPL từ textarea thay vì từ blocks và xử lý QR
         const currentZpl = zplCodeTextarea ? zplCodeTextarea.value.trim() : zplBlocks[current];
-        downloadPDFForZPL(currentZpl, labelWidthInch, labelHeightInch, printDpi);
+        downloadPDFForZPL(processQRInZPL(currentZpl), labelWidthInch, labelHeightInch, printDpi);
     };
 
     downloadAllBtn.onclick = () => {
-        // Tải tất cả các trang
-        const allZpl = zplBlocks.join('\n');
+        // Tải tất cả các trang với QR đã xử lý
+        const allZpl = zplBlocks.map(block => processQRInZPL(block)).join('\n');
         downloadPDFForZPL(allZpl, labelWidthInch, labelHeightInch, printDpi);
     };
 
@@ -600,8 +599,34 @@ function downloadPDFForZPL(zpl, width, height, dpi) {
     });
 }
 
+function processQRInZPL(zpl) {
+    if (!zpl) return zpl;
+    
+    // Đảm bảo ZPL có đầy đủ ^XA và ^XZ
+    if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
+    if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
 
+    // Xử lý các placeholder QR code với scale và vị trí tốt hơn
+    return zpl.replace(/\^FX_QR_FIELD:([^,]+),(\d+),(\d+),(\d+)/g, (match, value, x, y, scale) => {
+        // Tăng scale để QR code rõ ràng hơn
+        const adjustedScale = Math.max(scale * 2, 10); // Đảm bảo scale tối thiểu là 10
+        
+        // Tính toán kích thước QR code dựa trên scale
+        const qrSize = adjustedScale * 24; // 24 là kích thước cơ bản của module QR
+        
+        // Điều chỉnh vị trí y để căn giữa QR trong khung
+        const adjustedY = Math.max(0, y - Math.floor(qrSize * 0.1)); // Điều chỉnh lên trên 10% kích thước
+        
+        // ^BQ format: ^BQa,b,c,d
+        // a: Orientation (N=normal)
+        // b: Model (2)
+        // c: Magnification factor (1-10)
+        // d: Error correction level (H=high 30%, Q=medium 25%, M=medium 15%, L=low 7%)
+        return `^FO${x},${adjustedY}^BQN,2,${adjustedScale},H^FDLA,${value}^FS`;
+    });
+}
 
+// Make functions available globally
 window.previewMultiLabelPDF = previewMultiLabelPDF;
 window.getDataRowsFromCSVOrExcel = getDataRowsFromCSVOrExcel;
 window.setAlign = setAlign;
@@ -618,3 +643,4 @@ window.pauseVideo = pauseVideo;
 window.playVideo = playVideo;
 window.checkZPLTextareaWarning = checkZPLTextareaWarning;
 window.onMultiPDFClick = onMultiPDFClick;
+window.processQRInZPL = processQRInZPL;

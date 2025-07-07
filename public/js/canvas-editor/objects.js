@@ -1041,6 +1041,7 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
                     return (dynamicData[field] !== undefined) ? dynamicData[field] : match;
                 });
             }
+
             // Loại bỏ dấu tiếng Việt
             const removeVietnameseTones = (str) => {
                 return str
@@ -1049,51 +1050,64 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
                     .replace(/đ/g, "d")
                     .replace(/Đ/g, "D");
             };
-            // Lấy kích thước thực tế của text box sau khi scale
-            const boundingRect = obj.getBoundingRect();
-            const actualWidth = boundingRect.width;
-            const actualHeight = boundingRect.height;
-            
-            // Tính toán kích thước font dựa trên tỷ lệ thực tế
-            const heightInDots = Math.round(actualHeight * pxToDotY);
-            const widthInDots = Math.round((actualWidth / textContent.length) * pxToDotX); // Chia cho độ dài text để có width per character
-            
-            // Đảm bảo kích thước tối thiểu
-            const fontHeight = Math.max(10, heightInDots);
-            const fontWidth = Math.max(10, widthInDots);
-            
+
             const textNoAccent = removeVietnameseTones(textContent);
-            // Sử dụng ^A0 với cả chiều cao và chiều rộng
-            zpl += `^FO${x},${y}^A0N,${fontHeight},${fontWidth}^FD${textNoAccent}^FS\n`;
+
+            // Tính toán kích thước font chính xác
+            const fontSize = Math.round(obj.fontSize * (obj.scaleY || 1) * pxToDotY);
+            
+            // Tính toán chiều rộng ký tự dựa trên tỷ lệ thực tế
+            const charWidth = Math.round(fontSize * 0.6); // Tỷ lệ width/height của font
+            
+            // Tính toán vị trí dựa trên text alignment
+            let adjustedX = x;
+            const textWidth = textContent.length * charWidth;
+            
+            if (obj.textAlign === 'center') {
+                adjustedX = x + Math.round((w - textWidth) / 2);
+            } else if (obj.textAlign === 'right') {
+                adjustedX = x + (w - textWidth);
+            }
+
+            // Điều chỉnh vị trí y để text được căn giữa theo chiều dọc
+            const lineHeight = fontSize * 1.2; // Thêm khoảng cách giữa các dòng
+            const textHeight = lineHeight; // Cho một dòng
+            const verticalCenter = y + Math.round((h - textHeight) / 2);
+            
+            // Thêm baseline offset để text không bị lệch lên trên
+            const baselineOffset = Math.round(fontSize * 0.2);
+            const adjustedY = verticalCenter + baselineOffset;
+
+            zpl += `^FO${adjustedX},${adjustedY}^A0N,${fontSize},${charWidth}^FD${textNoAccent}^FS\n`;
         }
         // Rect
         else if (obj.type === 'rect') {
-            const sw = obj.strokeWidth || 1;
+            const sw = Math.max(1, Math.round((obj.strokeWidth || 1) * pxToDotX));
             const isFill = obj.fill && obj.fill !== 'transparent' && obj.fill !== 'rgba(0,0,0,0)';
             if (isFill) {
-                zpl += `^FO${x},${y}^GB${w},${h},${sw},F^FS\n`;
+                zpl += `^FO${x},${y}^GB${w},${h},${sw},B,${isFill ? 1 : 0}^FS\n`;
             } else {
-                zpl += `^FO${x},${y}^GB${w},${h},${sw},B^FS\n`;
+                zpl += `^FO${x},${y}^GB${w},${h},${sw}^FS\n`;
             }
         }
         // Circle
         else if (obj.type === 'circle') {
-            // Đường kính thực tế = getScaledWidth(), bán kính = /2
-            const r = Math.round((obj.getScaledWidth ? obj.getScaledWidth() : (obj.radius * 2 * (obj.scaleX || 1))) * ((pxToDotX + pxToDotY) / 2.5));
-            zpl += `^FO${x},${y}^GC${r},B^FS\n`;
+            const diameter = Math.round(obj.radius * 2 * Math.min(obj.scaleX || 1, obj.scaleY || 1) * pxToDotX);
+            const strokeWidth = Math.max(1, Math.round((obj.strokeWidth || 1) * pxToDotX));
+            zpl += `^FO${x},${y}^GC${diameter},${strokeWidth}^FS\n`;
         }
         // Line
         else if (obj.type === 'line') {
-            // Tính lại điểm đầu/cuối theo scale, rồi quy đổi sang dot
-            const x1 = ((obj.x1 || 0) * (obj.scaleX || 1) + left) * pxToDotX;
-            const y1 = ((obj.y1 || 0) * (obj.scaleY || 1) + top) * pxToDotY;
-            const x2 = ((obj.x2 || 0) * (obj.scaleX || 1) + left) * pxToDotX;
-            const y2 = ((obj.y2 || 0) * (obj.scaleY || 1) + top) * pxToDotY;
-            const lw = Math.max(1, Math.round(Math.abs(x2 - x1)));
-            const lh = Math.max(1, Math.round(Math.abs(y2 - y1)));
-            zpl += `^FO${Math.round(x1)},${Math.round(y1)}^GB${lw},${lh},${obj.strokeWidth || 1},B^FS\n`;
+            const strokeWidth = Math.max(1, Math.round((obj.strokeWidth || 1) * pxToDotX));
+            if (Math.abs(obj.x1 - obj.x2) > Math.abs(obj.y1 - obj.y2)) {
+                // Đường ngang
+                zpl += `^FO${x},${y}^GB${w},${strokeWidth},${strokeWidth}^FS\n`;
+            } else {
+                // Đường dọc
+                zpl += `^FO${x},${y}^GB${strokeWidth},${h},${strokeWidth}^FS\n`;
+            }
         }
-        // QR động (group)
+        // QR động
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrField = (obj.variable || '').replace(/[#\{\}]/g, '');
             const qrValue = dynamicData[qrField];
@@ -1106,10 +1120,8 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             const qrX = x + Math.floor((w - qrSize) / 2);
             const qrY = y + Math.floor((h - qrSize) / 2);
             if (qrValue && !preview) {
-                // Nếu có giá trị động và không phải preview, xuất QR thực tế
                 zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrValue}^FS\n`;
             } else {
-                // Nếu preview hoặc không có giá trị, xuất placeholder như cũ
                 zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
                 zpl += `^FO${x},${y}^GB${w},${h},2,B^FS\n`;
                 const fontSize = Math.max(10, Math.floor(qrScale * 4));
@@ -1119,10 +1131,8 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
                 zpl += `^FO${textX},${textY}^A0N,${fontSize},${fontSize}^FD${obj.variable}^FS\n`;
             }
         }
-
-        
-        // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
-        else if (obj.type === 'image' && obj.customType === 'staticQR' && obj._element) {
+        // QR tĩnh và ảnh
+        else if (obj.type === 'image' && obj._element) {
             const printQuality = document.getElementById('printQuality')?.value || 'mono';
             zpl += imageToZPL(obj._element, x, y, w, h, printQuality);
         }

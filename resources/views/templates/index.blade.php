@@ -215,7 +215,7 @@
                                     <div class="card-header py-2 px-3 bg-light border-bottom rounded-top-3">
                                         <span class="fw-semibold"><i class="bi bi-image"></i> Xem trước ZPL</span>
                                     </div>
-                                    <div class="card-body d-flex justify-content-center align-items-center p-2" style="min-height:340px;">
+                                    <div class="card-body d-flex justify-content-center align-items-center">
                                         <div id="zplPreviewBox"
                                             style="background:#fff; border:1px solid #ddd; border-radius:10px; box-shadow:0 2px 8px #0001; display:flex; align-items:center; justify-content:center; width:100%; padding:0; margin:0; overflow:hidden;">
                                             <img id="labelaryPreviewPrint"
@@ -603,7 +603,7 @@
                     </div>
                     <div class="modal-body p-0">
                         <div class="zpl-preview mb-3">
-                            <textarea id="zplCodeTextarea" class="form-control" rows="6" readonly></textarea>
+                            <textarea id="zplCodeTextarea" class="form-control" rows="10" readonly></textarea>
                         </div>
                         <div class="preview-container">
                             <img id="multiLabelPreviewImg" alt="">
