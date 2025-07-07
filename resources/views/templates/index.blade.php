@@ -50,7 +50,6 @@
                 <i class="bi bi-plus-circle"></i> Tạo thiết kế mới
             </button>
 
-
         </div>
 
         <!-- Nút menu mobile -->
@@ -59,7 +58,6 @@
         </button>
         <!-- Các nút thao tác, ẩn trên mobile -->
         <div class="tools d-none d-md-flex">
-
 
             <button class="btn btn-sm btn-success d-flex align-items-center gap-1" onclick="SaveCanvas()">
                 <i class="bi bi-download"></i>Lưu thiết kế
@@ -94,7 +92,6 @@
             </button>
         </div>
     </div>
-
 
     <div class="modal fade" id="printModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered draggable">
@@ -294,7 +291,6 @@
 
 
 
-
     <div class="d-flex">
         <div class="sidebar-canvas d-flex flex-column">
             <div class="sidebar-item" onclick="showPanel('dynamic')">
@@ -331,7 +327,6 @@
                 <span>Khác</span>
             </div>
         </div>
-
 
         <!-- Panel chi tiết -->
         <div id="panel-dynamic" class="sidebar-panel">
@@ -510,7 +505,6 @@
         </div>
 
 
-
         <div class="zoom-control">
             <label for="zoomRange">Zoom:</label>
             <input type="range" id="zoomRange" min="0.2" max="2" step="0.01" value="1">
@@ -586,7 +580,6 @@
             ⏸️
         </button>
 
-
         <!-- Modal preview Multi PDF -->
         <div class="modal fade" id="multiLabelPreviewModal" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -625,7 +618,6 @@
 
 
 
-
     <!-- Bootstrap JS -->
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 <script>
@@ -652,22 +644,31 @@
     <script>
         document.querySelector('#printForm').addEventListener('submit', function(e) {
             const name_design = document.querySelector('.name_design').value;
-            // const json = canvas.toJSON(['customType', 'variable']);
-            const json = canvas.toJSON(['customType', 'variable', 'qrValue']);
-            console.log(JSON.stringify(json),"hoanpppp");
+            // Lấy cấu hình canvas với đầy đủ thông tin
+            const config = window.canvas.toJSON(['customType', 'variable', 'qrValue']);
+            // Thêm kích thước canvas vào config
+            config.canvasWidth = window.canvas.getWidth();
+            config.canvasHeight = window.canvas.getHeight();
+            config.canvasUnit = window.defaultCanvasUnit || 'px';
+            config.canvasZoom = window.canvas.getZoom();
+            config.canvasViewport = window.canvas.viewportTransform;
+
+            // Cập nhật form fields
             document.getElementById('template_name').value = name_design;
-            document.getElementById('template_width').value = canvas.getWidth();
-            document.getElementById('template_height').value = canvas.getHeight();
-            document.getElementById('template_unit').value = window.defaultCanvasUnit || 'px';
-            document.getElementById('template_config').value = JSON.stringify(json);
+            document.getElementById('template_width').value = config.canvasWidth;
+            document.getElementById('template_height').value = config.canvasHeight;
+            document.getElementById('template_unit').value = config.canvasUnit;
+            document.getElementById('template_zoom').value = config.canvasZoom;
+            document.getElementById('template_viewport').value = JSON.stringify(config.canvasViewport);
+            document.getElementById('template_config').value = JSON.stringify(config);
         });
     </script>
     <script>
         // Khởi tạo giá trị mặc định từ PHP
         window.defaultConfig = {
-            width: {{ $width ?? 750 }},
-            height: {{ $height ?? 350 }},
-            unit: '{{ $unit ?? "px" }}',
+            width: {!! $width ?? 750 !!},
+            height: {!! $height ?? 350 !!},
+            unit: '{!! $unit ?? "px" !!}',
             config: {!! isset($config) ? json_encode($config) : 'null' !!}
         };
 
@@ -685,10 +686,17 @@
         // Hàm lưu canvas vào localStorage
         function saveCanvasToLocal() {
             if (!window.canvas) return;
+            
+            // Lấy cấu hình canvas với đầy đủ thông tin
             const config = window.canvas.toJSON(['customType', 'variable', 'qrValue']);
-            // Thêm kích thước canvas vào config
+            // Thêm các thông số canvas
             config.canvasWidth = window.canvas.getWidth();
             config.canvasHeight = window.canvas.getHeight();
+            config.canvasUnit = window.originUnit || 'px';
+            config.canvasZoom = window.canvas.getZoom();
+            config.canvasViewport = window.canvas.viewportTransform;
+            
+            // Lưu cấu hình vào localStorage
             localStorage.setItem('canvas_design', JSON.stringify(config));
             
             // Lưu thêm các thông số riêng
@@ -696,9 +704,9 @@
             if (nameInput) {
                 localStorage.setItem('canvas_design_name', nameInput.value);
             }
-            localStorage.setItem('canvas_design_width', window.canvas.getWidth());
-            localStorage.setItem('canvas_design_height', window.canvas.getHeight());
-            localStorage.setItem('canvas_design_unit', window.originUnit || 'px');
+            localStorage.setItem('canvas_design_width', config.canvasWidth);
+            localStorage.setItem('canvas_design_height', config.canvasHeight);
+            localStorage.setItem('canvas_design_unit', config.canvasUnit);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -812,7 +820,6 @@
             });
         });
     </script>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1024,3 +1031,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
+

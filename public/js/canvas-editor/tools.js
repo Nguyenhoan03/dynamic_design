@@ -513,12 +513,12 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
                     console.log('Image loaded:', img.naturalWidth, 'x', img.naturalHeight);
                 };
                 
-                page.innerHTML = `
-                    <div>Trang ${idx + 1} / ${zplBlocks.length}</div>
-                    <div style="color:#666; font-size:12px; margin-top:5px;">
-                        ${labelWidthInch}" × ${labelHeightInch}" - ${printDpi} dpmm
-                    </div>
-                `;
+                // page.innerHTML = `
+                //     <div>Trang ${idx + 1} / ${zplBlocks.length}</div>
+                //     <div style="color:#666; font-size:12px; margin-top:5px;">
+                //         ${labelWidthInch}" × ${labelHeightInch}" - ${printDpi} dpmm
+                //     </div>
+                // `;
             } else {
                 const errorText = await res.text();
                 console.error('API Error:', errorText);

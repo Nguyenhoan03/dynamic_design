@@ -38,16 +38,17 @@ class TemplateController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'width' => 'required|numeric',
-            'height' => 'required|numeric',
-            'unit' => 'required|string',
-            'viewport_state' => 'nullable|array',
-            'canvas_objects' => 'nullable|array',
-        ]);
+        // dd($request->all());
+        // $validated = $request->validate([
+        //     'name' => 'required|string',
+        //     'width' => 'required|numeric',
+        //     'height' => 'required|numeric',
+        //     'unit' => 'required|string',
+        //     // 'viewport_state' => 'nullable|array',
+        //     // 'canvas_objects' => 'nullable|array',
+        // ]);
 
-        $template = Template::create($validated);
+        $template = Template::create($request->all());
 
         return response()->json($template);
     }
@@ -135,17 +136,12 @@ class TemplateController extends Controller
         $height = $request->input('height');
         $config = $request->input('config');
 
-        // Thêm kích thước canvas vào config
-        $configArray = is_string($config) ? json_decode($config, true) : $config;
-        $configArray['canvasWidth'] = $width;
-        $configArray['canvasHeight'] = $height;
-
         $template = Template::where('name', $name)->first();
 
         if ($template) {
-            if ($template->config !== $configArray) {
+            if ($template->config !== $config) {
                 $template->update([
-                    'config' => $configArray,
+                    'config' => $config,
                     'width' => $width,
                     'height' => $height,
                 ]);
@@ -157,7 +153,7 @@ class TemplateController extends Controller
                 'name' => $name,
                 'width' => $width,
                 'height' => $height,
-                'config' => $configArray,
+                'config' => $config,
             ]);
             return response()->json(['status' => 'created', 'template' => $template]);
         }
@@ -166,8 +162,9 @@ class TemplateController extends Controller
     /**
      * Tạo mới hoặc cập nhật template theo tên.
      */
-    private function createOrUpdateTemplate($name, $width, $height, $unit, $config, $elements = [], $id = null)
+    private function createOrUpdateTemplate($name, $width, $height,$unit, $config, $elements = [], $id = null)
     {
+
         if ($id) {
             $template = Template::find($id);
             if ($template) {
@@ -186,15 +183,10 @@ class TemplateController extends Controller
             $template->name = $name;
         }
 
-        // Thêm kích thước canvas vào config
-        $configArray = is_string($config) ? json_decode($config, true) : $config;
-        $configArray['canvasWidth'] = $width;
-        $configArray['canvasHeight'] = $height;
-
         $template->width = $width;
         $template->height = $height;
         $template->unit = $unit;
-        $template->config = $configArray;
+        $template->config = $config;
         $template->save();
 
         // Nếu có elements thì cập nhật lại
