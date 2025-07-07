@@ -844,7 +844,43 @@ function previewZPL() {
         return;
     }
 
-    // Lấy và kiểm tra các thông số
+    // Lấy canvas hiện tại
+    const canvas = window.canvas;
+    if (!canvas) {
+        console.error('Không tìm thấy canvas');
+        return;
+    }
+
+    // Lấy viewport transform để tính toán zoom và pan
+    const vt = canvas.viewportTransform;
+    if (!vt) {
+        console.error('Không tìm thấy viewportTransform');
+        return;
+    }
+
+    // Lấy zoom level và pan
+    const zoom = vt[0];  // Tỷ lệ zoom hiện tại
+    const translateX = vt[4];
+    const translateY = vt[5];
+
+    // Tính kích thước thực của viewport (đã tính zoom)
+    const viewportWidth = canvas.width / zoom;
+    const viewportHeight = canvas.height / zoom;
+
+    // Lấy và kiểm tra preview elements
+    const previewBox = document.getElementById('zplPreviewBox');
+    const previewImg = document.getElementById('labelaryPreviewPrint');
+    
+    if (!previewBox || !previewImg) {
+        console.error('Không tìm thấy phần tử preview');
+        return;
+    }
+
+    // Set kích thước cho preview box theo kích thước thực của viewport
+    previewBox.style.width = viewportWidth + 'px';
+    previewBox.style.height = viewportHeight + 'px';
+
+    // Lấy thông số label size từ input
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
     const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
     const labelWidth = parseFloat(document.getElementById('labelWidthPrint').value);
@@ -860,15 +896,6 @@ function previewZPL() {
     
     if (wInch <= 0 || hInch <= 0) {
         console.error('Kích thước inch không hợp lệ:', { wInch, hInch });
-        return;
-    }
-
-    // Lấy và kiểm tra preview elements
-    const previewBox = document.getElementById('zplPreviewBox');
-    const previewImg = document.getElementById('labelaryPreviewPrint');
-    
-    if (!previewBox || !previewImg) {
-        console.error('Không tìm thấy phần tử preview');
         return;
     }
 
@@ -897,19 +924,18 @@ function previewZPL() {
             if (previewRotation) {
                 previewImg.style.transform = `rotate(${previewRotation}deg)`;
             }
-            console.log('Preview image loaded:', {
-                naturalWidth: this.naturalWidth,
-                naturalHeight: this.naturalHeight,
-                width: this.width,
-                height: this.height,
-                boxWidth: previewBox.offsetWidth,
-                boxHeight: previewBox.offsetHeight
+            
+            console.log('Preview loaded:', {
+                viewportSize: `${viewportWidth}x${viewportHeight}px`,
+                zoom,
+                previewSize: `${this.naturalWidth}x${this.naturalHeight}px`,
+                boxSize: `${previewBox.offsetWidth}x${previewBox.offsetHeight}px`
             });
         };
         
         previewImg.onerror = function(err) {
             console.error('Lỗi load ảnh:', err);
-            alert('Không thể tải ảnh preview');
+            // alert('Không thể tải ảnh preview');
         };
         
         previewImg.src = url;
