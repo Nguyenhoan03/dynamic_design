@@ -832,7 +832,13 @@ function rotatePreview() {
 }
 
 function previewZPL() {
-    const zpl = document.getElementById('zplPrintOutput').value;
+    // Lấy ZPL từ textarea
+    const textarea = document.getElementById('zplPrintOutput');
+    const zpl = textarea ? textarea.value.trim() : '';
+    
+    // Nếu không có ZPL, return
+    if (!zpl) return;
+
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
     const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
     
@@ -841,6 +847,17 @@ function previewZPL() {
     const labelHeight = parseFloat(document.getElementById('labelHeightPrint').value) || 6;
     const wInch = convertToInch(labelWidth, labelUnit);
     const hInch = convertToInch(labelHeight, labelUnit);
+
+    // Hiển thị cảnh báo nếu ZPL đã được sửa thủ công
+    const zplWarning = document.getElementById('zplWarning');
+    if (zplWarning) {
+        const originalZPL = convertCanvasToZPL(window.canvas, labelWidth, labelHeight, dpi);
+        if (zpl !== originalZPL) {
+            zplWarning.style.display = 'block';
+        } else {
+            zplWarning.style.display = 'none';
+        }
+    }
 
     fetch(`https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${wInch}x${hInch}/0/`, {
         method: "POST",

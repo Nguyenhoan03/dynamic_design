@@ -855,6 +855,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 @endif
+<!-- //Tự động cập nhật preview khi thay đổi DPI, quality, kích thước nhãn -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Thêm event listeners cho các thông số in
+    const printSettings = ['dpiSelectPrint', 'printQuality', 'labelWidthPrint', 'labelHeightPrint', 'labelUnit'];
+    printSettings.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                if (typeof previewZPL === 'function') {
+                    previewZPL();
+                }
+            });
+            // Thêm cho input number
+            if (element.type === 'number') {
+                element.addEventListener('input', function() {
+                    if (typeof previewZPL === 'function') {
+                        previewZPL();
+                    }
+                });
+            }
+        }
+    });
+});
+</script>
  </script>
  
 
