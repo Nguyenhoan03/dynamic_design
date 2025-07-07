@@ -32,50 +32,32 @@ class TemplateController extends Controller
             'width' => $template->width,
             'height' => $template->height,
             'unit' => $template->unit ?? 'px',
+
         ]);
 
     }
 
     public function store(Request $request)
     {
-        // dd($request->all());
-        // $validated = $request->validate([
-        //     'name' => 'required|string',
-        //     'width' => 'required|numeric',
-        //     'height' => 'required|numeric',
-        //     'unit' => 'required|string',
-        //     // 'viewport_state' => 'nullable|array',
-        //     // 'canvas_objects' => 'nullable|array',
-        // ]);
+        $id = $request->input('template_id');
+        $template = $this->createOrUpdateTemplate(
+            $request->input('name'),
+            $request->input('width'),
+            $request->input('height'),
+            $request->input('unit'),
+            $request->input('config'),
+            $request->input('elements', []),
+            $id
+        );
 
-        $template = Template::create($request->all());
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'template' => $template
+            ]);
+        }
 
-        return response()->json($template);
-    }
-
-    public function update(Request $request, Template $template)
-    {
-        $validated = $request->validate([
-            'name' => 'sometimes|string',
-            'width' => 'sometimes|numeric',
-            'height' => 'sometimes|numeric',
-            'unit' => 'sometimes|string',
-            'viewport_state' => 'nullable|array',
-            'canvas_objects' => 'nullable|array',
-        ]);
-
-        $template->update($validated);
-
-        return response()->json($template);
-    }
-
-    public function show(Template $template)
-    {
-        return response()->json([
-            'template' => $template,
-            'viewport_state' => $template->viewport_state,
-            'canvas_objects' => $template->canvas_objects,
-        ]);
+        return redirect()->route('templates.index')->with('success', 'Template saved successfully!');
     }
 
     public function printBatch(Request $request)

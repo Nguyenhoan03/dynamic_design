@@ -510,20 +510,56 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
             if (res.ok) {
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
-                img.src = url;
-                img.onload = () => {
-                    // Quy đổi đơn vị sang px để set width/height đúng tỷ lệ
-                    let pxW, pxH;
-                    if (document.getElementById('labelUnit').value === 'mm') {
+                // Tạo/thay thế box bọc img
+                let box = img.parentElement;
+                if (!box.classList.contains('preview-img-box')) {
+                    box = document.createElement('div');
+                    box.className = 'preview-img-box';
+                    img.parentElement.replaceChild(box, img);
+                    box.appendChild(img);
+                }
+                // Lấy width/height thực tế từ canvas nếu có, ưu tiên canvas
+                let canvasWidth = window.canvas ? window.canvas.getWidth() : null;
+                let canvasHeight = window.canvas ? window.canvas.getHeight() : null;
+                let unit = document.getElementById('labelUnit')?.value || 'inch';
+                let pxW, pxH;
+                if (canvasWidth && canvasHeight) {
+                    if (unit === 'mm') {
+                        pxW = (canvasWidth / 3.7795275591) * 3.7795275591;
+                        pxH = (canvasHeight / 3.7795275591) * 3.7795275591;
+                    } else if (unit === 'cm') {
+                        pxW = (canvasWidth / 37.795275591) * 37.795275591;
+                        pxH = (canvasHeight / 37.795275591) * 37.795275591;
+                    } else if (unit === 'inch') {
+                        pxW = (canvasWidth / 96) * 96;
+                        pxH = (canvasHeight / 96) * 96;
+                    } else {
+                        pxW = canvasWidth;
+                        pxH = canvasHeight;
+                    }
+                } else {
+                    if (unit === 'mm') {
                         pxW = labelWidthInch * 25.4 * 3.7795275591 / 25.4;
                         pxH = labelHeightInch * 25.4 * 3.7795275591 / 25.4;
-                    } else if (document.getElementById('labelUnit').value === 'cm') {
+                    } else if (unit === 'cm') {
                         pxW = labelWidthInch * 2.54 * 37.795275591 / 2.54;
                         pxH = labelHeightInch * 2.54 * 37.795275591 / 2.54;
                     } else {
                         pxW = labelWidthInch * 96;
                         pxH = labelHeightInch * 96;
                     }
+                }
+                box.style.width = pxW + 'px';
+                box.style.height = pxH + 'px';
+                box.style.maxWidth = '100%';
+                box.style.maxHeight = '80vh';
+                box.style.display = 'flex';
+                box.style.alignItems = 'center';
+                box.style.justifyContent = 'center';
+                box.style.background = '#fff';
+                box.style.margin = '0 auto';
+                img.src = url;
+                img.onload = () => {
                     img.style.width = pxW + 'px';
                     img.style.height = pxH + 'px';
                     img.style.maxWidth = '100%';
