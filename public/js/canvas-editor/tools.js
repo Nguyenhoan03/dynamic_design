@@ -123,10 +123,23 @@ function changeCanvasSize() {
     }
 
     updateCanvasInfo();
+
+    // Cập nhật kích thước label và preview ZPL
+    if (u === 'inch') {
+        document.getElementById('labelWidthPrint').value = w;
+        document.getElementById('labelHeightPrint').value = h;
+        document.getElementById('labelUnit').value = 'inch';
+    } else if (u === 'mm') {
+        document.getElementById('labelWidthPrint').value = w;
+        document.getElementById('labelHeightPrint').value = h;
+        document.getElementById('labelUnit').value = 'mm';
+    } else if (u === 'cm') {
+        document.getElementById('labelWidthPrint').value = w;
+        document.getElementById('labelHeightPrint').value = h;
+        document.getElementById('labelUnit').value = 'cm';
+    }
+    redrawZPL(); // Cập nhật lại ZPL và preview
 }
-
-
-
 
 function setFont(font) {
     const obj = window.canvas.getActiveObject();
@@ -135,7 +148,6 @@ function setFont(font) {
         window.canvas.requestRenderAll();
     }
 }
-
 
 function selectTool(tool) {
     document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
@@ -172,7 +184,6 @@ function playVideo() {
         window.lastVideoObject._element.play();
     }
 }
-
 
 function changeColor() {
     let colorInput = document.getElementById('colorPicker');
@@ -218,7 +229,6 @@ function changeColor() {
     colorInput.focus();
     colorInput.click();
 }
-
 
 function checkZPLTextareaWarning() {
     const textarea = document.getElementById('zplPrintOutput');
@@ -329,8 +339,6 @@ function goToLineInTextarea(textarea, lineNumber) {
         div.remove(); // cleanup
     });
 }
-
-
 
 document.getElementById('downloadExcelTemplate').addEventListener('click', function () {
     // Lấy danh sách trường động từ canvas

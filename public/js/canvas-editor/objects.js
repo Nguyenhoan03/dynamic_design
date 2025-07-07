@@ -578,8 +578,12 @@ function openPrintModal() {
         const zpl = convertCanvasToZPL(window.canvas, labelWidthInch, labelHeightInch, dpi);
         document.getElementById('zplPrintOutput').value = zpl;
         document.getElementById('labelaryPreviewPrint').src = '';
+
+        // Mở modal
         const printModal = new bootstrap.Modal(document.getElementById('printModal'));
         printModal.show();
+
+        updatePreviewSize();
         previewZPL();
     }, 200);
 }
@@ -831,6 +835,33 @@ function rotatePreview() {
     }
 }
 
+function updatePreviewSize() {
+    const canvas = window.canvas;
+    if (!canvas) return;
+
+    const previewContainer = document.querySelector('.preview-container');
+    const previewBox = document.getElementById('zplPreviewBox');
+    const previewImg = document.getElementById('labelaryPreviewPrint');
+    
+    if (!previewContainer || !previewBox || !previewImg) return;
+
+    // Lấy kích thước thực của canvas
+    const canvasWidth = canvas.getWidth();
+    const canvasHeight = canvas.getHeight();
+
+    // Cập nhật kích thước cho các phần tử
+    previewContainer.style.width = canvasWidth + 'px';
+    previewContainer.style.height = canvasHeight + 'px';
+    previewBox.style.width = canvasWidth + 'px';
+    previewBox.style.height = canvasHeight + 'px';
+    previewImg.style.width = canvasWidth + 'px';
+    previewImg.style.height = canvasHeight + 'px';
+}
+
+// Gọi hàm khi canvas thay đổi kích thước
+window.canvas.on('resize', updatePreviewSize);
+
+// Sửa lại hàm previewZPL để gọi updatePreviewSize
 function previewZPL() {
     const textarea = document.getElementById('zplPrintOutput');
     const zpl = textarea ? textarea.value.trim() : '';
@@ -843,6 +874,9 @@ function previewZPL() {
         console.error('ZPL không hợp lệ - phải bắt đầu bằng ^XA và kết thúc bằng ^XZ');
         return;
     }
+
+    // Cập nhật kích thước preview trước khi tải ảnh mới
+    updatePreviewSize();
 
     // Lấy canvas hiện tại
     const canvas = window.canvas;

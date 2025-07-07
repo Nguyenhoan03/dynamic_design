@@ -212,10 +212,10 @@
                             <!-- Preview bên phải -->
                             <div class="col-md-9">
                                 <div class="card shadow-sm border-0 h-100">
-                                    <div class="card-header py-2 px-3 bg-light border-bottom rounded-top-3">
+                                    <div class="card-header py-2 px-3 bg-light">
                                         <span class="fw-semibold"><i class="bi bi-image"></i> Xem trước ZPL</span>
                                     </div>
-                                    <div class="card-body preview-body">
+                                    <div class="card-body preview-body p-0">
                                         <div class="preview-container">
                                             <div id="zplPreviewBox">
                                                 <img id="labelaryPreviewPrint" alt="ZPL Preview">

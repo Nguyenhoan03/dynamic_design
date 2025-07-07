@@ -999,45 +999,36 @@ textarea.form-control {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+   
     overflow: auto;
 }
 
 .preview-container {
-    width: 100%;
-    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    overflow: hidden;
+    margin: 0;
+    background: #f5f5f5;
 }
 
 #zplPreviewBox {
-    max-width: 500px;
-    max-height: 500px;
-    width: 100%;
-    height: 100%;
     background: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
 }
 
 #labelaryPreviewPrint {
-    max-width: 100%;
-    max-height: 100%;
     object-fit: contain;
     display: block;
 }
 
 .card-body.preview-body {
-    height: 600px;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    background: #f5f5f5;
 }
 
 #zplLinearWarning {
@@ -1178,7 +1169,7 @@ textarea.form-control {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 0;
     background: #f8f9fa;
     overflow: auto;
 }
@@ -1194,4 +1185,15 @@ textarea.form-control {
     object-fit: contain;
     display: block;
     margin: 0 auto;
+}
+
+/* Thêm style cho tab ZPL */
+#zplTabPane .row,
+#zplTabPane .col-md-3,
+#zplTabPane .col-md-9,
+#zplTabPane .card,
+#zplTabPane .card-header {
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
 }
