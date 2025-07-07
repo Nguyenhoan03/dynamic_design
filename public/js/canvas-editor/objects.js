@@ -1119,20 +1119,31 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             // Căn giữa QR trong khung
             const qrX = x + Math.floor((w - qrSize) / 2);
             const qrY = y + Math.floor((h - qrSize) / 2);
+            
             if (qrValue && !preview) {
                 zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrValue}^FS\n`;
             } else {
+                // Placeholder QR
                 zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
+                // Vẽ khung
                 zpl += `^FO${x},${y}^GB${w},${h},2,B^FS\n`;
-                const fontSize = Math.max(10, Math.floor(qrScale * 4));
+                
+                // Tính toán font size và vị trí text tương đối với khung
+                const fontSize = Math.min(Math.floor(h / 3), Math.floor(w / (obj.variable.length * 0.7)));
                 const textWidth = obj.variable.length * fontSize * 0.6;
+                
+                // Căn giữa text theo cả chiều ngang và dọc
                 const textX = x + Math.floor((w - textWidth) / 2);
-                const textY = y + Math.floor((h - fontSize) / 2);
-                zpl += `^FO${textX},${textY}^A0N,${fontSize},${fontSize}^FD${obj.variable}^FS\n`;
+                const textY = y + Math.floor((h - fontSize) / 2) + Math.floor(fontSize * 0.2); // Thêm offset 20% fontSize để text không bị lệch lên trên
+                
+                // Thêm text với font size và vị trí đã tính
+                zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${obj.variable}^FS\n`;
             }
         }
-        // QR tĩnh và ảnh
-        else if (obj.type === 'image' && obj._element) {
+
+        
+        // QR tĩnh (xuất bằng ^BQN, không dùng ảnh)
+        else if (obj.type === 'image' && obj.customType === 'staticQR' && obj._element) {
             const printQuality = document.getElementById('printQuality')?.value || 'mono';
             zpl += imageToZPL(obj._element, x, y, w, h, printQuality);
         }

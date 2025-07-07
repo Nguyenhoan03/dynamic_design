@@ -606,23 +606,17 @@ function processQRInZPL(zpl) {
     if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
     if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
 
-    // Xử lý các placeholder QR code với scale và vị trí tốt hơn
-    return zpl.replace(/\^FX_QR_FIELD:([^,]+),(\d+),(\d+),(\d+)/g, (match, value, x, y, scale) => {
-        // Tăng scale để QR code rõ ràng hơn
-        const adjustedScale = Math.max(scale * 2, 10); // Đảm bảo scale tối thiểu là 10
+    // Xử lý các placeholder QR code với scale theo tỷ lệ thực
+    return zpl.replace(/\^FX_QR_FIELD:([^,]+),(\d+),(\d+),(\d+)/g, (match, field, x, y, scale) => {
+        // Lấy thông số in từ form
+        const printDpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
         
-        // Tính toán kích thước QR code dựa trên scale
-        const qrSize = adjustedScale * 24; // 24 là kích thước cơ bản của module QR
-        
-        // Điều chỉnh vị trí y để căn giữa QR trong khung
-        const adjustedY = Math.max(0, y - Math.floor(qrSize * 0.1)); // Điều chỉnh lên trên 10% kích thước
-        
-        // ^BQ format: ^BQa,b,c,d
-        // a: Orientation (N=normal)
-        // b: Model (2)
-        // c: Magnification factor (1-10)
-        // d: Error correction level (H=high 30%, Q=medium 25%, M=medium 15%, L=low 7%)
-        return `^FO${x},${adjustedY}^BQN,2,${adjustedScale},H^FDLA,${value}^FS`;
+        // Tính toán scale tối thiểu dựa trên DPI
+        const minScale = Math.max(2, Math.round(printDpi / 8));
+        const adjustedScale = Math.max(minScale, parseInt(scale));
+
+        // Tạo QR code với error correction H (30%)
+        return `^FO${x},${y}^BQN,2,${adjustedScale},H^FDLA,#{${field}}^FS`;
     });
 }
 

@@ -603,7 +603,7 @@
                     </div>
                     <div class="modal-body p-0">
                         <div class="zpl-preview mb-3">
-                            <textarea id="zplCodeTextarea" class="form-control" rows="10" readonly></textarea>
+                            <textarea id="zplCodeTextarea" class="form-control" rows="15" readonly></textarea>
                         </div>
                         <div class="preview-container">
                             <img id="multiLabelPreviewImg" alt="">
