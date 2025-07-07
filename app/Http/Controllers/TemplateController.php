@@ -38,25 +38,43 @@ class TemplateController extends Controller
 
     public function store(Request $request)
     {
-        $id = $request->input('template_id');
-        $template = $this->createOrUpdateTemplate(
-            $request->input('name'),
-            $request->input('width'),
-            $request->input('height'),
-            $request->input('unit'),
-            $request->input('config'),
-            $request->input('elements', []),
-            $id
-        );
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'width' => 'required|numeric',
+            'height' => 'required|numeric',
+            'unit' => 'required|string',
+            'viewport_state' => 'nullable|array',
+            'canvas_objects' => 'nullable|array',
+        ]);
 
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'template' => $template
-            ]);
-        }
+        $template = Template::create($validated);
 
-        return redirect()->route('templates.index')->with('success', 'Template saved successfully!');
+        return response()->json($template);
+    }
+
+    public function update(Request $request, Template $template)
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|string',
+            'width' => 'sometimes|numeric',
+            'height' => 'sometimes|numeric',
+            'unit' => 'sometimes|string',
+            'viewport_state' => 'nullable|array',
+            'canvas_objects' => 'nullable|array',
+        ]);
+
+        $template->update($validated);
+
+        return response()->json($template);
+    }
+
+    public function show(Template $template)
+    {
+        return response()->json([
+            'template' => $template,
+            'viewport_state' => $template->viewport_state,
+            'canvas_objects' => $template->canvas_objects,
+        ]);
     }
 
     public function printBatch(Request $request)
