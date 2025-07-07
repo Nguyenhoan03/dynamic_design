@@ -1003,24 +1003,41 @@ textarea.form-control {
     overflow: auto;
 }
 
-#zplPreviewBox {
-    background: #fff;
-    border: 1px solid #ddd;
-    display: inline-block;
-    position: relative;
+.preview-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
     overflow: hidden;
-    transform-origin: center center;
+}
+
+#zplPreviewBox {
+    max-width: 500px;
+    max-height: 500px;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
 #labelaryPreviewPrint {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     display: block;
-    transform-origin: center center;
+}
+
+.card-body.preview-body {
+    height: 600px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #zplLinearWarning {

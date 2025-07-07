@@ -215,10 +215,10 @@
                                     <div class="card-header py-2 px-3 bg-light border-bottom rounded-top-3">
                                         <span class="fw-semibold"><i class="bi bi-image"></i> Xem trước ZPL</span>
                                     </div>
-                                    <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 500px; padding: 0;">
+                                    <div class="card-body preview-body">
                                         <div class="preview-container">
-                                            <div id="zplPreviewBox" style="width: 100%; height: 100%; background: #fff;">
-                                                <img id="labelaryPreviewPrint" style="width: 100%; height: 100%; object-fit: contain;" alt="ZPL Preview">
+                                            <div id="zplPreviewBox">
+                                                <img id="labelaryPreviewPrint" alt="ZPL Preview">
                                             </div>
                                         </div>
                                     </div>
