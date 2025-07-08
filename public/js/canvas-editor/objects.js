@@ -1228,16 +1228,16 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${placeholder}^FS\n`;
 
         // Nếu là preview thì vẽ thêm viền + text
-        if (preview) {
-            zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
-            zpl += `^FO${zplX},${zplY}^GB${zplW},${zplH},2^FS\n`;
+        // if (preview) {
+        //     zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
+        //     zpl += `^FO${zplX},${zplY}^GB${zplW},${zplH},2^FS\n`;
 
-            const fontSize = Math.min(Math.floor(zplH / 3), Math.floor(zplW / (placeholder.length * 0.7)));
-            const textWidth = placeholder.length * fontSize * 0.6;
-            const textX = zplX + Math.floor((zplW - textWidth) / 2);
-            const textY = zplY + Math.floor((zplH - fontSize) / 2) + Math.floor(fontSize * 0.2);
-            zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${placeholder}^FS\n`;
-        }
+        //     const fontSize = Math.min(Math.floor(zplH / 3), Math.floor(zplW / (placeholder.length * 0.7)));
+        //     const textWidth = placeholder.length * fontSize * 0.6;
+        //     const textX = zplX + Math.floor((zplW - textWidth) / 2);
+        //     const textY = zplY + Math.floor((zplH - fontSize) / 2) + Math.floor(fontSize * 0.2);
+        //     zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${placeholder}^FS\n`;
+        // }
     }
 }
 
