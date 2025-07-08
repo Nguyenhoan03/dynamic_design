@@ -699,7 +699,7 @@ async function downloadMultiLabelPDF() {
 function downloadEPL() {
     const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
     const labelWidth = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
-    const labelHeight = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+    const labelHeight = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6
     const wInch = convertToInch(labelWidth, labelUnit);
     const hInch = convertToInch(labelHeight, labelUnit);
     const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
@@ -1113,9 +1113,9 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
     if (!vt) return '^XA\n^XZ';
 
     // Ma trận transform: [scaleX, skewX, skewY, scaleY, translateX, translateY]
-    const zoom = vt[0];  // Tỷ lệ zoom (scaleX = scaleY trong trường hợp này)
-    const translateX = vt[4];  // Pan X
-    const translateY = vt[5];  // Pan Y
+    const zoom = vt[0];
+    const translateX = vt[4];
+    const translateY = vt[5];
 
     // 3. Tính toán viewport bounds (vùng nhìn thấy trên canvas)
     const canvasWidth = canvas.width;
@@ -1135,9 +1135,9 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         labelH / viewportHeight
     );
 
-    // 5. Tính offset để căn giữa (nếu cần)
-    const offsetX = preview ? 0 : (labelW - (viewportWidth * scaleToZPL)) / 2;
-    const offsetY = preview ? 0 : (labelH - (viewportHeight * scaleToZPL)) / 2;
+    // 5. Luôn căn giữa nội dung canvas vào label (không dùng preview flag)
+    const offsetX = (labelW - (viewportWidth * scaleToZPL)) / 2;
+    const offsetY = (labelH - (viewportHeight * scaleToZPL)) / 2;
 
     // 6. Xử lý từng object
     canvas.getObjects().forEach(obj => {
