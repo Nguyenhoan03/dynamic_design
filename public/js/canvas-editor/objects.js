@@ -975,7 +975,6 @@ function previewZPL() {
                 previewImg.style.width = `${labelPixelWidth}px`;
                 previewImg.style.height = `${labelPixelHeight}px`;
                 previewImg.style.maxWidth = '100%';
-                previewImg.style.maxHeight = 'none';
                 previewImg.style.objectFit = 'contain';
                 previewImg.style.display = 'block';
                 previewImg.style.margin = '0 auto';

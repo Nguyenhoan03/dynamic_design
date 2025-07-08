@@ -1024,8 +1024,7 @@ textarea.form-control {
     justify-content: center;
     align-items: center;
     width: auto;
-    height: auto!important;
-    overflow: auto;
+   
     margin: 0 auto;
     
 }
