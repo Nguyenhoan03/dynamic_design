@@ -1172,15 +1172,18 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             const fontSizeZPL = Math.round(fontSizeCanvas * zoomRatio);
 
             // Cho chữ "rộng hơn một chút" – tăng hệ số chiều ngang
-            const charWidth = Math.round(fontSizeZPL * 0.7);  // thay vì 0.6
+            const charWidth = Math.round(fontSizeZPL * 0.7);  // hệ số sát thực tế font A0N
 
-            let textX = zplX;
             const textW = text.length * charWidth;
+            let textX;
 
-            if (obj.textAlign === 'center') {
-                textX += Math.round((zplW - textW) / 2);
+            // Xử lý căn lề cho text
+            if (obj.textAlign === 'left') {
+                textX = zplX + Math.round((zplW - textW) / 2);
             } else if (obj.textAlign === 'right') {
-                textX += zplW - textW;
+                textX = zplX + zplW - textW;
+            } else { // căn trái hoặc mặc định
+                textX = zplX;
             }
 
             // Giữ đúng khoảng cách từ top (không cộng padding 0.15 nữa)
