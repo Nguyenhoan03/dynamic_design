@@ -129,7 +129,7 @@
                         <div class="tab-pane fade show active" id="pdfTabPane" role="tabpanel">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Xem trước PDF:</label>
-                            <img id="canvasPreview" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;align-items: center;justify-content: center;margin: 0 auto;">
+                            <img id="canvasPreview" style="align-items: center;justify-content: center;margin: 0 auto;">
                             </div>
                            
                         </div>

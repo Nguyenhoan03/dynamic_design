@@ -966,24 +966,29 @@ function previewZPL() {
                 const imgWidth = this.naturalWidth;
                 const imgHeight = this.naturalHeight;
 
-                // Tính zoom để fit trong modal hoặc preview container
-                const containerWidth = previewBox.clientWidth;
-                const zoom = Math.min(containerWidth / imgWidth, 1); // không scale vượt 100%
+                const dpmm = dpi;
+                const dpiReal = dpmm * 25.4; // Convert về dots/inch
 
-                // Cập nhật ảnh
-                previewImg.style.width = `${imgWidth * zoom}px`;
-                previewImg.style.height = `${imgHeight * zoom}px`;
+                const labelPixelWidth = Math.round(wInch * dpiReal);
+                const labelPixelHeight = Math.round(hInch * dpiReal);
+
+                previewImg.style.width = `${labelPixelWidth}px`;
+                previewImg.style.height = `${labelPixelHeight}px`;
+                previewImg.style.maxWidth = '100%';
+                previewImg.style.maxHeight = '100%';
                 previewImg.style.objectFit = 'contain';
-                previewImg.style.margin = '0';
+                previewImg.style.display = 'block';
+                previewImg.style.margin = '0 auto';
                 previewImg.style.padding = '0';
                 previewImg.style.transform = previewRotation ? `rotate(${previewRotation}deg)` : 'none';
 
                 console.log('Preview loaded:', {
                     previewSize: `${imgWidth}x${imgHeight}px`,
-                    containerSize: `${containerWidth}px`,
-                    zoom
+                    labelSize: `${labelPixelWidth}x${labelPixelHeight}px`,
+                    dpiReal
                 });
             };
+
 
 
             previewImg.onerror = function (err) {
