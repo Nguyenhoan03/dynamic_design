@@ -407,6 +407,19 @@ async function onMultiPDFClick() {
     previewMultiLabelPDF(zplBlocks, width, height, dpi);
 }
 
+function updateDynamicFieldsLabel() {
+    const fields = getDynamicFieldsFromCanvas();
+    const labelSpan = document.getElementById('dynamic-fields-label');
+    if (labelSpan) {
+        labelSpan.textContent = fields.length ? fields.join(',') : '';
+    }
+    // Nếu cần truyền fields lên server:
+    const fieldsInput = document.getElementById('fields');
+    if (fieldsInput) {
+        fieldsInput.value = fields.join(',');
+    }
+}
+
 function getDataRowsFromCSVOrExcel() {
     // Lấy dynamic fields từ label (hoặc từ getDynamicFieldsFromCanvas)
     const fieldsLabel = document.getElementById('dynamic-fields-label');

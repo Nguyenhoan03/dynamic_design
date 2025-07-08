@@ -210,9 +210,8 @@ window.canvas.on('selection:cleared', () => {
 // Đăng ký hàm ra window để gọi từ HTML
 
 function addDynamicText(content) {
-    // Thêm hậu tố _text nếu chưa có
-    let field = content.replace(/[#\{\}]/g, '');
-    if (!field.endsWith('_text')) field += '_text';
+    // Không thêm hậu tố _text nữa, giữ nguyên tên biến
+    let field = content.replace(/[#{}]/g, '');
     const text = new fabric.Textbox(`#{${field}}`, {
         left: 120, top: 60, fontSize: 22, fill: '#222', width: 200, fontFamily: 'DejaVu Sans',
         customType: 'dynamic',
@@ -235,8 +234,7 @@ function promptDynamicField() {
 function addDynamicQR() {
     let field = prompt('Nhập tên biến QR (không dấu, không khoảng trắng):');
     if (field && /^[a-zA-Z0-9_]+$/.test(field)) {
-        // Thêm hậu tố _qr nếu chưa có
-        if (!field.endsWith('_qr')) field += '_qr';
+        // Không thêm hậu tố _qr nữa, giữ nguyên tên biến
         const rect = new fabric.Rect({
             width: 70, height: 70, fill: '#eee', stroke: '#333', strokeWidth: 1
         });
@@ -259,7 +257,7 @@ function getDynamicFieldsFromCanvas() {
         ['text', 'variable'].forEach(key => {
             if (typeof obj[key] === 'string') {
                 (obj[key].match(/#\{(.*?)\}/g) || []).forEach(m => {
-                    const field = m.replace(/[#\{\}]/g, '');
+                    const field = m.replace(/[#{}]/g, ''); // Không loại bỏ hậu tố, chỉ loại bỏ ký tự đặc biệt
                     if (!exists.has(field)) {
                         exists.add(field);
                         fields.push(field);
@@ -269,7 +267,7 @@ function getDynamicFieldsFromCanvas() {
         });
         // Nếu là group QR động thì lấy đúng tên biến QR động từ obj.variable
         if (obj.type === 'group' && obj.customType === 'dynamicQR') {
-            const qrField = (obj.variable || '').replace(/[#\{\}]/g, '');
+            const qrField = (obj.variable || '').replace(/[#{}]/g, '');
             if (qrField && !exists.has(qrField)) {
                 exists.add(qrField);
                 fields.push(qrField);
