@@ -39,6 +39,9 @@ function addText() {
         fontFamily: 'Arial',
         textAlign: 'center'
     });
+    const padding = 4;
+    const newWidth = text.calcTextWidth() + padding;
+    text.set({ width: newWidth });
     window.canvas.add(text).setActiveObject(text);
 }
 
@@ -218,6 +221,9 @@ function addDynamicText(content) {
         textAlign: 'center',
         variable: `#{${field}}`
     });
+    const padding = 4;
+    const newWidth = text.calcTextWidth() + padding;
+    text.set({ width: newWidth });
     window.canvas.add(text).setActiveObject(text);
     updateDynamicFieldsLabel();
 }
@@ -1198,46 +1204,46 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         }
         // QR Code
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
-    const qrField = (obj.variable || '').replace(/[#\{\}]/g, '');
-    const qrValue = dynamicData[qrField];
+            const qrField = (obj.variable || '').replace(/[#\{\}]/g, '');
+            const qrValue = dynamicData[qrField];
 
-    // Tính QR size theo tỷ lệ thực tế
-    const moduleCount = 21;
-    const minModuleSize = 2;
-    let qrScale = Math.floor(Math.min(zplW, zplH) / moduleCount);
-    if (qrScale < minModuleSize) qrScale = minModuleSize;
+            // Tính QR size theo tỷ lệ thực tế
+            const moduleCount = 21;
+            const minModuleSize = 2;
+            let qrScale = Math.floor(Math.min(zplW, zplH) / moduleCount);
+            if (qrScale < minModuleSize) qrScale = minModuleSize;
 
-    const qrSize = qrScale * moduleCount;
+            const qrSize = qrScale * moduleCount;
 
-    let qrX = zplX;
-    let qrY = zplY;
+            let qrX = zplX;
+            let qrY = zplY;
 
-    if (qrSize <= zplW && qrSize <= zplH) {
-        qrX = zplX + Math.floor((zplW - qrSize) / 2);
-        qrY = zplY + Math.floor((zplH - qrSize) / 2);
-    }
+            if (qrSize <= zplW && qrSize <= zplH) {
+                qrX = zplX + Math.floor((zplW - qrSize) / 2);
+                qrY = zplY + Math.floor((zplH - qrSize) / 2);
+            }
 
-    if (qrValue) {
-        // Có giá trị thật => in QR
-        zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrValue}^FS\n`;
-    } else {
-        // Không có giá trị nhưng vẫn cần in (QR placeholder)
-        const placeholder = obj.variable || 'QR';
-        zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${placeholder}^FS\n`;
+            if (qrValue) {
+                // Có giá trị thật => in QR
+                zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrValue}^FS\n`;
+            } else {
+                // Không có giá trị nhưng vẫn cần in (QR placeholder)
+                const placeholder = obj.variable || 'QR';
+                zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${placeholder}^FS\n`;
 
-        // Nếu là preview thì vẽ thêm viền + text
-        // if (preview) {
-        //     zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
-        //     zpl += `^FO${zplX},${zplY}^GB${zplW},${zplH},2^FS\n`;
+                // Nếu là preview thì vẽ thêm viền + text
+                // if (preview) {
+                //     zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
+                //     zpl += `^FO${zplX},${zplY}^GB${zplW},${zplH},2^FS\n`;
 
-        //     const fontSize = Math.min(Math.floor(zplH / 3), Math.floor(zplW / (placeholder.length * 0.7)));
-        //     const textWidth = placeholder.length * fontSize * 0.6;
-        //     const textX = zplX + Math.floor((zplW - textWidth) / 2);
-        //     const textY = zplY + Math.floor((zplH - fontSize) / 2) + Math.floor(fontSize * 0.2);
-        //     zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${placeholder}^FS\n`;
-        // }
-    }
-}
+                //     const fontSize = Math.min(Math.floor(zplH / 3), Math.floor(zplW / (placeholder.length * 0.7)));
+                //     const textWidth = placeholder.length * fontSize * 0.6;
+                //     const textX = zplX + Math.floor((zplW - textWidth) / 2);
+                //     const textY = zplY + Math.floor((zplH - fontSize) / 2) + Math.floor(fontSize * 0.2);
+                //     zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${placeholder}^FS\n`;
+                // }
+            }
+        }
 
         // Shapes
         else if (obj.type === 'rect' || obj.type === 'line') {
