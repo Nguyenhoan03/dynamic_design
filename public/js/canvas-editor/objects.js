@@ -1205,45 +1205,39 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         // QR Code
         else if (obj.type === 'group' && obj.customType === 'dynamicQR') {
             const qrField = (obj.variable || '').replace(/[#\{\}]/g, '');
-            const qrValue = dynamicData[qrField];
+            const qrValue = dynamicData?.[qrField]; // có thể undefined nếu đang preview
+            const isPreview = !qrValue;
 
-            // Tính QR size theo tỷ lệ thực tế
             const moduleCount = 21;
             const minModuleSize = 2;
             let qrScale = Math.floor(Math.min(zplW, zplH) / moduleCount);
             if (qrScale < minModuleSize) qrScale = minModuleSize;
 
             const qrSize = qrScale * moduleCount;
-
-            let qrX = zplX;
-            let qrY = zplY;
+            let qrX = zplX, qrY = zplY;
 
             if (qrSize <= zplW && qrSize <= zplH) {
                 qrX = zplX + Math.floor((zplW - qrSize) / 2);
                 qrY = zplY + Math.floor((zplH - qrSize) / 2);
             }
 
-            if (qrValue) {
-                // Có giá trị thật => in QR
+            if (!isPreview) {
+                // ✅ Có dữ liệu: QR thật
                 zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${qrValue}^FS\n`;
             } else {
-                // Không có giá trị nhưng vẫn cần in (QR placeholder)
+                // ❌ Không có dữ liệu (preview): QR placeholder
                 const placeholder = obj.variable || 'QR';
-                zpl += `^FO${qrX},${qrY}^BQN,2,${qrScale}^FDLA,${placeholder}^FS\n`;
+                zpl += `^FO${zplX},${zplY}^GB${zplW},${zplH},2^FS\n`;
 
-                // Nếu là preview thì vẽ thêm viền + text
-                // if (preview) {
-                //     zpl += `^FX_QR_FIELD:${obj.variable},${qrX},${qrY},${qrScale}\n`;
-                //     zpl += `^FO${zplX},${zplY}^GB${zplW},${zplH},2^FS\n`;
+                const fontSize = Math.min(Math.floor(zplH / 3), Math.floor(zplW / (placeholder.length * 0.7)));
+                const textWidth = placeholder.length * fontSize * 0.6;
+                const textX = zplX + Math.floor((zplW - textWidth) / 2);
+                const textY = zplY + Math.floor((zplH - fontSize) / 2) + Math.floor(fontSize * 0.2);
 
-                //     const fontSize = Math.min(Math.floor(zplH / 3), Math.floor(zplW / (placeholder.length * 0.7)));
-                //     const textWidth = placeholder.length * fontSize * 0.6;
-                //     const textX = zplX + Math.floor((zplW - textWidth) / 2);
-                //     const textY = zplY + Math.floor((zplH - fontSize) / 2) + Math.floor(fontSize * 0.2);
-                //     zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${placeholder}^FS\n`;
-                // }
+                zpl += `^FO${textX},${textY}^A0N,${fontSize},${Math.floor(fontSize * 0.6)}^FD${placeholder}^FS\n`;
             }
         }
+
 
         // Shapes
         else if (obj.type === 'rect' || obj.type === 'line') {
@@ -1276,7 +1270,7 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
             const printQuality = document.getElementById('printQuality')?.value || 'mono';
             if (obj.customType === 'staticQR') {
                 // QR tĩnh
-                const qrScale = Math.max(2, Math.floor(Math.min(zplW, zplH) / 21));
+                const qrScale = Math.max(2, Math.floor(Math.min(zplW, zplH) / 24.5));
                 zpl += `^FO${zplX},${zplY}^BQN,2,${qrScale}^FDLA,${obj.qrValue || ''}^FS\n`;
             } else {
                 // Ảnh thường
