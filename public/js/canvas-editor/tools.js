@@ -607,6 +607,13 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         }
     };
 
+    // Bổ sung lại sự kiện cho nút tải PDF từng nhãn
+    downloadBtn.onclick = () => {
+        // Lấy ZPL của trang hiện tại, đảm bảo đã xử lý QR động
+        const zpl = processQRInZPL(zplBlocks[current]).trim();
+        downloadPDFForZPL(zpl, labelWidthInch, labelHeightInch, printDpi);
+    };
+
     // Đúng chuẩn: Gộp từng PDF lại thành 1 file PDF duy nhất
     downloadAllBtn.onclick = async () => {
         const { PDFDocument } = window['pdf-lib'];
@@ -711,16 +718,17 @@ function processQRInZPL(zpl) {
     if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
     if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
 
-    // Regex match mọi trường hợp QR động ^FOx,y^BQN,2,scale(,H)?^FDLA,#{field}^FS
-    return zpl.replace(/\^FO(\d+),(\d+)\^BQN,2,(\d+)(?:,[A-Z])?\^FDLA,(#\{([a-zA-Z0-9_]+)\})\^FS/g, (match, x, y, scale, placeholder, field) => {
-        // Thông số khung
-        const boxSize = 120; // px
-        const fontSize = 32; // px
-        // Vẽ khung (rectangle)
-        // Vẽ text căn giữa khung (dùng ^FB để wrap text nếu dài)
-        // ^FOx,y^GBw,h,2^FS^FOx+8,y+boxSize/2-fontSize/2^A0N,fontSize,fontSize^FBboxSize,1,0,C,0^FD#{abc}^FS
-        const textY = parseInt(y) + Math.floor(boxSize/2) - Math.floor(fontSize/2);
-        return `^FO${x},${y}^GB${boxSize},${boxSize},2^FS^FO${parseInt(x)+8},${textY}^A0N,${fontSize},${fontSize}^FB${boxSize-16},1,0,C,0^FD${placeholder}^FS`;
+    // Xử lý các placeholder QR code với scale theo tỷ lệ thực
+    return zpl.replace(/\^FX_QR_FIELD:([^,]+),(\d+),(\d+),(\d+)/g, (match, field, x, y, scale) => {
+        // Lấy thông số in từ form
+        const printDpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+
+        // Tính toán scale tối thiểu dựa trên DPI
+        const minScale = Math.max(2, Math.round(printDpi / 8));
+        const adjustedScale = Math.max(minScale, parseInt(scale));
+
+        // Tạo QR code với error correction H (30%)
+        return `^FO${x},${y}^BQN,2,${adjustedScale},H^FDLA,#{${field}}^FS`;
     });
 }
 
