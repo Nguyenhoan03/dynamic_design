@@ -1018,7 +1018,7 @@ textarea.form-control {
     position: relative;
 }
 
-#zplPreviewBox {
+/* #zplPreviewBox {
     background: #fff;
     display: flex;
     justify-content: center;
@@ -1026,6 +1026,16 @@ textarea.form-control {
     width: auto;
     height: auto;
     margin: 0 auto;
+} */
+#zplPreviewBox {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  background: #fff;
 }
 
 #labelaryPreviewPrint {
@@ -1109,6 +1119,7 @@ textarea.form-control {
 .modal-content {
     height: 90vh!important;
     position: relative;
+    
 }
 
 /* Đảm bảo modal có thể di chuyển tự do */

@@ -622,7 +622,7 @@ function openPrintModal() {
 
 // Hàm chuyển đổi kích thước sang inch
 function convertToInch(value, unit) {
-    switch(unit) {
+    switch (unit) {
         case 'mm':
             return value / 25.4;
         case 'cm':
@@ -874,7 +874,7 @@ function updatePreviewSize() {
     const previewContainer = document.querySelector('.preview-container');
     const previewBox = document.getElementById('zplPreviewBox');
     const previewImg = document.getElementById('labelaryPreviewPrint');
-    
+
     if (!previewContainer || !previewBox || !previewImg) return;
 
     // Lấy kích thước thực của canvas
@@ -884,7 +884,7 @@ function updatePreviewSize() {
     // Cập nhật kích thước cho các phần tử
     previewContainer.style.width = canvasWidth + 'px';
     previewContainer.style.height = canvasHeight + 'px';
-    previewBox.style.width = canvasWidth + 'px';
+    // previewBox.style.width = canvasWidth + 'px';
     previewBox.style.height = canvasHeight + 'px';
     previewImg.style.width = canvasWidth + 'px';
     previewImg.style.height = canvasHeight + 'px';
@@ -897,7 +897,7 @@ window.canvas.on('resize', updatePreviewSize);
 function previewZPL() {
     const textarea = document.getElementById('zplPrintOutput');
     const zpl = textarea ? textarea.value.trim() : '';
-    
+
     if (!zpl) {
         console.error('Không có nội dung ZPL');
         return;
@@ -917,7 +917,7 @@ function previewZPL() {
     // Lấy và kiểm tra preview elements
     const previewBox = document.getElementById('zplPreviewBox');
     const previewImg = document.getElementById('labelaryPreviewPrint');
-    
+
     if (!previewBox || !previewImg) {
         console.error('Không tìm thấy phần tử preview');
         return;
@@ -944,7 +944,7 @@ function previewZPL() {
 
     // Gọi API Labelary
     const apiUrl = `https://api.labelary.com/v1/printers/${dpi}dpmm/labels/${wInch}x${hInch}/0/`;
-    
+
     fetch(apiUrl, {
         method: "POST",
         headers: {
@@ -953,70 +953,50 @@ function previewZPL() {
         },
         body: zpl
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Lỗi API: ${response.status} ${response.statusText}`);
-        }
-        return response.blob();
-    })
-    .then(blob => {
-        const url = URL.createObjectURL(blob);
-        
-        previewImg.onload = function() {
-            // Tính toán tỷ lệ zoom để preview khớp với canvas
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const imgWidth = this.naturalWidth;
-            const imgHeight = this.naturalHeight;
-
-            // Tính toán zoom để preview lấp đầy container và khớp với canvas
-            const containerWidth = previewBox.offsetWidth;
-            const containerHeight = previewBox.offsetHeight;
-            
-            // Tính zoom dựa trên tỷ lệ giữa kích thước canvas và container
-            const zoomX = containerWidth / imgWidth;
-            const zoomY = containerHeight / imgHeight;
-            const zoom = Math.min(zoomX, zoomY);
-
-            // Áp dụng zoom và căn giữa
-            previewImg.style.width = canvasWidth + 'px';
-            previewImg.style.height = canvasHeight + 'px';
-            previewImg.style.objectFit = 'contain';
-            previewImg.style.margin = '0';
-            previewImg.style.padding = '0';
-            
-            // Áp dụng rotation nếu có
-            if (previewRotation) {
-                previewImg.style.transform = `rotate(${previewRotation}deg)`;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Lỗi API: ${response.status} ${response.statusText}`);
             }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
 
-            // Cập nhật kích thước container
-            previewBox.style.width = canvasWidth + 'px';
-            previewBox.style.height = canvasHeight + 'px';
-            previewBox.style.overflow = 'hidden';
-            previewBox.style.display = 'flex';
-            previewBox.style.alignItems = 'center';
-            previewBox.style.justifyContent = 'center';
-            
-            console.log('Preview loaded:', {
-                canvasSize: `${canvasWidth}x${canvasHeight}px`,
-                previewSize: `${imgWidth}x${imgHeight}px`,
-                containerSize: `${containerWidth}x${containerHeight}px`,
-                zoom
-            });
-        };
-        
-        previewImg.onerror = function(err) {
-            console.error('Lỗi load ảnh:', err);
-        };
-        
-        previewImg.src = url;
-    })
-    .catch(err => {
-        console.error('Lỗi xử lý ZPL:', err);
-        alert("Không thể xem trước ZPL: " + err.message);
-        if (previewImg) previewImg.src = "";
-    });
+            previewImg.onload = function () {
+                const imgWidth = this.naturalWidth;
+                const imgHeight = this.naturalHeight;
+
+                // Tính zoom để fit trong modal hoặc preview container
+                const containerWidth = previewBox.clientWidth;
+                const zoom = Math.min(containerWidth / imgWidth, 1); // không scale vượt 100%
+
+                // Cập nhật ảnh
+                previewImg.style.width = `${imgWidth * zoom}px`;
+                previewImg.style.height = `${imgHeight * zoom}px`;
+                previewImg.style.objectFit = 'contain';
+                previewImg.style.margin = '0';
+                previewImg.style.padding = '0';
+                previewImg.style.transform = previewRotation ? `rotate(${previewRotation}deg)` : 'none';
+
+                console.log('Preview loaded:', {
+                    previewSize: `${imgWidth}x${imgHeight}px`,
+                    containerSize: `${containerWidth}px`,
+                    zoom
+                });
+            };
+
+
+            previewImg.onerror = function (err) {
+                console.error('Lỗi load ảnh:', err);
+            };
+
+            previewImg.src = url;
+        })
+        .catch(err => {
+            console.error('Lỗi xử lý ZPL:', err);
+            alert("Không thể xem trước ZPL: " + err.message);
+            if (previewImg) previewImg.src = "";
+        });
 }
 
 function AddImageZPL() {
@@ -1088,12 +1068,12 @@ function ConvertImgToZPL(base64Image) {
         // Lấy canvas hiện tại và viewport transform
         const canvas = window.canvas;
         const vt = canvas?.viewportTransform;
-        
+
         // Lấy thông số label size từ input
         const wInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
         const hInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
         const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-        
+
         // Tính kích thước thực tế của label theo dots
         const labelW = Math.round(wInch * dpi * 25.4);
         const labelH = Math.round(hInch * dpi * 25.4);
@@ -1132,7 +1112,7 @@ function ConvertImgToZPL(base64Image) {
             // Cập nhật textarea
             const textarea = document.getElementById('zplPrintOutput');
             let zpl = textarea ? textarea.value.trim() : '';
-            
+
             if (!zpl.startsWith('^XA')) {
                 zpl = `^XA\n${imageZPL}^XZ`;
             } else {
@@ -1170,11 +1150,11 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
     // 3. Tính toán viewport bounds (vùng nhìn thấy trên canvas)
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    
+
     // Tính điểm góc trái trên của viewport trong tọa độ canvas gốc
     const viewportLeft = -translateX / zoom;
     const viewportTop = -translateY / zoom;
-    
+
     // Tính kích thước thực của viewport trong tọa độ canvas gốc
     const viewportWidth = canvasWidth / zoom;
     const viewportHeight = canvasHeight / zoom;
@@ -1198,9 +1178,9 @@ function convertCanvasToZPL(canvas, labelWidthInch = 4, labelHeightInch = 6, dpi
         const objHeight = obj.getScaledHeight ? obj.getScaledHeight() : (obj.height || 0) * (obj.scaleY || 1);
 
         // Kiểm tra object có nằm trong viewport không
-        if (objLeft + objWidth < viewportLeft || 
+        if (objLeft + objWidth < viewportLeft ||
             objLeft > viewportLeft + viewportWidth ||
-            objTop + objHeight < viewportTop || 
+            objTop + objHeight < viewportTop ||
             objTop > viewportTop + viewportHeight) {
             return;
         }
