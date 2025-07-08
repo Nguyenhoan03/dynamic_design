@@ -493,14 +493,14 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         page.textContent = `Trang ${idx + 1} / ${zplBlocks.length}`;
         page.className = 'mt-2 page-indicator';
         img.alt = 'Đang tải...';
-        
+
         // Xử lý QR code trong ZPL với scale tốt hơn
         let zpl = processQRInZPL(zplBlocks[idx].trim());
 
         try {
             const res = await fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Accept': 'image/png',
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
@@ -594,16 +594,50 @@ async function previewMultiLabelPDF(zplBlocks, width, height, dpi) {
         }
     };
 
-    downloadBtn.onclick = () => {
-        // Lấy ZPL từ textarea thay vì từ blocks và xử lý QR
-        const currentZpl = zplCodeTextarea ? zplCodeTextarea.value.trim() : zplBlocks[current];
-        downloadPDFForZPL(processQRInZPL(currentZpl), labelWidthInch, labelHeightInch, printDpi);
-    };
+    // Đúng chuẩn: Gộp từng PDF lại thành 1 file PDF duy nhất
+    downloadAllBtn.onclick = async () => {
+        const { PDFDocument } = window['pdf-lib'];
+        const pdfDoc = await PDFDocument.create();
 
-    downloadAllBtn.onclick = () => {
-        // Tải tất cả các trang với QR đã xử lý
-        const allZpl = zplBlocks.map(block => processQRInZPL(block)).join('\n');
-        downloadPDFForZPL(allZpl, labelWidthInch, labelHeightInch, printDpi);
+        const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
+        const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
+        const printDpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
+
+        for (let block of zplBlocks) {
+            const zpl = processQRInZPL(block).trim();
+            const zplWrapped = `^XA\n${zpl}\n^XZ`;
+
+            try {
+                const res = await fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/pdf',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: zplWrapped
+                });
+
+                if (!res.ok) {
+                    console.warn(`Trang lỗi: ${res.status}`);
+                    continue;
+                }
+
+                const pdfBytes = await res.arrayBuffer();
+                const pageDoc = await PDFDocument.load(pdfBytes);
+                const [copiedPage] = await pdfDoc.copyPages(pageDoc, [0]);
+                pdfDoc.addPage(copiedPage);
+            } catch (err) {
+                console.error('Lỗi khi fetch ZPL:', err);
+            }
+        }
+
+        const finalPdfBytes = await pdfDoc.save();
+        const blob = new Blob([finalPdfBytes], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'all_labels.pdf';
+        link.click();
+        URL.revokeObjectURL(link.href);
     };
 
     modal.show();
@@ -631,7 +665,7 @@ function downloadPDFForZPL(zpl, width, height, dpi) {
     // Dùng thông số mới (labelWidthInch, labelHeightInch, printDpi) thay vì tham số cũ
     fetch(`https://api.labelary.com/v1/printers/${printDpi}dpmm/labels/${labelWidthInch}x${labelHeightInch}/0/`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Accept': 'application/pdf',
             'Content-Type': 'application/x-www-form-urlencoded'
         },
@@ -659,7 +693,7 @@ function downloadPDFForZPL(zpl, width, height, dpi) {
 
 function processQRInZPL(zpl) {
     if (!zpl) return zpl;
-    
+
     // Đảm bảo ZPL có đầy đủ ^XA và ^XZ
     if (!zpl.startsWith('^XA')) zpl = '^XA\n' + zpl;
     if (!zpl.endsWith('^XZ')) zpl = zpl + '\n^XZ';
@@ -668,7 +702,7 @@ function processQRInZPL(zpl) {
     return zpl.replace(/\^FX_QR_FIELD:([^,]+),(\d+),(\d+),(\d+)/g, (match, field, x, y, scale) => {
         // Lấy thông số in từ form
         const printDpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-        
+
         // Tính toán scale tối thiểu dựa trên DPI
         const minScale = Math.max(2, Math.round(printDpi / 8));
         const adjustedScale = Math.max(minScale, parseInt(scale));

@@ -547,55 +547,20 @@ function openPrintModal() {
     config.canvasHeight = canvas.height;
     document.getElementById('template_config').value = JSON.stringify(config);
 
-    // Lấy thông số label từ input
-    const labelUnit = document.getElementById('labelUnit')?.value || 'inch';
-    const labelWidth = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
-    const labelHeight = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
-    const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
-
-    // Quy đổi width/height sang px theo đơn vị
-    let widthPx, heightPx;
-    if (labelUnit === 'mm') {
-        widthPx = labelWidth * 3.7795275591;
-        heightPx = labelHeight * 3.7795275591;
-    } else if (labelUnit === 'cm') {
-        widthPx = labelWidth * 37.795275591;
-        heightPx = labelHeight * 37.795275591;
-    } else {
-        widthPx = labelWidth * 96;
-        heightPx = labelHeight * 96;
-    }
-
-    // Clone canvas với đúng kích thước
-    const cloneCanvas = new fabric.StaticCanvas(null, {
-        width: widthPx,
-        height: heightPx,
-        backgroundColor: canvas.backgroundColor
-    });
-    // Copy objects
-    canvas.getObjects().forEach(original => {
-        if (typeof original.clone === 'function') {
-            original.clone(clone => {
-                cloneCanvas.add(clone);
-            });
-        }
-    });
-    // Set viewportTransform giống canvas gốc
-    cloneCanvas.setViewportTransform([...canvas.viewportTransform]);
-    cloneCanvas.renderAll();
-
+    // --- WYSIWYG PREVIEW LOGIC ---
+    // Directly export the current canvas as PNG, no resizing or label-based scaling
     setTimeout(() => {
-        const dataUrl = cloneCanvas.toDataURL({
+        const dataUrl = canvas.toDataURL({
             format: 'png',
             quality: 1,
-            multiplier: 1 // Để đúng tỷ lệ
+            multiplier: 1 // Export at current canvas size
         });
         const preview = document.getElementById('canvasPreview');
         if (preview) {
             preview.src = dataUrl;
             preview.style.display = 'block';
-            preview.style.width = widthPx + 'px';
-            preview.style.height = heightPx + 'px';
+            preview.style.width = '';
+            preview.style.height = '';
             preview.style.maxWidth = '100%';
             preview.style.maxHeight = '80vh';
             preview.style.objectFit = 'contain';
@@ -604,6 +569,7 @@ function openPrintModal() {
         }
         updateDynamicFieldsLabel();
 
+        // ZPL logic (unchanged)
         const labelWidthInch = parseFloat(document.getElementById('labelWidthPrint')?.value) || 4;
         const labelHeightInch = parseFloat(document.getElementById('labelHeightPrint')?.value) || 6;
         const dpi = parseInt(document.getElementById('dpiSelectPrint')?.value) || 8;
